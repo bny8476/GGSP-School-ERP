@@ -293,27 +293,39 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Nav list */}
-            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
-              {navItems.filter(item => item.show).map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
+            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-3 custom-scrollbar">
+              {navCategories.map((catGroup) => {
+                const visibleItems = catGroup.items.filter((item) => item.show);
+                if (visibleItems.length === 0) return null;
 
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                      isActive
-                        ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
-                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <Icon className={`h-4 w-4 mr-3 shrink-0 ${
-                      isActive ? 'text-[#0050CB] dark:text-[#38BDF8]' : 'text-slate-400'
-                    }`} />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
+                  <div key={catGroup.category} className="space-y-1">
+                    <div className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                      {catGroup.category}
+                    </div>
+                    {visibleItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href;
+
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                            isActive
+                              ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+                          }`}
+                        >
+                          <Icon className={`h-4 w-4 mr-3 shrink-0 ${
+                            isActive ? 'text-[#0050CB] dark:text-[#38BDF8]' : 'text-slate-400'
+                          }`} />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </nav>
