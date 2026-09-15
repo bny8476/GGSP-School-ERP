@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Flower2, Menu, X } from 'lucide-react';
+import { Globe, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Navbar() {
@@ -11,12 +11,12 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto glass-panel-heavy rounded-2xl flex items-center justify-between px-6 py-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="bg-violet-100 p-2 rounded-xl group-hover:rotate-12 transition-transform">
-            <Flower2 className="h-6 w-6 text-violet-600" />
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="bg-indigo-600 p-2.5 rounded-xl group-hover:rotate-12 transition-transform text-white shadow-md shadow-indigo-600/30">
+            <Globe className="h-6 w-6" />
           </div>
-          <span className="text-2xl font-extrabold tracking-tight text-slate-800">
-            Garden<span className="text-violet-600">Guru</span>
+          <span className="text-2xl font-extrabold tracking-tight text-slate-900">
+            Global<span className="text-indigo-600">International</span>
           </span>
         </Link>
 

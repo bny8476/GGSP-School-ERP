@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { GraduationCap, Plus, Edit2, Trash2, Search, Activity, Phone, ShieldAlert, Bus, FileText, Download } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<any[]>([]);
@@ -110,13 +112,15 @@ export default function StudentsPage() {
       });
 
       if (res.ok) {
+        toast.success(editingStudentId ? 'Student updated successfully!' : 'Student created successfully!');
         resetForm();
         fetchData();
       } else {
-        alert('Error saving student data');
+        toast.error('Error saving student data');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving student');
     } finally {
       setIsSaving(false);
     }
@@ -145,9 +149,10 @@ export default function StudentsPage() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      toast.success('Report Card downloaded!');
     } catch (error) {
       console.error(error);
-      alert('Error downloading Report Card');
+      toast.error('Error downloading Report Card');
     }
   };
 
@@ -229,6 +234,21 @@ export default function StudentsPage() {
                         <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">
                           {student.grade || 'Class N/A'}
                         </span>
+                        <div className="flex space-x-2">
+                          <Link
+                            href={`/dashboard/students/${student._id}`}
+                            className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold text-xs rounded-xl hover:bg-indigo-100 transition-colors"
+                          >
+                            360° Profile
+                          </Link>
+                          <button
+                            onClick={() => openEdit(student)}
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            title="Edit Student"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div className="p-5 flex-1 text-sm space-y-3">

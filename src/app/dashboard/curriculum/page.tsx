@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, BookOpen, Calendar, ChevronRight, X, Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 type Curriculum = {
   _id: string;
@@ -93,6 +94,7 @@ export default function CurriculumPage() {
       });
 
       if (res.ok) {
+        toast.success('Curriculum plan created!');
         fetchCurriculums();
         setShowCreateModal(false);
         // Reset form
@@ -106,11 +108,11 @@ export default function CurriculumPage() {
         });
       } else {
         const errorData = await res.json();
-        alert(`Failed to create plan: ${errorData.message}`);
+        toast.error(`Failed to create plan: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Error creating curriculum:', error);
-      alert('An error occurred while creating the plan.');
+      toast.error('An error occurred while creating the plan.');
     }
   };
 

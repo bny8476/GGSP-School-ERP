@@ -5,7 +5,7 @@ import Student from '../models/Student';
 // @route   GET /api/students
 export const getStudents = async (req: Request, res: Response) => {
   try {
-    let query: any = {};
+    let query: Record<string, unknown> = {};
     if (req.user?.role === 'Parent') {
       query.parentId = req.user.id;
     }

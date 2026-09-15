@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Search, ChevronRight, CheckCircle2, XCircle, Clock, Calendar, Mail, Phone, Home, Sparkles, MoveRight, HelpCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdmissionsPage() {
   const [applications, setApplications] = useState<any[]>([]);
@@ -45,14 +46,17 @@ export default function AdmissionsPage() {
       if (res.ok) {
         fetchApplications();
         if (status === 'Admission Confirmed') {
-          alert('Applicant has been successfully Confirmed! You can now add them to the student directory.');
+          toast.success('Applicant Confirmed! You can now add them to the student directory.');
+        } else {
+          toast.success(`Application status updated to ${status}`);
         }
       } else {
         const err = await res.json();
-        alert(`Failed to update: ${err.message}`);
+        toast.error(`Failed to update: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error updating status');
     }
   };
 

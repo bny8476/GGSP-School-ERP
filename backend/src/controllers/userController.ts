@@ -7,11 +7,21 @@ import bcrypt from 'bcryptjs';
 // @route   GET /api/users
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.find()
+    const userRole = req.user?.role;
+    const isFullAccess = ['Admin', 'SuperAdmin', 'Principal'].includes(userRole || '');
+
+    let query = User.find()
       .populate('role', 'name')
       .populate('teachingAssignments.classId', 'name')
-      .populate('teachingAssignments.subjectId', 'name')
-      .select('-passwordHash');
+      .populate('teachingAssignments.subjectId', 'name');
+
+    if (!isFullAccess) {
+      query = query.select('-passwordHash -salary -performanceNotes -qualification -experienceYears');
+    } else {
+      query = query.select('-passwordHash');
+    }
+
+    const users = await query;
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
@@ -78,7 +88,7 @@ export const updateUser = async (req: Request, res: Response) => {
     const { firstName, lastName, email, phoneNumber, roleName, isActive, salary, designation, joinDate, qualification, experienceYears, performanceNotes, teachingAssignments } = req.body;
     
     // Everyone can update basic profile info
-    const updates: any = { firstName, lastName, email };
+    const updates: Record<string, unknown> = { firstName, lastName, email };
     if (phoneNumber !== undefined) updates.phoneNumber = phoneNumber;
     if (designation !== undefined) updates.designation = designation;
     if (qualification !== undefined) updates.qualification = qualification;

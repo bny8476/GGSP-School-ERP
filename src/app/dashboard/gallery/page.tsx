@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Plus, Edit2, Trash2, Search, Users, ExternalLink } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function GalleryPage() {
   const [albums, setAlbums] = useState<any[]>([]);
@@ -97,13 +98,15 @@ export default function GalleryPage() {
       });
 
       if (res.ok) {
+        toast.success(editingAlbumId ? 'Album updated successfully!' : 'Album created successfully!');
         resetForm();
         fetchAlbums();
       } else {
-        alert('Error saving album');
+        toast.error('Error saving album');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving album');
     } finally {
       setIsSaving(false);
     }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Search, CheckSquare, Users, GraduationCap, UsersRound } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AttendancePage() {
   const [activeTab, setActiveTab] = useState<'students' | 'staff'>('students');
@@ -102,14 +103,14 @@ export default function AttendancePage() {
       });
 
       if (res.ok) {
-        alert('Attendance saved successfully!');
+        toast.success('Attendance saved successfully!');
       } else {
         const err = await res.json();
-        alert(`Failed to save attendance: ${err.message}`);
+        toast.error(`Failed to save attendance: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
-      alert('Network error while saving attendance.');
+      toast.error('Network error while saving attendance.');
     } finally {
       setIsSaving(false);
     }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { HeartPulse, Plus, Edit2, Trash2, Search, AlertTriangle, ThermometerSun, Pill, AlignLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function HealthPage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -109,13 +110,15 @@ export default function HealthPage() {
       });
 
       if (res.ok) {
+        toast.success(editingLogId ? 'Health log updated!' : 'Health log recorded!');
         resetForm();
         fetchData();
       } else {
-        alert('Error saving health log');
+        toast.error('Error saving health log');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving health log');
     } finally {
       setIsSaving(false);
     }

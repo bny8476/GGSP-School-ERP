@@ -12,7 +12,12 @@ const getParentWhatsAppNumber = async (studentId: string): Promise<string | null
     const student = await Student.findById(studentId).populate('parentId');
     if (!student || !student.parentId) return null;
     
-    const parent: any = student.parentId;
+    interface ParentDoc {
+      whatsappNumber?: string;
+      fatherContact?: string;
+      motherContact?: string;
+    }
+    const parent = student.parentId as unknown as ParentDoc;
     // Prefer whatsappNumber, fallback to fatherContact, then motherContact
     let num = parent.whatsappNumber || parent.fatherContact || parent.motherContact;
     if (!num) return null;
@@ -65,7 +70,7 @@ export const createTransportLog = async (req: Request, res: Response) => {
     const parentNumber = await getParentWhatsAppNumber(log.studentId.toString());
     if (parentNumber) {
       const student = await Student.findById(log.studentId);
-      const msg = `🚌 *Garden Guru Update*\n${student?.firstName} has been marked as ${log.status} at ${new Date(log.pickupTime || new Date()).toLocaleTimeString()}.\nRoute: ${log.routeNumber || 'N/A'}`;
+      const msg = `🚌 *School ERP Update*\n${student?.firstName} has been marked as ${log.status} at ${new Date(log.pickupTime || new Date()).toLocaleTimeString()}.\nRoute: ${log.routeNumber || 'N/A'}`;
       await sendWhatsAppMessage(parentNumber, msg);
     }
 
@@ -136,7 +141,7 @@ export const createHealthLog = async (req: Request, res: Response) => {
       if (parentNumber) {
         const student = await Student.findById(log.studentId);
         const alertType = log.temperature >= 99 ? `Fever (${log.temperature}°F)` : 'Allergy Alert';
-        const msg = `⚠️ *URGENT - Garden Guru Health Alert*\n${student?.firstName} has a reported health issue: ${alertType}.\nPlease contact the school reception immediately.`;
+        const msg = `⚠️ *URGENT - School ERP Health Alert*\n${student?.firstName} has a reported health issue: ${alertType}.\nPlease contact the school reception immediately.`;
         await sendWhatsAppMessage(parentNumber, msg);
       }
     }

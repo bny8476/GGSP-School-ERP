@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Send, CheckCircle2, Star, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
+import toast from 'react-hot-toast';
+
 export default function AdmissionsPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,11 +38,11 @@ export default function AdmissionsPage() {
         setIsSubmitted(true);
       } else {
         const err = await response.json();
-        alert(`Submission failed: ${err.message}`);
+        toast.error(`Submission failed: ${err.message}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('A network error occurred.');
+      toast.error('A network error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +64,7 @@ export default function AdmissionsPage() {
           <div>
             <h2 className="text-3xl font-black text-slate-800 mb-2">Application Received!</h2>
             <p className="text-slate-500 leading-relaxed font-medium">
-              Thank you for choosing Garden Guru. Our admissions team will review your enquiry and get back to you within 24-48 hours.
+              Thank you for choosing School ERP. Our admissions team will review your enquiry and get back to you within 24-48 hours.
             </p>
           </div>
           <Link href="/" className="inline-flex items-center justify-center w-full py-3 px-4 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">
@@ -83,7 +85,7 @@ export default function AdmissionsPage() {
           <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-white/10 text-indigo-100 font-semibold text-sm backdrop-blur-md border border-white/20 mb-4">
             <Sparkles className="h-4 w-4 mr-2" /> 2026-2027 Admissions Open
           </div>
-          <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-md">Join the Garden Guru Family</h1>
+          <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-md">Join the School ERP Family</h1>
           <p className="text-xl text-indigo-100 max-w-2xl mx-auto font-medium">Fill out the application form below to start your child's educational journey with us.</p>
         </div>
 

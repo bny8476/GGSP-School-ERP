@@ -1,9 +1,46 @@
+import { Response } from 'express';
 import PDFDocument from 'pdfkit';
+
+export interface PayslipData {
+  month: string;
+  status: string;
+  baseSalary: number;
+  bonuses: number;
+  deductions: number;
+  netSalary: number;
+  paymentDate?: Date | string;
+  staffId?: {
+    firstName?: string;
+    lastName?: string;
+  };
+}
+
+export interface RubricData {
+  category: string;
+  skill: string;
+  score: string;
+}
+
+export interface AssessmentData {
+  term: string;
+  date: Date | string;
+  rubrics: RubricData[];
+  teacherComments: string;
+}
+
+export interface StudentPDFData {
+  firstName: string;
+  lastName: string;
+  admissionNumber?: string;
+  className?: string;
+  section?: string;
+  dateOfBirth?: Date | string;
+}
 
 /**
  * Utility to generate a PDF for a Salary Payslip
  */
-export const generatePayslipPDF = (res: any, payrollData: any) => {
+export const generatePayslipPDF = (res: Response, payrollData: PayslipData) => {
   const doc = new PDFDocument({ margin: 50 });
 
   // Pipe its output to the Express response
@@ -12,7 +49,7 @@ export const generatePayslipPDF = (res: any, payrollData: any) => {
   doc.pipe(res);
 
   // Header
-  doc.fillColor('#4f46e5').fontSize(24).text('Garden Guru ERP', { align: 'center' });
+  doc.fillColor('#4f46e5').fontSize(24).text('Global International', { align: 'center' });
   doc.fillColor('#64748b').fontSize(10).text('123 Education Lane, Learning City, 10001', { align: 'center' });
   doc.moveDown(2);
 
@@ -68,7 +105,7 @@ export const generatePayslipPDF = (res: any, payrollData: any) => {
 /**
  * Utility to generate a PDF for a Student Report Card
  */
-export const generateReportCardPDF = (res: any, student: any, assessments: any[]) => {
+export const generateReportCardPDF = (res: Response, student: StudentPDFData, assessments: AssessmentData[]) => {
   const doc = new PDFDocument({ margin: 50 });
 
   res.setHeader('Content-Type', 'application/pdf');
@@ -76,7 +113,7 @@ export const generateReportCardPDF = (res: any, student: any, assessments: any[]
   doc.pipe(res);
 
   // Header
-  doc.fillColor('#4f46e5').fontSize(24).text('Garden Guru ERP', { align: 'center' });
+  doc.fillColor('#4f46e5').fontSize(24).text('Global International', { align: 'center' });
   doc.fillColor('#64748b').fontSize(10).text('Early Childhood Education Report', { align: 'center' });
   doc.moveDown(2);
 
@@ -87,9 +124,9 @@ export const generateReportCardPDF = (res: any, student: any, assessments: any[]
   // Student Details
   doc.fontSize(12).fillColor('#334155');
   doc.text(`Student Name: ${student.firstName} ${student.lastName}`);
-  doc.text(`Admission No: ${student.admissionNumber}`);
-  doc.text(`Class: ${student.className} - Section ${student.section}`);
-  doc.text(`Date of Birth: ${new Date(student.dateOfBirth).toLocaleDateString()}`);
+  doc.text(`Admission No: ${student.admissionNumber || 'N/A'}`);
+  doc.text(`Class: ${student.className || 'N/A'} - Section ${student.section || 'N/A'}`);
+  doc.text(`Date of Birth: ${student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A'}`);
   doc.moveDown(2);
 
   // Loop through assessments
@@ -103,7 +140,7 @@ export const generateReportCardPDF = (res: any, student: any, assessments: any[]
 
       // Rubrics Table
       const startY = doc.y;
-      assessment.rubrics.forEach((rubric: any, index: number) => {
+      assessment.rubrics.forEach((rubric: RubricData) => {
         doc.font('Helvetica-Bold').fillColor('#334155').text(rubric.category, 50, doc.y);
         doc.font('Helvetica').text(rubric.skill, 150, doc.y);
         doc.font('Helvetica-Oblique').fillColor('#4f46e5').text(rubric.score, 400, doc.y, { align: 'right' });

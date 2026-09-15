@@ -10,9 +10,11 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Garden Guru Preschool ERP",
-  description: "Comprehensive management system for Pre-KG, LKG, and UKG.",
+  title: "Global International — School Management ERP",
+  description: "Enterprise-grade School Management System for Global International.",
 };
+
+import { Toaster } from "react-hot-toast";
 
 export default function RootLayout({
   children,
@@ -22,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} antialiased flex flex-col min-h-screen`}>
+        <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         <Navbar />
         <main className="flex-grow pt-24">
           {children}

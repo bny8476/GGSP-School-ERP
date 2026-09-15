@@ -9,7 +9,7 @@ router.route('/')
   .post(protect, authorize('Admin', 'SuperAdmin'), createUser);
 
 router.route('/:id')
-  .put(protect, updateUser)
+  .put(protect, authorize('Admin', 'SuperAdmin'), updateUser)
   .delete(protect, authorize('Admin', 'SuperAdmin'), deleteUser);
 
 export default router;

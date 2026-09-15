@@ -1,6 +1,6 @@
 import express from 'express';
 import { getLeaves, createLeave, updateLeaveStatus } from '../controllers/leaveController';
-import { protect } from '../middleware/auth';
+import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -11,6 +11,6 @@ router.route('/')
   .post(createLeave);
 
 router.route('/:id')
-  .put(updateLeaveStatus);
+  .put(authorize('SuperAdmin', 'Admin', 'Principal', 'Teacher'), updateLeaveStatus);
 
 export default router;

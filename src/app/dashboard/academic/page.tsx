@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Calendar, BookOpen, Clock, Plus, Trash2, Edit2, Users, CheckCircle2, ChevronDown } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AcademicPage() {
   const [activeTab, setActiveTab] = useState<'subjects' | 'timetables'>('timetables');
@@ -98,14 +99,16 @@ export default function AcademicPage() {
         body: JSON.stringify(subjectForm)
       });
       if (res.ok) {
+        toast.success("Subject saved!");
         setShowSubjectModal(false);
         setSubjectForm({ name: '', description: '', colorCode: '#4F46E5' });
         fetchData();
       } else {
-        alert("Failed to save subject.");
+        toast.error("Failed to save subject.");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Network error saving subject.");
     } finally {
       setIsSaving(false);
     }
@@ -119,9 +122,11 @@ export default function AcademicPage() {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      toast.success("Subject deleted!");
       fetchData();
     } catch (error) {
       console.error(error);
+      toast.error("Error deleting subject.");
     }
   };
 
@@ -172,13 +177,14 @@ export default function AcademicPage() {
         })
       });
       if (res.ok) {
-        alert("Timetable saved!");
+        toast.success("Timetable saved!");
         fetchTimetable();
       } else {
-        alert("Failed to save timetable.");
+        toast.error("Failed to save timetable.");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Network error saving timetable.");
     } finally {
       setIsSaving(false);
     }

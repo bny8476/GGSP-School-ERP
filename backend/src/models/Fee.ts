@@ -42,4 +42,7 @@ const FeeSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+FeeSchema.index({ studentId: 1, status: 1 });
+FeeSchema.index({ dueDate: 1 });
+
 export default mongoose.model<IFee>('Fee', FeeSchema);

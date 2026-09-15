@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BookOpen, Plus, Edit2, Trash2, Search, Phone, Mail, Award, Clock, DollarSign } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<any[]>([]);
@@ -129,13 +130,15 @@ export default function TeachersPage() {
       });
 
       if (res.ok) {
+        toast.success(editingTeacherId ? 'Teacher profile updated!' : 'Teacher added successfully!');
         resetForm();
         fetchData();
       } else {
-        alert('Error saving teacher data');
+        toast.error('Error saving teacher data');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving teacher');
     } finally {
       setIsSaving(false);
     }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Megaphone, Users, Trash2, Send, Clock, Plus, Filter } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function CommunicationPage() {
   const [announcements, setAnnouncements] = useState<any[]>([]);
@@ -65,15 +66,16 @@ export default function CommunicationPage() {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        alert("Announcement posted successfully!");
+        toast.success("Announcement posted successfully!");
         setFormData({ title: '', message: '', audience: 'All', classId: '' });
         setActiveTab('view');
         fetchData();
       } else {
-        alert("Failed to post announcement.");
+        toast.error("Failed to post announcement.");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Network error posting announcement.");
     } finally {
       setIsSaving(false);
     }

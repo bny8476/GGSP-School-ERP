@@ -1,9 +1,20 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { errorHandler } from './middleware/errorHandler';
 
 // Load env vars FIRST before anything else
 dotenv.config();
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: Missing JWT_SECRET environment variable');
+  process.exit(1);
+}
+if (!process.env.MONGO_URI) {
+  console.error('FATAL: Missing MONGO_URI environment variable');
+  process.exit(1);
+}
 
 import { createServer } from 'http';
 import connectDB from './config/db';
@@ -30,6 +41,21 @@ import eventsRoutes from './routes/eventsRoutes';
 import daycareRoutes from './routes/daycareRoutes';
 import galleryRoutes from './routes/galleryRoutes';
 import payrollRoutes from './routes/payrollRoutes';
+import healthRoutes from './routes/healthRoutes';
+import bookRoutes from './routes/bookRoutes';
+import hostelRoutes from './routes/hostelRoutes';
+import ticketRoutes from './routes/ticketRoutes';
+
+import notificationRoutes from './routes/notificationRoutes';
+import auditRoutes from './routes/auditRoutes';
+import documentRoutes from './routes/documentRoutes';
+import examRoutes from './routes/examRoutes';
+import learningRoutes from './routes/learningRoutes';
+import broadcastRoutes from './routes/broadcastRoutes';
+import inventoryRoutes from './routes/inventoryRoutes';
+import visitorRoutes from './routes/visitorRoutes';
+import recruitmentRoutes from './routes/recruitmentRoutes';
+
 
 // Connect to database
 connectDB();
@@ -44,20 +70,29 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean) as string[];
 
-// Middleware - CORS
-app.use(cors({
-  origin: (origin, callback) => {
-    // allow requests with no origin (e.g. mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error(`CORS: origin '${origin}' not allowed`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  // Middleware - CORS
+  app.use(cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
+
+  // Security middlewares
+  app.use(helmet());
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(limiter);
 
 // Handle OPTIONS preflight for all routes explicitly
 app.options(/.*/, cors({
@@ -75,10 +110,11 @@ app.use(express.json());
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {
-  res.send('Pre-school ERP API is running...');
+  res.send('Global International School ERP API is running...');
 });
 
 // API Routes
+app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admissions', admissionRoutes);
 app.use('/api/curriculum', curriculumRoutes);
@@ -101,6 +137,20 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/daycare', daycareRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/payroll', payrollRoutes);
+app.use('/api/books', bookRoutes);
+app.use('/api/hostel', hostelRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/exams', examRoutes);
+app.use('/api/learning', learningRoutes);
+app.use('/api/broadcasts', broadcastRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/visitors', visitorRoutes);
+app.use('/api/recruitment', recruitmentRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

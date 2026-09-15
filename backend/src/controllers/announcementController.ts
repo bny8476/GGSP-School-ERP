@@ -1,16 +1,12 @@
 import { Request, Response } from 'express';
 import Announcement from '../models/Announcement';
 
-export interface AuthRequest extends Request {
-  user?: any;
-}
-
 // @desc    Get announcements (filtered by role/audience)
 // @route   GET /api/announcements
-export const getAnnouncements = async (req: AuthRequest, res: Response) => {
+export const getAnnouncements = async (req: Request, res: Response) => {
   try {
-    const role = req.user?.role?.name || req.user?.role;
-    let query: any = {};
+    const role = req.user?.role;
+    let query: Record<string, unknown> = {};
 
     // Filter logic:
     // SuperAdmin/Admin sees all
@@ -37,7 +33,7 @@ export const getAnnouncements = async (req: AuthRequest, res: Response) => {
 
 // @desc    Create an announcement
 // @route   POST /api/announcements
-export const createAnnouncement = async (req: AuthRequest, res: Response) => {
+export const createAnnouncement = async (req: Request, res: Response) => {
   try {
     const { title, message, audience, classId } = req.body;
     
@@ -46,7 +42,7 @@ export const createAnnouncement = async (req: AuthRequest, res: Response) => {
       message,
       audience,
       classId: classId || undefined,
-      createdBy: req.user._id,
+      createdBy: req.user?.id,
     });
 
     const populated = await Announcement.findById(announcement._id)

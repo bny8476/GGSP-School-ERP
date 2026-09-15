@@ -25,24 +25,27 @@ export const protect = (req: Request, res: Response, next: NextFunction): void =
       // Get token from header
       token = req.headers.authorization.split(' ')[1];
 
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret') as JwtPayload;
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        throw new Error('JWT_SECRET is missing from environment');
+      }
+      const decoded = jwt.verify(token, secret) as JwtPayload;
 
       // Get user from the token payload and attach to request
       req.user = decoded.user;
 
       next();
-      return; // CRITICAL: must return after calling next()
+      return;
     } catch (error) {
       console.error(error);
       res.status(401).json({ message: 'Not authorized, token failed' });
-      return; // CRITICAL: must return to prevent fall-through
+      return;
     }
   }
 
   if (!token) {
     res.status(401).json({ message: 'Not authorized, no token' });
-    return; // CRITICAL: must return
+    return;
   }
 };
 
@@ -57,3 +60,33 @@ export const authorize = (...roles: string[]) => {
     next();
   };
 };
+
+/**
+ * Data-level Scope Authorization Middleware
+ * Verifies that caller is either in allowed privileged roles OR matches the target userId parameter.
+ */
+export const authorizeDataOwnerOrRoles = (...allowedRoles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ message: 'Not authenticated' });
+      return;
+    }
+
+    const isPrivileged = allowedRoles.includes(req.user.role);
+    const isOwner = req.params.id === req.user.id || req.params.userId === req.user.id;
+
+    if (!isPrivileged && !isOwner) {
+      res.status(403).json({
+        message: 'Access denied: You do not have permission to view or modify this resource.',
+      });
+      return;
+    }
+
+    next();
+  };
+};
+
+
+export const authenticate = protect;
+export const authorizeRoles = authorize;
+

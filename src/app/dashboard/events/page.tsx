@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Calendar, Plus, Edit2, Trash2, Search, Users, Clock, AlignLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
@@ -94,13 +95,15 @@ export default function EventsPage() {
       });
 
       if (res.ok) {
+        toast.success(editingEventId ? 'Event updated successfully!' : 'Event created successfully!');
         resetForm();
         fetchEvents();
       } else {
-        alert('Error saving event');
+        toast.error('Error saving event');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving event');
     } finally {
       setIsSaving(false);
     }
