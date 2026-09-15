@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Comprehensive management system for E.A.S. Academy School",
 };
 
+import MainWrapper from "@/components/MainWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,9 +54,9 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <Navbar />
-            <main className="flex-grow pt-24">
+            <MainWrapper>
               {children}
-            </main>
+            </MainWrapper>
             <Footer />
           </LanguageProvider>
         </ThemeProvider>

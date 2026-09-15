@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, useInView, useReducedMotion } from "framer-motion";
 import AcademyLogo from "@/components/AcademyLogo";
 import { useLanguage } from "@/context/LanguageContext";
 import {
@@ -40,11 +39,10 @@ function NavLinkItem({ href, label }: NavLinkItemProps) {
 export default function Footer() {
   const { t } = useLanguage();
   const pathname = usePathname();
-  const footerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(footerRef, { once: true, margin: "-60px" });
-  const prefersReduced = useReducedMotion();
 
-  if (pathname === '/login') {
+  // Hide the public marketing footer on login and inside portal/dashboard views
+  // (the dashboard has its own dedicated application footer)
+  if (pathname === '/login' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/portal')) {
     return null;
   }
 
@@ -64,8 +62,7 @@ export default function Footer() {
 
   return (
     <footer
-      ref={footerRef}
-      className="relative w-full bg-[#000E28] text-white overflow-hidden select-none"
+      className="relative w-full bg-[#000E28] text-white overflow-hidden select-none z-10"
       aria-label="Footer Navigation and School Information"
     >
       {/* Top Transition Divider: Glowing horizontal beam separating page content from footer */}
@@ -76,27 +73,9 @@ export default function Footer() {
 
       {/* Atmospheric Background Layers */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Slow floating ambient blue glow in center */}
-        <motion.div
-          animate={
-            prefersReduced
-              ? {}
-              : {
-                  scale: [1, 1.1, 1],
-                  opacity: [0.15, 0.25, 0.15],
-                }
-          }
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#0050CB]/30 via-[#002B7A]/20 to-transparent rounded-full blur-3xl pointer-events-none"
-        />
-
-        {/* Soft atmospheric arc lower-left */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#0050CB]/30 via-[#002B7A]/20 to-transparent rounded-full blur-3xl pointer-events-none opacity-20" />
         <div className="absolute -bottom-24 -left-20 w-80 h-80 rounded-full bg-[#0050CB]/15 blur-3xl pointer-events-none" />
-
-        {/* Soft atmospheric arc lower-right */}
         <div className="absolute -bottom-24 -right-20 w-96 h-96 rounded-full bg-[#38BDF8]/10 blur-3xl pointer-events-none" />
-
-
       </div>
 
       {/* Main 4-Column Footer Content */}
@@ -104,17 +83,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12">
           
           {/* COLUMN 1: Brand & Mission (4 Cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: prefersReduced ? 0 : 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.05, ease: "easeOut" }}
-            className="lg:col-span-4 space-y-4"
-          >
+          <div className="lg:col-span-4 space-y-4">
             {/* Logo Treatment with Academic Crest */}
             <Link href="/" className="inline-flex items-center gap-3 group">
               <AcademyLogo size="md" />
               <span className="text-2xl font-black tracking-tight text-white">
-                E.A.S.<span className="text-white">Academy</span>
+                E.A.S.<span className="text-[#38BDF8]">Academy</span>
               </span>
             </Link>
 
@@ -133,15 +107,10 @@ export default function Footer() {
                 <span>{t("footer.openAdmissions", "Admissions open for 2026–2027")}</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* COLUMN 2: Explore Navigation (2.5 Cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: prefersReduced ? 0 : 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
-            className="lg:col-span-2 sm:col-span-1"
-          >
+          <div className="lg:col-span-2 sm:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-[#0050CB] to-[#38BDF8]" />
               <h3 className="text-xs font-bold tracking-[0.1em] text-white uppercase">
@@ -153,15 +122,10 @@ export default function Footer() {
                 <NavLinkItem key={link.href} href={link.href} label={link.label} />
               ))}
             </ul>
-          </motion.div>
+          </div>
 
           {/* COLUMN 3: Management Navigation (3 Cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: prefersReduced ? 0 : 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.18, ease: "easeOut" }}
-            className="lg:col-span-3 sm:col-span-1"
-          >
+          <div className="lg:col-span-3 sm:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-[#0050CB] to-[#38BDF8]" />
               <h3 className="text-xs font-bold tracking-[0.1em] text-white uppercase">
@@ -173,30 +137,25 @@ export default function Footer() {
                 <NavLinkItem key={link.href} href={link.href} label={link.label} />
               ))}
             </ul>
-          </motion.div>
+          </div>
 
           {/* COLUMN 4: Contact & Support (3.5 Cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: prefersReduced ? 0 : 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.24, ease: "easeOut" }}
-            className="lg:col-span-3 space-y-4"
-          >
+          <div className="lg:col-span-3 space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-[#0050CB] to-[#38BDF8]" />
               <h3 className="text-xs font-bold tracking-[0.1em] text-white uppercase">
-                {t("footer.contact", "CONTACT & SUPPORT")}
+                {t("footer.contact", "CONTACT & CAMPUS")}
               </h3>
             </div>
 
             <ul className="space-y-3 text-[14px]">
-              {/* Location */}
+              {/* Address */}
               <li className="group flex items-start gap-3 text-slate-300">
                 <div className="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-[#38BDF8] shrink-0 mt-0.5 group-hover:scale-105 group-hover:border-[#0050CB] group-hover:bg-[#0050CB]/20 transition-all duration-200">
                   <MapPin className="w-4 h-4" />
                 </div>
-                <span className="leading-snug text-slate-300 group-hover:text-white transition-colors">
-                  {t("footer.location", "E.A.S. Academy Campus, Main Avenue")}
+                <span className="text-slate-300 group-hover:text-white transition-colors leading-snug">
+                  123 Education Lane, Learning City, 10001
                 </span>
               </li>
 
@@ -231,18 +190,18 @@ export default function Footer() {
                 <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
-          </motion.div>
+          </div>
 
         </div>
       </div>
 
       {/* Bottom Sub-footer Bar */}
-      <div className="relative border-t border-white/[0.08] bg-[#000818]/60 py-6">
+      <div className="relative border-t border-white/[0.08] bg-[#000818]/80 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           
           {/* Copyright */}
           <p className="text-center sm:text-left text-slate-400 font-normal">
-            &copy; 2026 E.A.S. Academy School. {t("footer.rights", "All rights reserved.")}
+            &copy; {new Date().getFullYear()} E.A.S. Academy School. {t("footer.rights", "All rights reserved.")}
           </p>
 
           {/* Trust Indicators & Portal Links */}

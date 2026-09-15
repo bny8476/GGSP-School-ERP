@@ -93,9 +93,12 @@ export default function PortalLayout({
              <div className="text-sm font-bold text-slate-600">Need Help? Contact Admin</div>
           </div>
         </header>
-        <div className="p-8 max-w-6xl mx-auto">
+        <div className="p-8 max-w-6xl mx-auto min-h-[calc(100vh-10rem)]">
           {children}
         </div>
+        <footer className="p-6 border-t border-slate-200 text-center text-xs text-slate-400 font-medium">
+          &copy; {new Date().getFullYear()} E.A.S. Academy School Portal. All rights reserved.
+        </footer>
       </main>
     </div>
   );

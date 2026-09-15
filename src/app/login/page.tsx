@@ -143,7 +143,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full -mt-24 bg-gradient-to-b from-[#EBF2FE] via-[#F4F8FE] to-[#E6F0FD] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] flex flex-col justify-between overflow-x-hidden font-sans select-none transition-colors duration-200">
+    <div className="relative min-h-screen w-full bg-gradient-to-b from-[#EBF2FE] via-[#F4F8FE] to-[#E6F0FD] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] flex flex-col justify-between overflow-x-hidden font-sans select-none transition-colors duration-200">
       
       {/* ========================================================
           TOP HEADER BAR: BACK BUTTON & LOGO (LEFT) & THEME/LANGUAGE (RIGHT)
