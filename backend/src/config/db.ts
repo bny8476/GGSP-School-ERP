@@ -6,11 +6,11 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`Error: ${error.message}`);
+      console.error(`MongoDB connection error: ${error.message}`);
     } else {
       console.error('An unknown error occurred during database connection');
     }
-    process.exit(1);
+    console.warn('⚠️  Backend will continue running. Ensure MongoDB is running locally or provide a valid MONGO_URI in backend/.env');
   }
 };
 

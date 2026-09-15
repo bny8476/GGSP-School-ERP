@@ -1,141 +1,594 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Lock,
+  Mail,
+  ArrowRight,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Shield,
+  ShieldCheck,
+  GraduationCap,
+  Users,
+  BarChart3,
+  Globe,
+  Sun,
+  Moon,
+  ChevronDown,
+  User,
+  Check,
+} from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
+import { useLanguage } from "@/context/LanguageContext";
+
+/* Academic Crest Logo with Laurel Wreath & Mortarboard */
+function AcademyCrest({ size = "md" }: { size?: "sm" | "md" }) {
+  const isSm = size === "sm";
+  return (
+    <div className={`relative flex items-center justify-center ${isSm ? "w-10 h-10" : "w-12 h-12"}`}>
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        {/* Left Laurel Wreath Branch */}
+        <path
+          d="M20 48C14 40 14 24 23 14"
+          stroke="#0050CB"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <path d="M16 22C14 20 12 21 12 24C12 27 15 26 16 24" fill="#0050CB" />
+        <path d="M15 31C13 30 11 31 11 34C11 37 14 36 15 33" fill="#0050CB" />
+        <path d="M16 40C14 39 12 40 12 43C12 46 15 45 16 42" fill="#0050CB" />
+        <path d="M20 47C18 46 16 48 16 50C16 53 19 52 20 49" fill="#0050CB" />
+        <path d="M22 17C21 15 19 15 18 18C18 20 21 20 22 18" fill="#0050CB" />
+
+        {/* Right Laurel Wreath Branch */}
+        <path
+          d="M44 48C50 40 50 24 41 14"
+          stroke="#0050CB"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <path d="M48 22C50 20 52 21 52 24C52 27 49 26 48 24" fill="#0050CB" />
+        <path d="M49 31C51 30 53 31 53 34C53 37 50 36 49 33" fill="#0050CB" />
+        <path d="M48 40C50 39 52 40 52 43C52 46 49 45 48 42" fill="#0050CB" />
+        <path d="M44 47C46 46 48 48 48 50C48 53 45 52 44 49" fill="#0050CB" />
+        <path d="M42 17C43 15 45 15 46 18C46 20 43 20 42 18" fill="#0050CB" />
+
+        {/* Graduation Cap Diamond Top */}
+        <polygon points="32,20 50,29 32,38 14,29" fill="#0050CB" />
+        <polygon points="14,29 32,38 32,40 14,31" fill="#003E9E" />
+        <polygon points="50,29 32,38 32,40 50,31" fill="#00226B" />
+
+        {/* Skull Cap Base */}
+        <path d="M23 33C23 33 23 44 32 45C41 44 41 33 41 33" fill="#000E28" />
+
+        {/* Golden Tassel Button & String */}
+        <circle cx="32" cy="29" r="2.2" fill="#FF690C" />
+        <path
+          d="M32 29 Q43 31 44 38 L44 43"
+          stroke="#FF690C"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <circle cx="44" cy="43.5" r="1.8" fill="#FF690C" />
+      </svg>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const isDarkMode = theme === "dark";
+  const { language, currentLanguage, setLanguage, languages, t } = useLanguage();
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (langRef.current && !langRef.current.contains(event.target as Node)) {
+        setIsLangOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Save token (in a real app, consider secure cookies instead of localStorage)
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data));
-        
-        // Redirect based on role
-        const roleStr = data.role.toLowerCase();
-        if (roleStr === 'parent' || roleStr === 'student') {
-          router.push('/portal');
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data));
+
+        const roleStr = (data.role || "").toLowerCase();
+        if (roleStr === "parent" || roleStr === "student") {
+          router.push("/portal");
         } else {
-          router.push('/dashboard');
+          router.push("/dashboard");
         }
       } else {
-        setError(data.message || 'Invalid email or password');
+        setError(data.message || "Invalid email or password");
       }
     } catch (err) {
-      setError('Failed to connect to the server. Please try again.');
+      console.error("Login error:", err);
+      setError("Failed to connect to the server. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-slate-50">
-      {/* Background blobs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
-
-      <div className="glass-panel w-full max-w-md p-8 sm:p-10 rounded-3xl shadow-2xl relative z-10 border border-white/50">
-        <div className="text-center mb-8">
-          <h2 className="mt-6 text-3xl font-black tracking-tight text-slate-900">Welcome Back</h2>
-          <p className="text-slate-500 mt-2">Sign in to your E.A.S. Academy School portal</p>
-        </div>
-
-        {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-xl mb-6 text-sm text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-slate-400" />
-              </div>
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white/70 backdrop-blur-sm transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-slate-700">Password</label>
-              <a href="#" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">Forgot password?</a>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-slate-400" />
-              </div>
-              <input 
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-10 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white/70 backdrop-blur-sm transition-all"
-                placeholder="••••••••"
-              />
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-slate-400 hover:text-slate-500 focus:outline-none"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-70"
+    <div className="relative min-h-screen w-full -mt-24 bg-gradient-to-b from-[#EBF2FE] via-[#F4F8FE] to-[#E6F0FD] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] flex flex-col justify-between overflow-x-hidden font-sans select-none transition-colors duration-200">
+      
+      {/* ========================================================
+          TOP HEADER BAR: BACK BUTTON & LOGO (LEFT) & THEME/LANGUAGE (RIGHT)
+      ======================================================== */}
+      <header className="relative z-30 w-full px-6 sm:px-10 lg:px-12 pt-5 pb-3 flex items-center justify-between">
+        
+        {/* Left: Back Button & Brand Logo */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            }}
+            className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-[#001438]/90 backdrop-blur-sm border border-slate-200/80 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-[#0050CB] dark:hover:text-[#38BDF8] hover:border-[#0050CB]/40 dark:hover:border-[#38BDF8]/40 shadow-xs hover:shadow-sm transition-all cursor-pointer"
+            title={t("common.back", "Back")}
+            aria-label="Go back"
           >
-            {isLoading ? 'Signing in...' : (
-              <>
-                Sign In <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
+            <ArrowLeft className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-[#0050CB] dark:group-hover:text-[#38BDF8] transition-transform group-hover:-translate-x-1" strokeWidth={2.5} />
+            <span className="font-bold">{t("common.back", "Back")}</span>
           </button>
-        </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-200 text-center">
-          <p className="text-sm text-slate-600">
-            Don't have an account? <Link href="/admissions" className="font-medium text-indigo-600 hover:text-indigo-500">Apply for Admission</Link>
-          </p>
-          <Link href="/" className="inline-block mt-4 text-xs text-slate-500 hover:text-slate-800">
-            &larr; Back to Home
+          <span className="h-6 w-px bg-slate-200 dark:bg-slate-700/80 hidden sm:block" />
+
+          {/* Brand Logo & Title */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <AcademyCrest size="md" />
+            <div className="leading-tight">
+              <span className="block text-xl sm:text-2xl font-black tracking-tight text-[#000E28] dark:text-white">
+                E.A.S.<span className="text-[#0050CB] dark:text-[#38BDF8]">Academy</span>
+              </span>
+              <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-wide">
+                {t("header.sub", "School Management System")}
+              </span>
+            </div>
           </Link>
         </div>
-      </div>
+
+        {/* Right Controls: Theme Toggle & Language */}
+        <div className="flex items-center gap-3">
+          
+          {/* Theme Pill (Sun / Moon) */}
+          <div className="flex items-center bg-white/90 dark:bg-[#001438]/90 backdrop-blur-sm border border-slate-200/80 dark:border-slate-700 rounded-full p-1 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setTheme("light")}
+              className={`p-1.5 rounded-full transition-all cursor-pointer ${
+                !isDarkMode
+                  ? "bg-[#E5EEFF] text-[#0050CB] shadow-xs"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+              }`}
+              aria-label="Light mode"
+            >
+              <Sun className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme("dark")}
+              className={`p-1.5 rounded-full transition-all cursor-pointer ${
+                isDarkMode
+                  ? "bg-[#0050CB] text-white shadow-xs"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+              }`}
+              aria-label="Dark mode"
+            >
+              <Moon className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Interactive Language Selector Dropdown */}
+          <div className="relative" ref={langRef}>
+            <button
+              type="button"
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-[#001438]/90 backdrop-blur-sm border border-slate-200/80 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+              aria-haspopup="true"
+              aria-expanded={isLangOpen}
+            >
+              <Globe className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#38BDF8]" />
+              <span>{currentLanguage.nativeName}</span>
+              <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isLangOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isLangOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#001438] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3.5 py-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  {t("nav.selectLanguage", "Select Language")}
+                </div>
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => {
+                      setLanguage(lang.code);
+                      setIsLangOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/25 hover:text-[#0050CB] dark:hover:text-blue-300 transition-colors cursor-pointer ${
+                      language === lang.code
+                        ? "text-[#0050CB] dark:text-blue-400 font-bold bg-[#E5EEFF]/60 dark:bg-[#0050CB]/20"
+                        : "text-slate-700 dark:text-slate-200"
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      <span>{lang.nativeName}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">{lang.label}</span>
+                    </div>
+                    {language === lang.code && (
+                      <Check className="w-4 h-4 text-[#0050CB] dark:text-blue-400" strokeWidth={2.5} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </header>
+
+      {/* ========================================================
+          MAIN CONTENT AREA: SPLIT HERO (LEFT) & LOGIN CARD (RIGHT)
+      ======================================================== */}
+      <main className="relative z-20 flex-1 w-full max-w-[1580px] mx-auto px-4 sm:px-8 lg:px-12 py-3 sm:py-6 flex items-center">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          
+          {/* ----------------------------------------------------
+              LEFT COLUMN: HERO IMAGE + BLUE WAVES + 4 PILLARS
+          ---------------------------------------------------- */}
+          <div className="lg:col-span-7 relative flex flex-col justify-between rounded-[36px] overflow-hidden shadow-[0_20px_60px_rgba(0,14,40,0.12)] border border-white/60 dark:border-slate-800 bg-white dark:bg-[#000E28] min-h-[580px] sm:min-h-[660px] lg:min-h-[720px]">
+            
+            {/* Campus Background Image */}
+            <div className="absolute inset-0 z-0">
+              <Image
+                src="/school-campus.jpg"
+                alt="E.A.S. Academy Campus Exterior"
+                fill
+                priority
+                className="object-cover object-center"
+              />
+            </div>
+
+            {/* TOP ORGANIC BLUE WAVE OVERLAY */}
+            <div className="relative z-10 w-full pt-8 sm:pt-10 px-6 sm:px-10 pb-20">
+              {/* Organic wave shape SVG behind text */}
+              <div className="absolute inset-0 -top-6 -left-6 -right-6 h-[290px] sm:h-[320px] bg-gradient-to-r from-[#002B7A] via-[#0050CB] to-[#0050CB]/90 transform -skew-y-2 origin-top-left shadow-lg pointer-events-none rounded-b-[60px]" />
+
+              <div className="relative z-10 space-y-2 max-w-lg">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
+                  {t("login.heroTitle", "Excellence in")} <br />
+                  <span className="text-[#38BDF8]">{t("login.heroTitleHighlight", "Education.")}</span>
+                </h2>
+                <p className="text-blue-100/90 text-xs sm:text-sm font-normal max-w-md leading-relaxed pt-1">
+                  {t("login.heroSubtitle", "Join over 1,000+ top educational institutions streamlining administration, academics, and parent trust.")}
+                </p>
+              </div>
+            </div>
+
+            {/* SPACER */}
+            <div className="flex-1 min-h-[120px]" />
+
+            {/* BOTTOM 4 PILLARS GRID */}
+            <div className="relative z-10 p-5 sm:p-7">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                
+                {/* Pillar 1 */}
+                <div className="bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md rounded-2xl p-3 border border-white/80 dark:border-slate-700/60 shadow-sm flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#E5EEFF] dark:bg-[#0050CB]/25 flex items-center justify-center text-[#0050CB] dark:text-[#38BDF8] shrink-0">
+                    <GraduationCap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">{t("nav.admissions", "Admissions")}</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">100% Online</p>
+                  </div>
+                </div>
+
+                {/* Pillar 2 */}
+                <div className="bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md rounded-2xl p-3 border border-white/80 dark:border-slate-700/60 shadow-sm flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#E5EEFF] dark:bg-[#0050CB]/25 flex items-center justify-center text-[#0050CB] dark:text-[#38BDF8] shrink-0">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">{t("card.attendance", "Attendance")}</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">Live Biometrics</p>
+                  </div>
+                </div>
+
+                {/* Pillar 3 */}
+                <div className="bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md rounded-2xl p-3 border border-white/80 dark:border-slate-700/60 shadow-sm flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#E5EEFF] dark:bg-[#0050CB]/25 flex items-center justify-center text-[#0050CB] dark:text-[#38BDF8] shrink-0">
+                    <BarChart3 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">{t("card.fees", "Fee Billing")}</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">Auto Receipts</p>
+                  </div>
+                </div>
+
+                {/* Pillar 4 */}
+                <div className="bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md rounded-2xl p-3 border border-white/80 dark:border-slate-700/60 shadow-sm flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#E5EEFF] dark:bg-[#0050CB]/25 flex items-center justify-center text-[#0050CB] dark:text-[#38BDF8] shrink-0">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">{t("nav.parentPortal", "Parent App")}</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">24/7 Access</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          {/* ----------------------------------------------------
+              RIGHT COLUMN: MODERN LOGIN FORM CARD
+          ---------------------------------------------------- */}
+          <div className="lg:col-span-5 w-full">
+            <div className="bg-white/95 dark:bg-[#001233]/95 backdrop-blur-xl rounded-[36px] p-7 sm:p-10 border border-slate-100 dark:border-slate-800 shadow-[0_20px_50px_rgba(0,14,40,0.08)]">
+              
+              {/* Card Mobile Crest Header */}
+              <div className="flex lg:hidden items-center gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <AcademyCrest size="sm" />
+                <div>
+                  <span className="block text-base font-black text-[#000E28] dark:text-white">
+                    E.A.S.<span className="text-[#0050CB] dark:text-[#38BDF8]">Academy</span>
+                  </span>
+                  <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    {t("header.sub", "School Management System")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Title & Subtitle */}
+              <div className="mb-5">
+                <span className="text-[11px] font-extrabold tracking-widest text-[#0050CB] dark:text-[#38BDF8] uppercase block mb-1">
+                  {t("login.welcomeBack", "WELCOME BACK")}
+                </span>
+                <h3 className="text-2xl sm:text-[26px] font-black text-[#000E28] dark:text-white tracking-tight leading-snug">
+                  {t("login.signInTitle", "Sign In to Your Account")}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal leading-relaxed">
+                  {t("login.signInSubtitle", "Access your E.A.S. Academy School portal and manage your academic journey.")}
+                </p>
+              </div>
+
+              {/* Error Alert */}
+              {error && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium text-center">
+                  {error}
+                </div>
+              )}
+
+              {/* Login Form */}
+              <form onSubmit={handleLogin} className="space-y-4">
+                
+                {/* Email Address Field */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5"
+                  >
+                    <User className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                    <span>{t("login.email", "Email Address")}</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      required
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t("login.emailPlaceholder", "Enter your email address")}
+                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#0050CB] focus:ring-2 focus:ring-[#0050CB]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label
+                      htmlFor="password"
+                      className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                      <span>{t("login.password", "Password")}</span>
+                    </label>
+                    <a
+                      href="#"
+                      className="text-xs font-semibold text-[#0050CB] dark:text-[#38BDF8] hover:underline"
+                    >
+                      {t("login.forgotPassword", "Forgot password?")}
+                    </a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      required
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={t("login.passwordPlaceholder", "Enter your password")}
+                      className="w-full pl-10 pr-11 py-2.5 sm:py-3 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#0050CB] focus:ring-2 focus:ring-[#0050CB]/15 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer focus:outline-none"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember Me & Secure Login Row */}
+                <div className="flex items-center justify-between pt-0.5">
+                  <label className="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#0050CB] focus:ring-[#0050CB]/30 cursor-pointer accent-[#0050CB]"
+                    />
+                    <span>{t("login.rememberMe", "Remember me")}</span>
+                  </label>
+
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                    <span>{t("login.secureLogin", "Secure Login")}</span>
+                  </span>
+                </div>
+
+                {/* Primary Sign In Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 sm:py-3.5 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white font-bold text-sm shadow-[0_8px_20px_rgba(0,80,203,0.3)] hover:shadow-[0_10px_25px_rgba(0,80,203,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                >
+                  {isLoading ? (
+                    <span>{t("login.signingIn", "Signing in...")}</span>
+                  ) : (
+                    <>
+                      <ArrowRight className="w-4 h-4" />
+                      <span>{t("login.signInBtn", "Sign In")}</span>
+                    </>
+                  )}
+                </button>
+
+                {/* OR Divider */}
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-[#001233] px-3 text-slate-400 dark:text-slate-500 font-bold tracking-wider text-[10px]">
+                      {t("login.or", "OR")}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Social SSO Buttons: Google & Microsoft */}
+                <div className="grid grid-cols-2 gap-3">
+                  
+                  {/* Google */}
+                  <button
+                    type="button"
+                    className="flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-slate-200/90 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs cursor-pointer"
+                  >
+                    {/* Google G SVG */}
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                      />
+                    </svg>
+                    <span className="truncate">{t("login.google", "Continue with Google")}</span>
+                  </button>
+
+                  {/* Microsoft */}
+                  <button
+                    type="button"
+                    className="flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-slate-200/90 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs cursor-pointer"
+                  >
+                    {/* Microsoft 4 Squares SVG */}
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 21 21">
+                      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+                      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+                      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+                      <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+                    </svg>
+                    <span className="truncate">{t("login.microsoft", "Continue with Microsoft")}</span>
+                  </button>
+
+                </div>
+
+                {/* Footer Sign Up & Back to Home */}
+                <div className="pt-3 text-center space-y-2">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                    <span>{t("login.noAccount", "Don't have an account?")}</span>
+                    <Link
+                      href="/admissions"
+                      className="font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline"
+                    >
+                      {t("login.applyAdmission", "Apply for Admission")}
+                    </Link>
+                  </p>
+
+                  <div>
+                    <Link
+                      href="/"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      <span>{t("login.backHome", "← Back to Home")}</span>
+                    </Link>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Subtle bottom padding */}
+      <div className="h-4" />
     </div>
   );
 }
