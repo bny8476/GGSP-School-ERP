@@ -250,7 +250,6 @@ export default function IdCardGenerator() {
                   <p className="text-[8px] font-medium text-slate-500 mt-0.5">123 Education Lane, Learning City</p>
                   <p className="text-[8px] font-medium text-slate-500">Ph: +1 (800) EAS-ACADEMY</p>
                 </div>
-                </div>
               </div>
               
               <div className="absolute bottom-4 w-full text-center">
