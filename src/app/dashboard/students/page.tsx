@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { GraduationCap, Plus, Edit2, Trash2, Search, Activity, Phone, ShieldAlert, Bus, FileText, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { Card, ProfileCard, EmptyStateCard, SkeletonCard } from '@/components/ui/Card';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<any[]>([]);
@@ -197,89 +198,39 @@ export default function StudentsPage() {
 
           <div className="p-6 md:p-8">
             {isLoading ? (
-              <div className="py-12 text-center text-slate-500">Loading students...</div>
-            ) : filteredStudents.length === 0 ? (
-              <div className="py-12 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-                <GraduationCap className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                <h3 className="text-lg font-bold text-slate-700">No students found</h3>
-                <p>Add a new student to get started.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
               </div>
+            ) : filteredStudents.length === 0 ? (
+              <EmptyStateCard
+                title="No Students Found"
+                description="Add a new student profile to start tracking academic performance, attendance, and medical records."
+                icon={GraduationCap}
+                actionText="Add New Student"
+                onAction={() => { resetForm(); setActiveTab('create'); }}
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredStudents.map((student) => (
-                  <div key={student._id} className="border border-slate-200 rounded-2xl hover:shadow-lg transition-shadow bg-white flex flex-col overflow-hidden group">
-                    <div className="p-5 border-b border-slate-100 bg-indigo-50/30">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center space-x-3 mb-4">
-                          <div className="h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                            {student.firstName[0]}{student.lastName[0]}
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-slate-400">ADM: {student.admissionNumber || 'N/A'}</span>
-                            <span className={`block text-xs font-bold ${student.status === 'Active' ? 'text-emerald-600' : 'text-slate-500'}`}>
-                              • {student.status}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleDownloadReportCard(student)} title="Download Report Card" className="p-1.5 text-emerald-600 hover:bg-emerald-100 rounded-md"><Download className="h-4 w-4" /></button>
-                          <button onClick={() => openEdit(student)} className="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-md"><Edit2 className="h-4 w-4" /></button>
-                          <button onClick={() => handleDelete(student._id)} className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-md"><Trash2 className="h-4 w-4" /></button>
-                        </div>
-                      </div>
-                      <h3 className="font-bold text-lg text-slate-800 leading-tight">
-                        {student.firstName} {student.lastName}
-                      </h3>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">
-                          {student.grade || 'Class N/A'}
-                        </span>
-                        <div className="flex space-x-2">
-                          <Link
-                            href={`/dashboard/students/${student._id}`}
-                            className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold text-xs rounded-xl hover:bg-indigo-100 transition-colors"
-                          >
-                            360° Profile
-                          </Link>
-                          <button
-                            onClick={() => openEdit(student)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                            title="Edit Student"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-5 flex-1 text-sm space-y-3">
-                      <div className="flex items-center text-slate-600">
-                        <Phone className="h-4 w-4 mr-3 shrink-0 text-slate-400" />
-                        <span className="truncate">
-                          {student.parentId ? (student.parentId.fatherName || student.parentId.motherName) : 'No parent linked'}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-rose-600 font-medium bg-rose-50 px-2 py-1 -ml-2 rounded-lg w-fit">
-                        <ShieldAlert className="h-4 w-4 mr-2 shrink-0 text-rose-500" />
-                        <span>Emg: {student.emergencyContact || 'None'}</span>
-                      </div>
-                      <div className="flex items-center text-slate-600">
-                        <Activity className="h-4 w-4 mr-3 shrink-0 text-red-400" />
-                        <span className="truncate">Blood: <strong className="text-red-600">{student.bloodGroup || 'N/A'}</strong></span>
-                      </div>
-                      <div className="flex items-center text-slate-600">
-                        <Bus className="h-4 w-4 mr-3 shrink-0 text-amber-500" />
-                        <span>{student.transportDetails ? student.transportDetails : 'Self Drop'}</span>
-                      </div>
-                      
-                      {student.medicalNotes && (
-                        <div className="pt-3 mt-3 border-t border-slate-100">
-                          <p className="text-xs text-rose-700 font-medium italic">
-                            Medical: {student.medicalNotes}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <ProfileCard
+                    key={student._id}
+                    name={`${student.firstName} ${student.lastName}`}
+                    roleOrGrade={`Grade ${student.grade || 'N/A'}`}
+                    idOrSubtext={`ADM #${student.admissionNumber || 'N/A'}`}
+                    initials={`${student.firstName[0]}${student.lastName[0]}`}
+                    statusBadge={{
+                      text: student.status || 'Active',
+                      type: student.status === 'Active' ? 'success' : 'info'
+                    }}
+                    metadata={[
+                      { label: "Blood Group", value: student.bloodGroup || "O+" },
+                      { label: "Guardian", value: student.parentId ? (student.parentId.fatherName || student.parentId.motherName || "Linked") : "None" }
+                    ]}
+                    primaryActionText="360° Profile"
+                    onPrimaryAction={() => window.location.href = `/dashboard/students/${student._id}`}
+                  />
                 ))}
               </div>
             )}

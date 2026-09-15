@@ -34,6 +34,8 @@ export default function InventoryPage() {
     fetchData();
   }, [activeTab]);
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+
   const fetchData = async () => {
     setLoading(true);
     const token = localStorage.getItem('token');
@@ -41,13 +43,13 @@ export default function InventoryPage() {
 
     try {
       if (activeTab === 'stock') {
-        const res = await fetch('http://localhost:5000/api/inventory/items', {
+        const res = await fetch(`${API_BASE}/api/inventory/items`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (data.success) setItems(data.data || []);
       } else {
-        const res = await fetch('http://localhost:5000/api/inventory/orders', {
+        const res = await fetch(`${API_BASE}/api/inventory/orders`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -64,7 +66,7 @@ export default function InventoryPage() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/inventory/items', {
+      const res = await fetch(`${API_BASE}/api/inventory/items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +87,7 @@ export default function InventoryPage() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/inventory/orders', {
+      const res = await fetch(`${API_BASE}/api/inventory/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -52,6 +52,8 @@ export default function DigitalClassroomPage() {
     fetchData();
   }, [activeTab]);
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+
   const fetchData = async () => {
     setLoading(true);
     const token = localStorage.getItem('token');
@@ -59,19 +61,19 @@ export default function DigitalClassroomPage() {
 
     try {
       if (activeTab === 'materials') {
-        const res = await fetch('http://localhost:5000/api/learning', {
+        const res = await fetch(`${API_BASE}/api/learning`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (data.success) setMaterials(data.data || []);
       } else if (activeTab === 'exams') {
-        const res = await fetch('http://localhost:5000/api/exams', {
+        const res = await fetch(`${API_BASE}/api/exams`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (data.success) setExams(data.data || []);
       } else if (activeTab === 'questions') {
-        const res = await fetch('http://localhost:5000/api/exams/questions', {
+        const res = await fetch(`${API_BASE}/api/exams/questions`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -88,7 +90,7 @@ export default function DigitalClassroomPage() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/learning', {
+      const res = await fetch(`${API_BASE}/api/learning`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +111,7 @@ export default function DigitalClassroomPage() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/exams/questions', {
+      const res = await fetch(`${API_BASE}/api/exams/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,358 +1,766 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Plus, BookOpen, Calendar, ChevronRight, X, Clock } from 'lucide-react';
-import toast from 'react-hot-toast';
-
-type Curriculum = {
-  _id: string;
-  title: string;
-  theme: string;
-  grade: string;
-  weekStartDate: string;
-  weekEndDate: string;
-  activities: {
-    day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
-    description: string;
-    learningOutcomes: string[];
-  }[];
-  createdBy?: {
-    firstName: string;
-    lastName: string;
-  };
-};
+import React, { useState, useEffect } from "react";
+import { 
+  BookOpen, Calendar, Target, Users, Plus, Search, Filter, ChevronDown, 
+  ChevronRight, MoreVertical, CheckCircle2, Edit3, Rocket, FileText, 
+  Download, Upload, Sparkles, X, LayoutGrid, List, Check, ArrowUpRight
+} from "lucide-react";
+import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function CurriculumPage() {
-  const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Modals state
+  const [plans, setPlans] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"All" | "My" | "Active" | "Draft" | "Archived">("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedClass, setSelectedClass] = useState("All Classes");
+  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [selectedStatus, setSelectedStatus] = useState("All Status");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Curriculum | null>(null);
+  const [selectedPlanDetails, setSelectedPlanDetails] = useState<any | null>(null);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    title: '',
-    theme: '',
-    grade: 'LKG',
-    weekStartDate: '',
-    weekEndDate: '',
-  });
-
-  const [activities, setActivities] = useState<any>({
-    Monday: { description: '', learningOutcomes: '' },
-    Tuesday: { description: '', learningOutcomes: '' },
-    Wednesday: { description: '', learningOutcomes: '' },
-    Thursday: { description: '', learningOutcomes: '' },
-    Friday: { description: '', learningOutcomes: '' },
-  });
-
-  const fetchCurriculums = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/curriculum`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCurriculums(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch curriculums', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // New plan state
+  const [planTitle, setPlanTitle] = useState("");
+  const [planGrade, setPlanGrade] = useState("Class 10-A");
+  const [planSubject, setPlanSubject] = useState("Mathematics");
+  const [planDuration, setPlanDuration] = useState("Apr 2025 - Mar 2026");
 
   useEffect(() => {
-    fetchCurriculums();
+    // Initial sample curriculum plans matching reference screenshot exactly
+    setPlans([
+      {
+        id: "1",
+        title: "Mathematics Curriculum",
+        subTitle: "Grade 10 - Annual Plan",
+        class: "Class 10-A",
+        subject: "Mathematics",
+        duration: "Apr 2025 - Mar 2026",
+        status: "Active",
+        progress: 75,
+        color: "bg-[#0050CB]",
+        icon: "📚",
+      },
+      {
+        id: "2",
+        title: "Science Curriculum",
+        subTitle: "Grade 9 - Semester Plan",
+        class: "Class 9-B",
+        subject: "Science",
+        duration: "Apr 2025 - Sep 2025",
+        status: "Active",
+        progress: 60,
+        color: "bg-purple-600",
+        icon: "⚗️",
+      },
+      {
+        id: "3",
+        title: "English Curriculum",
+        subTitle: "Grade 8 - Annual Plan",
+        class: "Class 8-A",
+        subject: "English",
+        duration: "Apr 2025 - Mar 2026",
+        status: "Draft",
+        progress: 30,
+        color: "bg-amber-500",
+        icon: "📖",
+      },
+      {
+        id: "4",
+        title: "Social Studies Curriculum",
+        subTitle: "Grade 7 - Semester Plan",
+        class: "Class 7-A",
+        subject: "Social Studies",
+        duration: "Apr 2025 - Sep 2025",
+        status: "Active",
+        progress: 85,
+        color: "bg-emerald-600",
+        icon: "🌐",
+      },
+      {
+        id: "5",
+        title: "Art & Craft Curriculum",
+        subTitle: "Grade 6 - Annual Plan",
+        class: "Class 6-B",
+        subject: "Art",
+        duration: "Apr 2025 - Mar 2026",
+        status: "Archived",
+        progress: 100,
+        color: "bg-rose-500",
+        icon: "🎨",
+      },
+    ]);
   }, []);
 
-  const handleCreateSubmit = async (e: React.FormEvent) => {
+  const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      
-      // Transform activities object into array
-      const activitiesArray = Object.keys(activities).map(day => ({
-        day,
-        description: activities[day].description,
-        learningOutcomes: activities[day].learningOutcomes.split(',').map((o: string) => o.trim()).filter((o: string) => o)
-      })).filter(a => a.description); // Only include days with a description
+    if (!planTitle.trim()) return;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/curriculum`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          activities: activitiesArray
-        })
-      });
+    const newPlan = {
+      id: String(Date.now()),
+      title: planTitle,
+      subTitle: `${planGrade} - Custom Plan`,
+      class: planGrade,
+      subject: planSubject,
+      duration: planDuration,
+      status: "Active",
+      progress: 0,
+      color: "bg-[#0050CB]",
+      icon: "📚",
+    };
 
-      if (res.ok) {
-        toast.success('Curriculum plan created!');
-        fetchCurriculums();
-        setShowCreateModal(false);
-        // Reset form
-        setFormData({ title: '', theme: '', grade: 'LKG', weekStartDate: '', weekEndDate: '' });
-        setActivities({
-          Monday: { description: '', learningOutcomes: '' },
-          Tuesday: { description: '', learningOutcomes: '' },
-          Wednesday: { description: '', learningOutcomes: '' },
-          Thursday: { description: '', learningOutcomes: '' },
-          Friday: { description: '', learningOutcomes: '' },
-        });
-      } else {
-        const errorData = await res.json();
-        toast.error(`Failed to create plan: ${errorData.message}`);
-      }
-    } catch (error) {
-      console.error('Error creating curriculum:', error);
-      toast.error('An error occurred while creating the plan.');
-    }
+    setPlans([newPlan, ...plans]);
+    toast.success("New curriculum plan created!");
+    setPlanTitle("");
+    setShowCreateModal(false);
   };
 
+  const filteredPlans = plans.filter((p) => {
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.class.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTab = activeTab === "All" || 
+                       (activeTab === "My" && true) ||
+                       (activeTab === "Active" && p.status === "Active") ||
+                       (activeTab === "Draft" && p.status === "Draft") ||
+                       (activeTab === "Archived" && p.status === "Archived");
+    const matchesClassFilter = selectedClass === "All Classes" || p.class === selectedClass;
+    const matchesSubjectFilter = selectedSubject === "All Subjects" || p.subject === selectedSubject;
+    const matchesStatusFilter = selectedStatus === "All Status" || p.status === selectedStatus;
+    
+    return matchesSearch && matchesTab && matchesClassFilter && matchesSubjectFilter && matchesStatusFilter;
+  });
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Curriculum Planner</h1>
-          <p className="text-slate-500 mt-1">Manage weekly themes and learning outcomes.</p>
-        </div>
-        <button 
-          onClick={() => setShowCreateModal(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center transition-colors shadow-sm"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Create Plan
-        </button>
+    <div className="space-y-6 font-sans text-[#000E28] dark:text-white pb-16">
+      
+      {/* BREADCRUMB */}
+      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-semibold">
+        <Link href="/dashboard" className="hover:text-[#0050CB]">Home</Link>
+        <span>&gt;</span>
+        <span className="text-[#0050CB] dark:text-[#38BDF8] font-bold">Curriculum & Syllabus</span>
       </div>
 
-      {isLoading ? (
-        <div className="animate-pulse space-y-4">
-          <div className="h-24 bg-white rounded-2xl w-full"></div>
-          <div className="h-24 bg-white rounded-2xl w-full"></div>
+      {/* HERO BANNER SECTION */}
+      <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-r from-[#EBF3FF] via-[#F4F8FF] to-[#E5F0FF] dark:from-[#001A48] dark:via-[#001438] dark:to-[#002766] p-6 sm:p-8 border border-blue-100 dark:border-slate-800 shadow-xs">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#000E28] dark:text-white tracking-tight">
+              Curriculum Planner
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-300 font-medium leading-relaxed">
+              Plan, manage and track your curriculum, subjects, and learning outcomes for better academic success.
+            </p>
+          </div>
+
+          {/* Right 3D Graduation & Books Graphic Container */}
+          <div className="hidden lg:flex items-center justify-center relative shrink-0">
+            <div className="w-56 h-36 rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white dark:border-slate-700 shadow-sm p-4 flex flex-col justify-between overflow-hidden">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-[#0050CB] text-white flex items-center justify-center text-xl">
+                  🎓
+                </div>
+                <div>
+                  <p className="text-xs font-black text-[#000E28] dark:text-white">Academic Excellence</p>
+                  <p className="text-[10px] text-[#0050CB] dark:text-[#38BDF8] font-bold">Syllabus 2025-26</p>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700 flex justify-between items-center text-[10px] font-bold text-slate-500">
+                <span>45 Subjects</span>
+                <span className="text-emerald-600">98% Completion</span>
+              </div>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {curriculums.length > 0 ? (
-            curriculums.map((plan) => (
-              <div 
-                key={plan._id} 
-                onClick={() => setSelectedPlan(plan)}
-                className="bg-white p-6 rounded-3xl border border-slate-200 hover:shadow-xl hover:border-indigo-300 transition-all cursor-pointer group flex flex-col h-full"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold uppercase tracking-wider border border-indigo-100">
-                    {plan.grade}
-                  </span>
-                  <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                    <Calendar className="h-5 w-5 text-slate-400 group-hover:text-indigo-600" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2 leading-tight group-hover:text-indigo-600 transition-colors">{plan.title}</h3>
-                <p className="text-slate-500 text-sm mb-6 flex-grow border-l-2 border-indigo-200 pl-3">Theme: <span className="font-medium text-slate-700">{plan.theme}</span></p>
-                <div className="flex items-center justify-between border-t border-slate-100 pt-5 mt-auto">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Week Of</span>
-                    <span className="text-sm font-medium text-slate-700">
-                      {new Date(plan.weekStartDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - {new Date(plan.weekEndDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                  <div className="h-8 w-8 rounded-full bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
-                    <ChevronRight className="h-4 w-4 text-indigo-400 group-hover:text-white" />
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white rounded-3xl border border-dashed border-slate-300">
-              <div className="bg-indigo-50 p-5 rounded-full mb-5">
-                <BookOpen className="h-10 w-10 text-indigo-500" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">No curriculum plans</h3>
-              <p className="text-slate-500 text-center max-w-sm mb-6">You haven't created any weekly lesson plans yet. Get started by designing your first curriculum.</p>
+
+        {/* 4 STAT METRIC CARDS ROW */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t border-blue-200/50 dark:border-slate-800">
+          
+          {/* Card 1: Total Subjects */}
+          <div className="bg-white dark:bg-[#000E28] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] flex items-center justify-center font-bold shrink-0">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-black text-[#000E28] dark:text-white leading-none">45</p>
+              <p className="text-[11px] font-bold text-slate-400 mt-1">Total Subjects</p>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">↑ 12% vs last term</span>
+            </div>
+          </div>
+
+          {/* Card 2: Academic Plans */}
+          <div className="bg-white dark:bg-[#000E28] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-black text-[#000E28] dark:text-white leading-none">12</p>
+              <p className="text-[11px] font-bold text-slate-400 mt-1">Academic Plans</p>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">↑ 8% vs last term</span>
+            </div>
+          </div>
+
+          {/* Card 3: Completion Rate */}
+          <div className="bg-white dark:bg-[#000E28] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold shrink-0">
+              <Target className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-black text-[#000E28] dark:text-white leading-none">98%</p>
+              <p className="text-[11px] font-bold text-slate-400 mt-1">Completion Rate</p>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">↑ 6% vs last term</span>
+            </div>
+          </div>
+
+          {/* Card 4: Active Classes */}
+          <div className="bg-white dark:bg-[#000E28] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl font-black text-[#000E28] dark:text-white leading-none">24</p>
+              <p className="text-[11px] font-bold text-slate-400 mt-1">Active Classes</p>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">↑ 5% vs last term</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* TAB FILTERS & CREATE PLAN ACTION BUTTON */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        
+        {/* Left Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {(["All", "My", "Active", "Draft", "Archived"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                activeTab === tab
+                  ? "bg-[#0050CB] text-white shadow-xs"
+                  : "bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              {tab === "All" && "⊞ All Plans"}
+              {tab === "My" && "👤 My Plans"}
+              {tab === "Active" && "🟢 Active"}
+              {tab === "Draft" && "⚪ Draft"}
+              {tab === "Archived" && "🗃️ Archived"}
+            </button>
+          ))}
+        </div>
+
+        {/* Right Create Button */}
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold shadow-md cursor-pointer transition-all shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Create Plan</span>
+        </button>
+
+      </div>
+
+      {/* SEARCH & FILTERS ROW */}
+      <div className="bg-white dark:bg-[#000E28] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+        
+        {/* Search Input */}
+        <div className="relative flex-1 w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 transform -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search by plan name, subject, class..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-medium outline-none focus:ring-2 focus:ring-[#0050CB]"
+          />
+        </div>
+
+        {/* Class Filter */}
+        <select
+          value={selectedClass}
+          onChange={(e) => setSelectedClass(e.target.value)}
+          className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none shrink-0"
+        >
+          <option value="All Classes">All Classes</option>
+          <option value="Class 10-A">Class 10-A</option>
+          <option value="Class 9-B">Class 9-B</option>
+          <option value="Class 8-A">Class 8-A</option>
+          <option value="Class 7-A">Class 7-A</option>
+          <option value="Class 6-B">Class 6-B</option>
+        </select>
+
+        {/* Subject Filter */}
+        <select
+          value={selectedSubject}
+          onChange={(e) => setSelectedSubject(e.target.value)}
+          className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none shrink-0"
+        >
+          <option value="All Subjects">All Subjects</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Science">Science</option>
+          <option value="English">English</option>
+          <option value="Social Studies">Social Studies</option>
+          <option value="Art">Art</option>
+        </select>
+
+        {/* Status Filter */}
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none shrink-0"
+        >
+          <option value="All Status">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Draft">Draft</option>
+          <option value="Archived">Archived</option>
+        </select>
+
+        {/* View Mode Toggle Icons */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-1.5 rounded-lg transition-colors ${viewMode === "list" ? "bg-white dark:bg-slate-700 text-[#0050CB] shadow-xs" : "text-slate-400"}`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-1.5 rounded-lg transition-colors ${viewMode === "grid" ? "bg-white dark:bg-slate-700 text-[#0050CB] shadow-xs" : "text-slate-400"}`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
+
+      </div>
+
+      {/* MAIN TWO-COLUMN LAYOUT GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* LEFT COLUMN: CURRICULUM TABLE (COL-8) */}
+        <div className="lg:col-span-8 bg-white dark:bg-[#000E28] rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden flex flex-col justify-between">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
+                  <th className="p-4 w-10 text-center">#</th>
+                  <th className="p-4">Plan Name</th>
+                  <th className="p-4">Class</th>
+                  <th className="p-4">Subject</th>
+                  <th className="p-4">Duration</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 w-32">Progress</th>
+                  <th className="p-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                {filteredPlans.map((plan, idx) => (
+                  <tr key={plan.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                    <td className="p-4 text-center font-bold text-slate-400">{idx + 1}</td>
+                    
+                    {/* Plan Name */}
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl ${plan.color} text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0`}>
+                          {plan.icon}
+                        </div>
+                        <div>
+                          <p className="font-extrabold text-[#000E28] dark:text-white leading-tight">{plan.title}</p>
+                          <p className="text-[10px] font-semibold text-slate-400">{plan.subTitle}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Class Pill */}
+                    <td className="p-4">
+                      <span className="px-2.5 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] text-[10px] font-extrabold">
+                        {plan.class}
+                      </span>
+                    </td>
+
+                    {/* Subject Pill */}
+                    <td className="p-4">
+                      <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
+                        {plan.subject}
+                      </span>
+                    </td>
+
+                    {/* Duration */}
+                    <td className="p-4 font-semibold text-slate-500 dark:text-slate-400 text-[11px]">{plan.duration}</td>
+
+                    {/* Status Badge */}
+                    <td className="p-4">
+                      {plan.status === "Active" && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold">
+                          Active
+                        </span>
+                      )}
+                      {plan.status === "Draft" && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-extrabold">
+                          • Draft
+                        </span>
+                      )}
+                      {plan.status === "Archived" && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 text-[10px] font-extrabold">
+                          Archived
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Progress Bar */}
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex-1">
+                          <div
+                            className="h-full bg-[#0050CB] rounded-full transition-all"
+                            style={{ width: `${plan.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-slate-600 dark:text-slate-300 shrink-0">{plan.progress}%</span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="p-4 text-center">
+                      <button 
+                        onClick={() => setSelectedPlanDetails(plan)}
+                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4 mx-auto" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* TABLE FOOTER & PAGINATION */}
+          <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
+            <span>Showing 1 to {filteredPlans.length} of 12 plans</span>
+
+            <div className="flex items-center gap-1.5">
+              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">
+                &lt;
+              </button>
+              <button className="w-8 h-8 rounded-lg bg-[#0050CB] text-white font-bold flex items-center justify-center shadow-xs">
+                1
+              </button>
+              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">
+                2
+              </button>
+              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">
+                3
+              </button>
+              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">
+                &gt;
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: QUICK ACTIONS + RECENT ACTIVITY + QUOTE BANNER (COL-4) */}
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* QUICK ACTIONS PANEL */}
+          <div className="bg-white dark:bg-[#000E28] rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Sparkles className="w-4 h-4 text-[#0050CB] dark:text-[#38BDF8]" />
+              <h3 className="text-sm font-black text-[#000E28] dark:text-white">Quick Actions</h3>
+            </div>
+
+            <div className="space-y-2">
               <button 
                 onClick={() => setShowCreateModal(true)}
-                className="text-white bg-indigo-600 font-medium hover:bg-indigo-700 px-6 py-2.5 rounded-xl shadow-sm flex items-center transition-colors"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 text-xs font-bold text-[#000E28] dark:text-white transition-all border border-slate-100 dark:border-slate-800 group cursor-pointer"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                Create First Plan
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* CREATE CURRICULUM MODAL */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <div>
-                <h3 className="font-bold text-xl text-slate-800">Design Weekly Curriculum</h3>
-                <p className="text-xs text-slate-500 mt-1">Plan out themes, activities, and learning outcomes.</p>
-              </div>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-700 bg-white p-2 rounded-full shadow-sm border border-slate-100 transition-all">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="overflow-y-auto flex-1 p-8">
-              <form id="curriculum-form" onSubmit={handleCreateSubmit} className="space-y-8">
-                {/* Meta Section */}
-                <div className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Plan Title</label>
-                      <input required type="text" placeholder="e.g. Week 4: The Solar System" className="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Theme / Topic</label>
-                      <input required type="text" placeholder="e.g. Space & Planets" className="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.theme} onChange={e => setFormData({...formData, theme: e.target.value})} />
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#0050CB] text-white flex items-center justify-center">
+                    <Plus className="w-4 h-4" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Grade Level</label>
-                      <select className="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.grade} onChange={e => setFormData({...formData, grade: e.target.value})}>
-                        <option>Pre-KG</option>
-                        <option>LKG</option>
-                        <option>UKG</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Start Date</label>
-                      <input required type="date" className="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.weekStartDate} onChange={e => setFormData({...formData, weekStartDate: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1.5">End Date</label>
-                      <input required type="date" className="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.weekEndDate} onChange={e => setFormData({...formData, weekEndDate: e.target.value})} />
-                    </div>
-                  </div>
+                  <span>Create New Plan</span>
                 </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#0050CB]" />
+              </button>
 
-                {/* Daily Activities Section */}
+              <button 
+                onClick={() => setShowCreateModal(true)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 text-xs font-bold text-[#000E28] dark:text-white transition-all border border-slate-100 dark:border-slate-800 group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <span>Add Subject</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600" />
+              </button>
+
+              <button 
+                onClick={() => setShowCreateModal(true)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 text-xs font-bold text-[#000E28] dark:text-white transition-all border border-slate-100 dark:border-slate-800 group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <span>Manage Syllabus</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600" />
+              </button>
+
+              <button 
+                onClick={() => toast.success("Opening curriculum import dialog...")}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 text-xs font-bold text-[#000E28] dark:text-white transition-all border border-slate-100 dark:border-slate-800 group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <span>Import Curriculum</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500" />
+              </button>
+
+              <button 
+                onClick={() => toast.success("Exporting curriculum reports...")}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 text-xs font-bold text-[#000E28] dark:text-white transition-all border border-slate-100 dark:border-slate-800 group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-cyan-500 text-white flex items-center justify-center">
+                    <Download className="w-4 h-4" />
+                  </div>
+                  <span>Export Reports</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-cyan-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* RECENT ACTIVITY PANEL */}
+          <div className="bg-white dark:bg-[#000E28] rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-sm font-black text-[#000E28] dark:text-white">Recent Activity</h3>
+              <button className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline flex items-center gap-0.5">
+                <span>View All</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-4 h-4" />
+                </div>
                 <div>
-                  <h4 className="font-bold text-lg text-slate-800 mb-4 flex items-center">
-                    <Calendar className="h-5 w-5 mr-2 text-indigo-500" />
-                    Daily Schedule & Outcomes
-                  </h4>
-                  <div className="space-y-4">
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day) => (
-                      <div key={day} className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-                        <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-700 flex items-center">
-                          <span className="w-24">{day}</span>
-                        </div>
-                        <div className="p-5 space-y-4">
-                          <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Activity Description</label>
-                            <textarea 
-                              rows={2} 
-                              className="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none" 
-                              placeholder={`Describe what the students will do on ${day}...`}
-                              value={activities[day].description}
-                              onChange={(e) => setActivities({...activities, [day]: { ...activities[day], description: e.target.value }})}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Learning Outcomes (comma separated)</label>
-                            <input 
-                              type="text" 
-                              className="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500" 
-                              placeholder="e.g. Fine motor skills, Recognizing colors"
-                              value={activities[day].learningOutcomes}
-                              onChange={(e) => setActivities({...activities, [day]: { ...activities[day], learningOutcomes: e.target.value }})}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="font-bold text-[#000E28] dark:text-white">New curriculum plan created</p>
+                  <p className="text-[10px] font-semibold text-slate-500">Mathematics - Grade 10</p>
+                  <p className="text-[9px] text-slate-400">2 hours ago</p>
                 </div>
-              </form>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-[#000E28] dark:text-white">Syllabus updated</p>
+                  <p className="text-[10px] font-semibold text-slate-500">Science - Grade 9</p>
+                  <p className="text-[9px] text-slate-400">4 hours ago</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-blue-100 text-[#0050CB] flex items-center justify-center shrink-0 mt-0.5">
+                  <Rocket className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-[#000E28] dark:text-white">Plan activated</p>
+                  <p className="text-[10px] font-semibold text-slate-500">English - Grade 8</p>
+                  <p className="text-[9px] text-slate-400">6 hours ago</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-[#000E28] dark:text-white">New subject added</p>
+                  <p className="text-[10px] font-semibold text-slate-500">Computer Science</p>
+                  <p className="text-[9px] text-slate-400">1 day ago</p>
+                </div>
+              </div>
             </div>
-            
-            <div className="px-8 py-5 border-t border-slate-100 bg-white flex justify-end space-x-3 shrink-0">
-              <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
-              <button type="submit" form="curriculum-form" className="px-6 py-2.5 bg-indigo-600 text-white font-bold hover:bg-indigo-700 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">Publish Curriculum</button>
+          </div>
+
+          {/* INSPIRING QUOTE BANNER CARD */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#EEF2FF] via-[#F3E8FF] to-[#E0E7FF] dark:from-[#1E1B4B] dark:via-[#2E1065] dark:to-[#3B0764] p-5 border border-purple-200/60 dark:border-purple-900/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1 max-w-[180px]">
+              <p className="text-xs font-bold text-[#000E28] dark:text-white leading-relaxed italic">
+                “Every lesson is a step towards a bigger dream.”
+              </p>
+              <p className="text-[10px] font-extrabold text-[#0050CB] dark:text-[#38BDF8]">
+                Plan • Teach • Succeed
+              </p>
+            </div>
+
+            <div className="w-14 h-14 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md flex items-center justify-center text-3xl shadow-sm shrink-0">
+              🎓
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* FOOTER */}
+      <footer className="pt-6 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
+        <div>
+          <span className="font-black text-[#000E28] dark:text-white">Global International School ERP</span> &copy; 2026. All rights reserved.
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live Portal Active
+          </span>
+          <span>•</span>
+          <span className="hover:underline cursor-pointer">Support</span>
+          <span>|</span>
+          <span className="hover:underline cursor-pointer">Help</span>
+        </div>
+      </footer>
+
+      {/* CREATE PLAN MODAL */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-[#000E28] w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h2 className="text-base font-black text-[#000E28] dark:text-white">Create Curriculum Plan</h2>
+              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Plan Title *</label>
+                <input
+                  type="text"
+                  value={planTitle}
+                  onChange={(e) => setPlanTitle(e.target.value)}
+                  placeholder="e.g. Advanced Mathematics Annual Plan"
+                  required
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-[#0050CB]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Class</label>
+                  <select
+                    value={planGrade}
+                    onChange={(e) => setPlanGrade(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
+                  >
+                    <option value="Class 10-A">Class 10-A</option>
+                    <option value="Class 9-B">Class 9-B</option>
+                    <option value="Class 8-A">Class 8-A</option>
+                    <option value="Class 7-A">Class 7-A</option>
+                    <option value="Class 6-B">Class 6-B</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Subject</label>
+                  <select
+                    value={planSubject}
+                    onChange={(e) => setPlanSubject(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
+                  >
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Science">Science</option>
+                    <option value="English">English</option>
+                    <option value="Social Studies">Social Studies</option>
+                    <option value="Art">Art</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Duration Range</label>
+                <input
+                  type="text"
+                  value={planDuration}
+                  onChange={(e) => setPlanDuration(e.target.value)}
+                  placeholder="e.g. Apr 2025 - Mar 2026"
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#0050CB] text-white font-bold rounded-xl shadow-md cursor-pointer"
+                >
+                  Publish Plan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PLAN DETAILS MODAL */}
+      {selectedPlanDetails && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-[#000E28] w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#E5EEFF] text-[#0050CB] text-[10px] font-black uppercase">
+                {selectedPlanDetails.class}
+              </span>
+              <button onClick={() => setSelectedPlanDetails(null)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-base font-black text-[#000E28] dark:text-white leading-tight">
+                {selectedPlanDetails.title}
+              </h3>
+              <p className="text-xs font-bold text-slate-500">{selectedPlanDetails.subTitle}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium pt-1">
+                Subject: <strong>{selectedPlanDetails.subject}</strong> • Duration: {selectedPlanDetails.duration}
+              </p>
+              <div className="pt-2">
+                <p className="text-xs font-bold text-slate-500 mb-1">Completion Progress: {selectedPlanDetails.progress}%</p>
+                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-[#0050CB] rounded-full" style={{ width: `${selectedPlanDetails.progress}%` }} />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => setSelectedPlanDetails(null)}
+                className="px-4 py-2 bg-[#0050CB] text-white text-xs font-bold rounded-xl"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* VIEW CURRICULUM MODAL */}
-      {selectedPlan && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-indigo-600 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 opacity-10 pointer-events-none transform translate-x-1/4 -translate-y-1/4">
-                <BookOpen className="h-64 w-64" />
-              </div>
-              <div className="relative z-10">
-                <div className="flex items-center space-x-3 mb-2">
-                  <span className="px-3 py-1 bg-white/20 rounded-lg text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-                    {selectedPlan.grade}
-                  </span>
-                  <span className="text-indigo-100 text-sm font-medium flex items-center">
-                    <Clock className="h-4 w-4 mr-1.5" />
-                    {new Date(selectedPlan.weekStartDate).toLocaleDateString()} - {new Date(selectedPlan.weekEndDate).toLocaleDateString()}
-                  </span>
-                </div>
-                <h2 className="font-bold text-3xl mb-1">{selectedPlan.title}</h2>
-                <p className="text-indigo-100 text-lg">Theme: {selectedPlan.theme}</p>
-                {selectedPlan.createdBy && (
-                  <p className="text-xs text-indigo-200 mt-4 font-medium">Created by {selectedPlan.createdBy.firstName} {selectedPlan.createdBy.lastName}</p>
-                )}
-              </div>
-              <button onClick={() => setSelectedPlan(null)} className="relative z-10 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all">
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            
-            <div className="overflow-y-auto flex-1 p-8 bg-slate-50">
-              <div className="space-y-6">
-                {selectedPlan.activities.map((activity, idx) => (
-                  <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                    <h3 className="text-xl font-bold text-slate-800 mb-3 text-indigo-600 border-b border-slate-100 pb-3">{activity.day}</h3>
-                    <div className="grid md:grid-cols-3 gap-6">
-                      <div className="md:col-span-2">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Activity Description</h4>
-                        <p className="text-slate-700 leading-relaxed whitespace-pre-line">{activity.description}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Learning Outcomes</h4>
-                        {activity.learningOutcomes.length > 0 ? (
-                          <ul className="space-y-2">
-                            {activity.learningOutcomes.map((outcome, i) => (
-                              <li key={i} className="flex items-start">
-                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-2 mr-2 shrink-0"></div>
-                                <span className="text-sm font-medium text-slate-700">{outcome}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <span className="text-sm text-slate-400 italic">No specific outcomes logged.</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {selectedPlan.activities.length === 0 && (
-                  <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 border-dashed">
-                    <p className="text-slate-500 font-medium">No activities recorded for this week.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

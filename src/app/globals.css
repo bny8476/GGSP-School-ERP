@@ -6,39 +6,52 @@
   --font-sans: var(--font-outfit), 'Outfit', sans-serif;
   --font-outfit: var(--font-outfit), 'Outfit', sans-serif;
 
-  --color-primary: #0050CB; /* Primary Color */
-  --color-primary-hover: #0041A8;
-  --color-light-blue: #E5EEFF; /* Light Blue */
-  --color-orange: #FF690C; /* Orange Accent */
-  --color-dark-blue: #000E28; /* Dark Blue */
-  --color-white: #FFFFFF; /* White */
+  /* Master ERP Color Palette */
+  --color-academic-navy: #07152F;
+  --color-academic-navy-light: #0B1F3A;
+  --color-primary-blue: #0757D5;
+  --color-primary-blue-hover: #1469E8;
+  --color-accent-blue: #2F80ED;
+  --color-gold-accent: #C9A227;
+  --color-gold-accent-light: #E4C766;
 
-  --color-brand-primary: #0050CB;
-  --color-brand-light: #E5EEFF;
-  --color-brand-orange: #FF690C;
-  --color-brand-dark: #000E28;
+  --color-primary: #0757D5; /* Primary Action Blue */
+  --color-primary-hover: #1469E8;
+  --color-light-blue: #E5EEFF;
+  --color-[#0050CB]: #0757D5;
+  --color-[#000E28]: #07152F;
+  --color-[#FF690C]: #FF690C;
+  --color-[#12B76A]: #12B76A;
+  --color-[#F59E0B]: #F59E0B;
+  --color-[#EF4444]: #EF4444;
 
   --color-secondary: #FF690C;
-  --color-accent: #FF690C;
-  --color-success: #10b981;
-  --color-background-start: #E5EEFF;
+  --color-accent: #2F80ED;
+  --color-success: #12B76A;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-background-start: #F4F7FC;
   --color-background-end: #FFFFFF;
 
   --animate-blob: blob 7s infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  
-  @keyframes blob {
-    0% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
-    100% { transform: translate(0px, 0px) scale(1); }
+  --animate-page-entrance: pageEntrance 300ms ease-out forwards;
+
+  @keyframes pageEntrance {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-    100% { transform: translateY(0px); }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 }
 
@@ -47,19 +60,76 @@
     --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
-    /* Project Color Palette */
-    --primary: #0050CB;
+    /* Master Academic Palette Tokens */
+    --academic-navy: #07152F;
+    --primary-blue: #0757D5;
+    --accent-blue: #2F80ED;
+    --success: #12B76A;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --gold-accent: #C9A227;
+
+    --primary: #0757D5;
     --light-blue: #E5EEFF;
     --orange: #FF690C;
-    --dark-blue: #000E28;
+    --dark-blue: #07152F;
     --white: #FFFFFF;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --color-background-start: #000a1f;
-    --color-background-end: #000E28;
+    --color-background-start: #030A17;
+    --color-background-end: #07152F;
+  }
+}
+
+/* Micro-interaction utility classes */
+.page-entrance {
+  animation: pageEntrance 300ms ease-out forwards;
+}
+
+.hover-card-elevation {
+  transition: transform 220ms ease-out, box-shadow 220ms ease-out, border-color 220ms ease-out;
+}
+.hover-card-elevation:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -8px rgba(7, 21, 47, 0.12);
+}
+
+.hover-button-micro {
+  transition: transform 180ms ease-out, background-color 180ms ease-out, box-shadow 180ms ease-out;
+}
+.hover-button-micro:hover {
+  transform: translateY(-1px);
+}
+.hover-button-micro:active {
+  transform: scale(0.98);
+}
+
+.shimmer-skeleton {
+  background: linear-gradient(90deg, rgba(226,232,240,0.6) 25%, rgba(241,245,249,0.9) 50%, rgba(226,232,240,0.6) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+.dark .shimmer-skeleton {
+  background: linear-gradient(90deg, rgba(11,31,58,0.6) 25%, rgba(15,40,75,0.9) 50%, rgba(11,31,58,0.6) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .page-entrance {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 
