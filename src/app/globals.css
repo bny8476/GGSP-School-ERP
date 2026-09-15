@@ -3,6 +3,9 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
+  --font-sans: var(--font-outfit), 'Outfit', sans-serif;
+  --font-outfit: var(--font-outfit), 'Outfit', sans-serif;
+
   --color-primary: #0050CB; /* Primary Color */
   --color-primary-hover: #0041A8;
   --color-light-blue: #E5EEFF; /* Light Blue */
@@ -64,9 +67,13 @@ body {
   color: var(--foreground);
   background: linear-gradient(135deg, var(--color-background-start), var(--color-background-end));
   min-height: 100vh;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-outfit), 'Outfit', sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+input, button, select, textarea {
+  font-family: inherit;
 }
 
 .glass-panel {
