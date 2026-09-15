@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import User from '../models/User';
 import Role from '../models/Role';
 
@@ -72,6 +73,42 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide both email and password' });
+    }
+
+    // If MongoDB is not connected, provide a demo mode login fallback
+    if (mongoose.connection.readyState !== 1) {
+      const demoUsers: Record<string, { role: string; name: string }> = {
+        'admin@easacademy.com': { role: 'SuperAdmin', name: 'System Admin' },
+        'admin@schoolerp.com': { role: 'SuperAdmin', name: 'System Admin' },
+        'teacher@school.com': { role: 'Teacher', name: 'Tom Teacher' },
+        'parent@school.com': { role: 'Parent', name: 'Patty Parent' },
+        'accountant@school.com': { role: 'Accountant', name: 'Alice Accountant' },
+        'principal@school.com': { role: 'Principal', name: 'Peter Principal' }
+      };
+
+      const demo = demoUsers[email.toLowerCase().trim()];
+      if (demo && (password === 'password123' || password === 'admin123')) {
+        const dummyId = '66789abcdef0123456789abc';
+        const [firstName, ...rest] = demo.name.split(' ');
+        const lastName = rest.join(' ');
+        return res.json({
+          _id: dummyId,
+          firstName,
+          lastName,
+          email,
+          role: demo.role,
+          token: generateToken(dummyId, demo.role),
+          isDemoMode: true
+        });
+      }
+
+      return res.status(503).json({
+        message: 'Database is currently offline. Please start MongoDB locally or configure a valid MONGO_URI in backend/.env'
+      });
+    }
+
     // Check for user email and populate role
     const user = await User.findOne({ email }).populate('role');
 
@@ -91,7 +128,8 @@ export const loginUser = async (req: Request, res: Response) => {
       res.status(401).json({ message: 'Invalid credentials' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server Error: Unable to complete authentication', error });
   }
 };
 
