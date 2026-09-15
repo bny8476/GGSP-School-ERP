@@ -331,11 +331,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                           onClick={() => setIsMobileMenuOpen(false)}
                           className={`flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                             isActive
-                              ? 'bg-[#0050CB] text-white'
-                              : 'text-slate-300 hover:bg-slate-800/60'
+                              ? 'bg-[#0050CB] text-white shadow-xs'
+                              : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                           }`}
                         >
-                          <Icon className="h-4 w-4 mr-3 shrink-0 text-white" />
+                          <Icon className={`h-4 w-4 mr-3 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                           <span className="truncate">{item.label}</span>
                         </Link>
                       );
