@@ -8,7 +8,7 @@ import {
   HeartPulse, Image as ImageIcon, WalletCards, 
   BarChart3, Settings, LogOut, FileText, Activity, 
   Gift, Globe, Sun, Moon, Search, PanelLeftClose, PanelLeft,
-  Package, ShieldCheck, CheckCircle2, Lock, Database
+  Package, ShieldCheck, CheckCircle2, Lock, Database, Menu, X
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -22,6 +22,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme, direction, setDirection } = useTheme();
   const { t } = useLanguage();
 
@@ -34,6 +35,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       } catch (e) {}
     }
   }, []);
+
+  // Close mobile drawer on route navigation
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -90,7 +96,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-[#F7FAFE] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-sans">
       <CommandPalette />
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar */}
       <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-[#000E28] border-r border-slate-200/80 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 shadow-xs z-30 transition-all duration-300`}>
         
         {/* Sidebar Header */}
@@ -169,15 +175,93 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
+      {/* Mobile Drawer Backdrop & Drawer */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Drawer content */}
+          <div className="relative w-72 max-w-[85vw] bg-white dark:bg-[#000E28] h-full flex flex-col shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+            {/* Drawer Header */}
+            <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <Link href="/dashboard" className="flex items-center gap-2.5">
+                <AcademyLogo size="sm" />
+                <div className="leading-tight">
+                  <span className="text-base font-black tracking-tight text-[#000E28] dark:text-white">
+                    E.A.S.<span className="text-[#0050CB]">Academy</span>
+                  </span>
+                </div>
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                aria-label="Close navigation"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Nav list */}
+            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
+              {navItems.filter(item => item.show).map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      isActive
+                        ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <Icon className={`h-4 w-4 mr-3 shrink-0 ${
+                      isActive ? 'text-[#0050CB] dark:text-[#38BDF8]' : 'text-slate-400'
+                    }`} />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Drawer Footer */}
+            <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-1 shrink-0">
+              <button 
+                onClick={handleLogout} 
+                className="w-full flex items-center px-3.5 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer"
+              >
+                <LogOut className="h-4 w-4 mr-3 text-rose-600 shrink-0" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
         
         {/* Dashboard Topbar */}
-        <header className="h-16 bg-white/95 dark:bg-[#000E28]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-6 sm:px-8 shrink-0 z-20 transition-colors">
+        <header className="h-16 bg-white/95 dark:bg-[#000E28]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-4 sm:px-8 shrink-0 z-20 transition-colors">
           
-          {/* Left: Portal Title & Role Pill */}
+          {/* Left: Hamburger (mobile) + Portal Title & Role Pill */}
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white tracking-tight">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <h1 className="text-lg sm:text-2xl font-black text-[#000E28] dark:text-white tracking-tight truncate max-w-[200px] sm:max-w-none">
               {portalName}
             </h1>
             <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0050CB]/20 border border-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] text-[11px] font-bold">
@@ -187,7 +271,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Quick Search Trigger */}
             <div 
               onClick={() => {
@@ -203,7 +287,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             {/* RTL / LTR Direction Toggle */}
             <button
               onClick={() => setDirection(direction === 'ltr' ? 'rtl' : 'ltr')}
-              className="px-2.5 py-1 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+              className="px-2 sm:px-2.5 py-1 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
               title="Toggle Layout Direction (LTR/RTL)"
             >
               {direction.toUpperCase()}
@@ -215,15 +299,15 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               title="Toggle Dark/Light Mode"
             >
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
 
             {/* User Profile Pill */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-slate-800">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#0050CB] to-[#38BDF8] flex items-center justify-center text-white font-black shadow-md text-sm ring-2 ring-white dark:ring-[#001438]">
+            <div className="flex items-center gap-2 sm:gap-2.5 pl-2 border-l border-slate-200 dark:border-slate-800">
+              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-tr from-[#0050CB] to-[#38BDF8] flex items-center justify-center text-white font-black shadow-md text-xs sm:text-sm ring-2 ring-white dark:ring-[#001438]">
                 {initial}
               </div>
               <div className="hidden lg:block text-left leading-tight">
@@ -239,7 +323,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Scrollable Dashboard Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-8 bg-gradient-to-b from-[#F7FAFE] via-white to-[#F6F9FE] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] transition-colors">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-gradient-to-b from-[#F7FAFE] via-white to-[#F6F9FE] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] transition-colors">
           <div className="max-w-7xl mx-auto space-y-8">
             {children}
           </div>
