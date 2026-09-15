@@ -24,6 +24,8 @@ import {
 
 import { useLanguage } from "@/context/LanguageContext";
 
+import toast from 'react-hot-toast';
+
 export default function AdmissionsPage() {
   const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -107,11 +109,11 @@ export default function AdmissionsPage() {
         setIsSubmitted(true);
       } else {
         const err = await response.json();
-        alert(`Submission failed: ${err.message}`);
+        toast.error(`Submission failed: ${err.message}`);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("A network error occurred.");
+      toast.error("A network error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -195,7 +197,6 @@ export default function AdmissionsPage() {
               </p>
             </div>
           </div>
-
           {/* Right: Stepper (01, 02, 03) with smooth animated fill lines */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 self-start lg:self-center">
             
@@ -299,6 +300,7 @@ export default function AdmissionsPage() {
             </div>
 
           </div>
+
 
         </div>
 

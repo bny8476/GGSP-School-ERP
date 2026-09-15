@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Global International — School Management ERP
 
-## Getting Started
+> Production-ready, enterprise-grade School Management System powering **Global International**.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🌟 Overview
+
+**Global International School ERP** is a unified digital platform built for administration, principals, teachers, students, parents, guardians, accountants, HR, librarians, and transport managers. 
+
+Built with Next.js 16 (App Router) on the frontend and Express 5 + Mongoose on the backend, it features dynamic role-based workspaces, data-level authorization, real-time messaging, comprehensive academic tracking, and financial workflows.
+
+---
+
+## 🚀 Key Features & Modules
+
+- 👨‍🎓 **Student 360° Profile & Academic History:** Academic, attendance, fee ledger, exam results, medical history, transport, and activity timeline.
+- 🏫 **Academic Management & Conflict-Free Timetable:** Classrooms, sections, subjects, syllabus progress, and routine conflict detection.
+- 💳 **Fee Collection & Automated Receipts:** Multiple payment methods (Cash, Card, UPI, Gateway), discounts, late fees, and computer-generated PDF receipts.
+- 📊 **Multi-Role Dashboards:** Dynamic views tailored for Admin, Teacher, Student, and Parent roles.
+- 🔒 **Enterprise RBAC & Security:** JWT authentication, fail-fast env validation, role-based data filtering, and central audit logging (`AuditLog`).
+- 💬 **Communication Suite:** Real-time Socket.IO chat, announcements, events calendar, and notification center.
+- 📚 **Operations & HR:** Library book cataloging, hostel room occupancy, transport vehicle routing, staff payroll lifecycle, and support tickets.
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, TailwindCSS, `react-hot-toast`, Lucide Icons
+- **Backend:** Express 5, Node.js, TypeScript, Mongoose, Socket.IO, PDFKit, Zod, Helmet, Express-Rate-Limit
+- **Database:** MongoDB
+- **Testing:** Jest, Supertest
+
+---
+
+## 📂 Environment Setup
+
+Create `.env` inside `backend/`:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/global_international_erp
+JWT_SECRET=your_super_secret_jwt_key
+FRONTEND_URL=http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚡ Quick Start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Install dependencies at root and backend
+npm install
+cd backend && npm install && cd ..
 
-## Learn More
+# Boot dev servers concurrently (Frontend on 3000, Backend on 5000)
+npm run dev:all
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🏥 Health Check API
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```http
+GET /api/health
+```
 
-## Deploy on Vercel
+**Response:**
+```json
+{
+  "status": "ok",
+  "service": "Global International School ERP",
+  "database": "connected",
+  "timestamp": "2026-09-11T14:30:00.000Z"
+}
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📜 License
+
+© 2026 **Global International School ERP**. All rights reserved.

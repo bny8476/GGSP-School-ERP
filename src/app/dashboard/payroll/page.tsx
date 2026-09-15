@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Banknote, Plus, Search, FileText, CheckCircle2, User, Download, Edit2, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function PayrollPage() {
   const [payrolls, setPayrolls] = useState<any[]>([]);
@@ -135,13 +136,15 @@ export default function PayrollPage() {
       });
 
       if (res.ok) {
+        toast.success(editingId ? 'Payroll updated successfully!' : 'Payroll generated successfully!');
         resetForm();
         fetchData();
       } else {
-        alert('Error saving payroll');
+        toast.error('Error saving payroll');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving payroll');
     } finally {
       setIsSaving(false);
     }
@@ -155,9 +158,11 @@ export default function PayrollPage() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ ...payroll, status: 'Paid', paymentDate: new Date() })
       });
+      toast.success('Marked as Paid!');
       fetchData();
     } catch (error) {
       console.error(error);
+      toast.error('Failed to update payment status');
     }
   };
 
@@ -179,9 +184,10 @@ export default function PayrollPage() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      toast.success('Payslip downloaded!');
     } catch (error) {
       console.error(error);
-      alert('Error downloading payslip');
+      toast.error('Error downloading payslip');
     }
   };
 

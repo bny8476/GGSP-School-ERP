@@ -1,13 +1,15 @@
 import express from 'express';
 import { getFeeDefaulters, getAdmissionAnalytics, getAttendanceSummary } from '../controllers/reportController';
-import { protect } from '../middleware/auth';
+import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
 
 router.use(protect);
 
-router.get('/fee-defaulters', getFeeDefaulters);
-router.get('/admissions', getAdmissionAnalytics);
-router.get('/attendance', getAttendanceSummary);
+const adminStaffAuth = authorize('SuperAdmin', 'Admin', 'Principal', 'Accountant');
+
+router.get('/fee-defaulters', adminStaffAuth, getFeeDefaulters);
+router.get('/admissions', adminStaffAuth, getAdmissionAnalytics);
+router.get('/attendance', authorize('SuperAdmin', 'Admin', 'Principal', 'Accountant', 'Teacher'), getAttendanceSummary);
 
 export default router;

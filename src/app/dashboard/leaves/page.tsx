@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Calendar, CheckCircle2, XCircle, Clock, Search, Plus, UserCircle, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function LeavesPage() {
   const [leaves, setLeaves] = useState<any[]>([]);
@@ -57,15 +58,17 @@ export default function LeavesPage() {
       });
       
       if (res.ok) {
+        toast.success('Leave application submitted!');
         setShowAddModal(false);
         setFormData({ userId: '', startDate: '', endDate: '', reason: '' });
         fetchData();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error submitting leave');
     } finally {
       setIsSaving(false);
     }
@@ -81,13 +84,15 @@ export default function LeavesPage() {
       });
       
       if (res.ok) {
+        toast.success(`Leave request ${status.toLowerCase()}!`);
         fetchData();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error updating leave status');
     }
   };
 

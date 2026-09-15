@@ -6,7 +6,11 @@ import Role from '../models/Role';
 
 // Generate JWT
 const generateToken = (id: string, role: string) => {
-  return jwt.sign({ user: { id, role } }, process.env.JWT_SECRET || 'fallback_secret', {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is missing from environment');
+  }
+  return jwt.sign({ user: { id, role } }, secret, {
     expiresIn: '30d',
   });
 };
@@ -16,7 +20,7 @@ const generateToken = (id: string, role: string) => {
 // @access  Public (in real app, should be restricted to Admin to create staff accounts)
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, password, roleName } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -24,10 +28,11 @@ export const registerUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Find role or default to something (e.g., Parent)
-    let role = await Role.findOne({ name: roleName || 'Parent' });
+    // Public self-registration ALWAYS creates a 'Parent' account. Ignore any roleName field in req.body.
+    const defaultRoleName = 'Parent';
+    let role = await Role.findOne({ name: defaultRoleName });
     if (!role) {
-      role = await Role.create({ name: roleName || 'Parent', permissions: [] });
+      role = await Role.create({ name: defaultRoleName, permissions: [] });
     }
 
     // Hash password

@@ -2,23 +2,46 @@
 
 import { useState, useEffect } from 'react';
 import { Wallet, IndianRupee, PieChart, Download, Plus, Search, Edit, CheckCircle2, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function FinancePage() {
   const [activeTab, setActiveTab] = useState<'fees' | 'expenses'>('fees');
   const [fees, setFees] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Modals state
-  const [showFeeModal, setShowFeeModal] = useState(false);
-  const [showUpdateFeeModal, setShowUpdateFeeModal] = useState<{show: boolean, fee: any}>({show: false, fee: null});
-  const [showExpenseModal, setShowExpenseModal] = useState(false);
 
-  // Form states
-  const [feeForm, setFeeForm] = useState({ studentId: '', grade: 'Pre-KG', feeType: 'Tuition', totalAmount: '', dueDate: '' });
-  const [updateFeeForm, setUpdateFeeForm] = useState({ amountPaid: '', status: 'Pending' });
-  const [expenseForm, setExpenseForm] = useState({ description: '', category: 'Supplies', amount: '', date: new Date().toISOString().split('T')[0] });
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Modals
+  const [showFeeModal, setShowFeeModal] = useState(false);
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [showUpdateFeeModal, setShowUpdateFeeModal] = useState<{show: boolean, fee: any | null}>({show: false, fee: null});
+
+  // Forms
+  const [feeForm, setFeeForm] = useState({
+    studentId: '',
+    grade: 'Pre-KG',
+    feeType: 'Tuition',
+    totalAmount: '',
+    dueDate: ''
+  });
+
+  const [updateFeeForm, setUpdateFeeForm] = useState({
+    amountPaid: '',
+    status: 'Paid'
+  });
+
+  const [expenseForm, setExpenseForm] = useState({
+    description: '',
+    category: 'Supplies',
+    amount: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -26,27 +49,22 @@ export default function FinancePage() {
       const token = localStorage.getItem('token');
       const headers = { 'Authorization': `Bearer ${token}` };
 
-      const [feeRes, expenseRes, studentRes] = await Promise.all([
+      const [feesRes, expRes, stuRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/finance/fees`, { headers }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/finance/expenses`, { headers }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/students`, { headers })
       ]);
-      
-      if (feeRes.ok) setFees(await feeRes.json());
-      if (expenseRes.ok) setExpenses(await expenseRes.json());
-      if (studentRes.ok) setStudents(await studentRes.json());
+
+      if (feesRes.ok) setFees(await feesRes.json());
+      if (expRes.ok) setExpenses(await expRes.json());
+      if (stuRes.ok) setStudents(await stuRes.json());
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Handlers
   const handleCreateFee = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -57,15 +75,17 @@ export default function FinancePage() {
         body: JSON.stringify(feeForm)
       });
       if (res.ok) {
+        toast.success('Fee invoice generated successfully!');
         setShowFeeModal(false);
         setFeeForm({ studentId: '', grade: 'Pre-KG', feeType: 'Tuition', totalAmount: '', dueDate: '' });
         fetchData();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error creating fee');
     }
   };
 
@@ -80,14 +100,16 @@ export default function FinancePage() {
         body: JSON.stringify(updateFeeForm)
       });
       if (res.ok) {
+        toast.success('Fee payment updated!');
         setShowUpdateFeeModal({show: false, fee: null});
         fetchData();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error updating fee');
     }
   };
 
@@ -101,15 +123,17 @@ export default function FinancePage() {
         body: JSON.stringify(expenseForm)
       });
       if (res.ok) {
+        toast.success('Expense recorded successfully!');
         setShowExpenseModal(false);
         setExpenseForm({ description: '', category: 'Supplies', amount: '', date: new Date().toISOString().split('T')[0] });
         fetchData();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error recording expense');
     }
   };
 

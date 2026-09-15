@@ -8,7 +8,7 @@ import { getIO } from '../socket';
 export const getAttendance = async (req: Request, res: Response) => {
   try {
     const { date, entityType } = req.query;
-    let query: any = {};
+    let query: Record<string, unknown> = {};
     
     if (date) {
       // Create date range for the specific day
@@ -28,10 +28,9 @@ export const getAttendance = async (req: Request, res: Response) => {
 
     // Role-based filtering for Parents
     if (req.user?.role === 'Parent') {
-      // Import Student model locally to avoid circular dependency issues if any, though it should be fine at top level
       const Student = require('../models/Student').default;
       const students = await Student.find({ parentId: req.user.id });
-      const studentIds = students.map((s: any) => s._id);
+      const studentIds = students.map((s: { _id: mongoose.Types.ObjectId }) => s._id);
       query.entityId = { $in: studentIds };
       query.entityType = 'Student';
     }

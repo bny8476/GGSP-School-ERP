@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Sun, Plus, Edit2, Trash2, Search, Clock, Coffee, Moon, AlignLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function DaycarePage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -103,13 +104,15 @@ export default function DaycarePage() {
       });
 
       if (res.ok) {
+        toast.success(editingLogId ? 'Daycare log updated successfully!' : 'Daycare log recorded!');
         resetForm();
         fetchData();
       } else {
-        alert('Error saving log');
+        toast.error('Error saving log');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving daycare log');
     } finally {
       setIsSaving(false);
     }

@@ -1,11 +1,18 @@
 import express from 'express';
 import { getAll, create, update, remove } from '../controllers/galleryController';
-import { protect } from '../middleware/auth';
+import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
 
 router.use(protect);
-router.route('/').get(getAll).post(create);
-router.route('/:id').put(update).delete(remove);
+const staffAuth = authorize('SuperAdmin', 'Admin', 'Principal', 'Teacher');
+
+router.route('/')
+  .get(getAll)
+  .post(staffAuth, create);
+
+router.route('/:id')
+  .put(staffAuth, update)
+  .delete(authorize('SuperAdmin', 'Admin', 'Principal'), remove);
 
 export default router;

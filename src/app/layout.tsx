@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { Toaster } from "react-hot-toast";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -47,6 +48,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${outfit.variable} antialiased flex flex-col min-h-screen bg-white dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200`}>
+        <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         <ThemeProvider>
           <LanguageProvider>
             <Navbar />

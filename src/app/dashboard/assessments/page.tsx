@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, Plus, Search, ChevronDown, CheckCircle2, Award, User, Calendar, BookOpen } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const RUBRIC_TEMPLATE = [
   { category: 'Motor Skills', skill: 'Holds pencil correctly and traces lines' },
@@ -60,7 +61,7 @@ export default function AssessmentsPage() {
   const handleSaveAssessment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) {
-      alert("Please select a student.");
+      toast.error("Please select a student.");
       return;
     }
 
@@ -89,7 +90,7 @@ export default function AssessmentsPage() {
       });
 
       if (res.ok) {
-        alert("Assessment saved successfully!");
+        toast.success("Assessment saved successfully!");
         fetchData(); // Refresh list
         setActiveTab('view');
         // Reset form
@@ -98,11 +99,11 @@ export default function AssessmentsPage() {
         setRubricScores({});
       } else {
         const err = await res.json();
-        alert(`Failed to save: ${err.message}`);
+        toast.error(`Failed to save: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
-      alert('Error saving assessment');
+      toast.error('Error saving assessment');
     } finally {
       setIsSaving(false);
     }

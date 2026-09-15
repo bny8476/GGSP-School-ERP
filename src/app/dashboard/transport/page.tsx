@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bus, MapPin, Users, Plus, Trash2, Edit2, CheckCircle2, Navigation, Phone, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function TransportPage() {
   const [routes, setRoutes] = useState<any[]>([]);
@@ -110,15 +111,16 @@ export default function TransportPage() {
       });
 
       if (res.ok) {
-        alert(editingRouteId ? 'Route updated!' : 'Route created!');
+        toast.success(editingRouteId ? 'Route updated!' : 'Route created!');
         resetForm();
         fetchRoutes();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving route');
     } finally {
       setIsSaving(false);
     }

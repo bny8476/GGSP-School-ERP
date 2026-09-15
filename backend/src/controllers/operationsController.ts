@@ -12,7 +12,12 @@ const getParentWhatsAppNumber = async (studentId: string): Promise<string | null
     const student = await Student.findById(studentId).populate('parentId');
     if (!student || !student.parentId) return null;
     
-    const parent: any = student.parentId;
+    interface ParentDoc {
+      whatsappNumber?: string;
+      fatherContact?: string;
+      motherContact?: string;
+    }
+    const parent = student.parentId as unknown as ParentDoc;
     // Prefer whatsappNumber, fallback to fatherContact, then motherContact
     let num = parent.whatsappNumber || parent.fatherContact || parent.motherContact;
     if (!num) return null;

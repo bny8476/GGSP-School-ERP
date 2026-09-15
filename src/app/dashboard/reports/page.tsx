@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BarChart3, Users, DollarSign, Download, AlertTriangle, UserCheck, CalendarDays } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ReportsPage() {
   const [activeReport, setActiveReport] = useState<'fees' | 'admissions' | 'attendance'>('fees');
@@ -57,9 +58,9 @@ export default function ReportsPage() {
       link.setAttribute("download", "fee_defaulters_report.csv");
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      toast.success("Fee defaulters CSV downloaded!");
     } else {
-      alert("CSV export is currently available for the Fee Defaulters tabular report.");
+      toast.error("CSV export is currently available for the Fee Defaulters tabular report.");
     }
   };
 

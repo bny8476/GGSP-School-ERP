@@ -10,7 +10,7 @@ export const getDailyDiaries = async (req: Request, res: Response) => {
     const { date, grade } = req.query;
     
     // First, get all students in the grade (or parent's children)
-    let studentQuery: any = {};
+    let studentQuery: Record<string, unknown> = {};
     if (grade) studentQuery.grade = grade;
     if (req.user?.role === 'Parent') {
       studentQuery.parentId = req.user.id;
@@ -18,7 +18,7 @@ export const getDailyDiaries = async (req: Request, res: Response) => {
     const students = await Student.find(studentQuery);
     const studentIds = students.map(s => s._id);
 
-    let query: any = { studentId: { $in: studentIds } };
+    let query: Record<string, unknown> = { studentId: { $in: studentIds } };
     
     if (date) {
       const queryDate = new Date(date as string);

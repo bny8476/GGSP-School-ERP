@@ -15,13 +15,22 @@ dotenv.config();
 const seedDB = async () => {
   try {
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGO_URI as string);
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is missing from environment');
+    }
+    await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected.');
 
+    const options = { upsert: true, new: true, runValidators: true };
+
     // Find or create roles
-    const adminRole = await Role.findOneAndUpdate({ name: 'SuperAdmin' }, { name: 'SuperAdmin', permissions: ['all'] }, { upsert: true, new: true });
-    const teacherRole = await Role.findOneAndUpdate({ name: 'Teacher' }, { name: 'Teacher', permissions: ['read', 'write'] }, { upsert: true, new: true });
-    const parentRole = await Role.findOneAndUpdate({ name: 'Parent' }, { name: 'Parent', permissions: ['read'] }, { upsert: true, new: true });
+    const adminRole = await Role.findOneAndUpdate({ name: 'SuperAdmin' }, { name: 'SuperAdmin', permissions: ['all'] }, options);
+    const teacherRole = await Role.findOneAndUpdate({ name: 'Teacher' }, { name: 'Teacher', permissions: ['read', 'write'] }, options);
+    const parentRole = await Role.findOneAndUpdate({ name: 'Parent' }, { name: 'Parent', permissions: ['read'] }, options);
+
+    if (!adminRole || !teacherRole || !parentRole) {
+      throw new Error('Failed to initialize roles');
+    }
 
     // Hash a default password
     const salt = await bcrypt.genSalt(10);
@@ -29,19 +38,19 @@ const seedDB = async () => {
 
     // 1. Create a Staff/SuperAdmin
     const staff = await User.findOneAndUpdate(
-      { email: 'admin@easacademy.com' },
+      { email: 'admin@schoolerp.com' },
       {
-        email: 'admin@easacademy.com',
+        email: 'admin@schoolerp.com',
         firstName: 'System',
         lastName: 'Admin',
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         role: adminRole._id,
-        status: 'Active',
-        contactNumber: '1234567890'
+        isActive: true,
+        phoneNumber: '1234567890'
       },
-      { upsert: true, new: true }
+      options
     );
-    console.log('Admin created: admin@easacademy.com / password123');
+    console.log('Admin created: admin@schoolerp.com / password123');
 
     // 2. Create a Teacher
     const teacher = await User.findOneAndUpdate(
@@ -50,14 +59,14 @@ const seedDB = async () => {
         firstName: 'Tom',
         lastName: 'Teacher',
         email: 'teacher@school.com',
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         role: teacherRole._id,
-        status: 'Active',
-        contactNumber: '0987654321',
+        isActive: true,
+        phoneNumber: '0987654321',
         designation: 'Lead Instructor',
         salary: 4000
       },
-      { upsert: true, new: true }
+      options
     );
     console.log('Teacher created: teacher@school.com / password123');
 
@@ -68,13 +77,17 @@ const seedDB = async () => {
         firstName: 'Patty',
         lastName: 'Parent',
         email: 'parent@school.com',
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         role: parentRole._id,
-        status: 'Active',
-        contactNumber: '5551234567'
+        isActive: true,
+        phoneNumber: '5551234567'
       },
-      { upsert: true, new: true }
+      options
     );
+
+    if (!parentUser || !teacher || !staff) {
+      throw new Error('Failed to create staff or parent users');
+    }
 
     // Create the detailed Parent profile
     const parentProfile = await Parent.findOneAndUpdate(
@@ -88,8 +101,12 @@ const seedDB = async () => {
         whatsappNumber: '+15551234567',
         address: '123 Family Lane'
       },
-      { upsert: true, new: true }
+      options
     );
+
+    if (!parentProfile) {
+      throw new Error('Failed to create parent profile');
+    }
     console.log('Parent created: parent@school.com / password123');
 
     // 4. Create a Student
@@ -105,8 +122,12 @@ const seedDB = async () => {
         bloodGroup: 'O+',
         medicalNotes: 'No allergies.'
       },
-      { upsert: true, new: true }
+      options
     );
+
+    if (!student) {
+      throw new Error('Failed to create student');
+    }
     console.log('Student created: Sammy Student');
 
     // 5. Create an Assessment for the Student

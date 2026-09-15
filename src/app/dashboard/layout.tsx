@@ -4,22 +4,25 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, Users, UserCheck, GraduationCap, 
-  CalendarHeart, DollarSign, BookOpen, Clock, 
-  Megaphone, Bus, HeartPulse, Image as ImageIcon, 
-  WalletCards, BarChart3, Settings, LogOut, 
-  FileText, Activity, Gift
+  DollarSign, BookOpen, Clock, Megaphone, Bus, 
+  HeartPulse, Image as ImageIcon, WalletCards, 
+  BarChart3, Settings, LogOut, FileText, Activity, 
+  Gift, Globe, Sun, Moon, Search, PanelLeftClose, PanelLeft,
+  Package, ShieldCheck, CheckCircle2, Lock, Database
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import CommandPalette from '@/components/ui/CommandPalette';
+import NotificationDrawer from '@/components/ui/NotificationDrawer';
+import AcademyLogo from '@/components/AcademyLogo';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme, toggleTheme, direction, setDirection } = useTheme();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -47,11 +50,11 @@ export default function DashboardLayout({
   const isAccountant = r === 'accountant' || isSuperAdmin;
   const isReceptionist = r === 'receptionist' || isSuperAdmin;
   
-  const portalName = isSuperAdmin ? 'Super Admin Portal' 
-    : r === 'principal' ? 'Principal Portal'
-    : r === 'teacher' ? 'Teacher Portal'
-    : r === 'accountant' ? 'Accounts Portal'
-    : 'Staff Portal';
+  const portalName = isSuperAdmin ? 'Super Admin Workspace' 
+    : r === 'principal' ? 'Principal Workspace'
+    : r === 'teacher' ? 'Teacher Workspace'
+    : r === 'accountant' ? 'Accounts Workspace'
+    : 'Staff Workspace';
 
   const initial = user?.firstName ? user.firstName[0].toUpperCase() : 'A';
   const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
@@ -59,31 +62,65 @@ export default function DashboardLayout({
   const navItems = [
     { href: '/dashboard', label: t('nav.home', 'Dashboard'), icon: LayoutDashboard, show: true },
     { href: '/dashboard/admissions', label: t('nav.admissions', 'Admissions'), icon: FileText, show: isSuperAdmin || isReceptionist },
-    { href: '/dashboard/students', label: t('footer.students', 'Student Mgmt'), icon: GraduationCap, show: isPrincipal || isTeacher },
-    { href: '/dashboard/parents', label: 'Parent Mgmt', icon: Users, show: isPrincipal || isReceptionist },
+    { href: '/dashboard/students', label: t('footer.students', 'Student 360°'), icon: GraduationCap, show: isPrincipal || isTeacher },
+    { href: '/dashboard/parents', label: 'Parents & Guardians', icon: Users, show: isPrincipal || isReceptionist },
     { href: '/dashboard/attendance', label: t('footer.attendance', 'Attendance'), icon: UserCheck, show: isPrincipal || isTeacher },
-    { href: '/dashboard/fees', label: t('footer.fees', 'Fee Mgmt'), icon: DollarSign, show: isAccountant || isPrincipal },
-    { href: '/dashboard/teachers', label: 'Teacher Mgmt', icon: BookOpen, show: isPrincipal },
-    { href: '/dashboard/classes', label: 'Class Mgmt', icon: LayoutDashboard, show: isSuperAdmin },
-    { href: '/dashboard/daily-activity', label: 'Daily Activity', icon: Activity, show: isPrincipal || isTeacher },
-    { href: '/dashboard/communication', label: 'Communication', icon: Megaphone, show: isPrincipal || isReceptionist },
-    { href: '/dashboard/events', label: 'Events', icon: Gift, show: isPrincipal },
+    { href: '/dashboard/fees', label: t('footer.fees', 'Fees & Ledger'), icon: DollarSign, show: isAccountant || isPrincipal },
+    { href: '/dashboard/teachers', label: 'Staff Roster', icon: BookOpen, show: isPrincipal },
+    { href: '/dashboard/classes', label: 'Classes & Sections', icon: LayoutDashboard, show: isSuperAdmin },
+    { href: '/dashboard/daily-activity', label: 'Daily Diary', icon: Activity, show: isPrincipal || isTeacher },
+    { href: '/dashboard/classroom', label: 'Digital Classroom', icon: BookOpen, show: isPrincipal || isTeacher },
+    { href: '/dashboard/communication', label: 'Notices & Chat', icon: Megaphone, show: isPrincipal || isReceptionist },
+    { href: '/dashboard/events', label: 'Events & Calendar', icon: Gift, show: isPrincipal },
     { href: '/dashboard/transport', label: 'Transport', icon: Bus, show: isSuperAdmin || isReceptionist },
     { href: '/dashboard/daycare', label: 'Day Care', icon: Clock, show: isSuperAdmin || isTeacher },
     { href: '/dashboard/health', label: 'Health Records', icon: HeartPulse, show: isSuperAdmin || isReceptionist },
     { href: '/dashboard/gallery', label: 'Gallery', icon: ImageIcon, show: isSuperAdmin || isTeacher },
+    { href: '/dashboard/inventory', label: 'Inventory & PO', icon: Package, show: isSuperAdmin || isAccountant },
+    { href: '/dashboard/visitors', label: 'Visitor Gate Pass', icon: ShieldCheck, show: isSuperAdmin || isReceptionist },
+    { href: '/dashboard/approvals', label: 'Approval Center', icon: CheckCircle2, show: isSuperAdmin || isPrincipal },
+    { href: '/dashboard/timeline', label: 'Activity Stream', icon: Activity, show: isSuperAdmin || isPrincipal },
+    { href: '/dashboard/security', label: 'Security Center', icon: Lock, show: isSuperAdmin },
+    { href: '/dashboard/import-export', label: 'Import & Export', icon: Database, show: isSuperAdmin || isPrincipal },
     { href: '/dashboard/payroll', label: t('footer.payroll', 'Staff Payroll'), icon: WalletCards, show: isSuperAdmin },
     { href: '/dashboard/reports', label: 'Reports', icon: BarChart3, show: isPrincipal || isAccountant },
   ];
 
   return (
     <div className="flex h-screen bg-[#F7FAFE] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-sans">
-      
+      <CommandPalette />
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-[#000E28] border-r border-slate-200/80 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 shadow-xs z-30 transition-colors">
+      <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-[#000E28] border-r border-slate-200/80 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 shadow-xs z-30 transition-all duration-300`}>
         
+        {/* Sidebar Header */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+          {!isCollapsed && (
+            <Link href="/dashboard" className="flex items-center gap-2.5">
+              <AcademyLogo size="sm" />
+              <div className="leading-tight">
+                <span className="text-base font-black tracking-tight text-[#000E28] dark:text-white">
+                  E.A.S.<span className="text-[#0050CB]">Academy</span>
+                </span>
+              </div>
+            </Link>
+          )}
+          {isCollapsed && (
+            <div className="mx-auto">
+              <AcademyLogo size="sm" />
+            </div>
+          )}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition-colors cursor-pointer"
+            title="Toggle sidebar"
+          >
+            {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </button>
+        </div>
+
         {/* Sidebar Nav Links */}
-        <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-1 custom-scrollbar">
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
           {navItems.filter(item => item.show).map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -92,18 +129,19 @@ export default function DashboardLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                title={item.label}
+                className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                   isActive
                     ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] shadow-xs'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50 hover:text-[#0050CB] dark:hover:text-white'
                 }`}
               >
-                <Icon className={`h-4 w-4 mr-3 transition-colors ${
+                <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-colors ${
                   isActive ? 'text-[#0050CB] dark:text-[#38BDF8]' : 'text-slate-400 group-hover:text-[#0050CB]'
                 }`} strokeWidth={isActive ? 2.4 : 2} />
-                <span>{item.label}</span>
-                {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#0050CB] dark:bg-[#38BDF8]" />
+                {!isCollapsed && <span className="truncate">{item.label}</span>}
+                {!isCollapsed && isActive && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#0050CB] dark:bg-[#38BDF8] shrink-0" />
                 )}
               </Link>
             );
@@ -114,17 +152,19 @@ export default function DashboardLayout({
         <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 space-y-1 shrink-0">
           <Link 
             href="/dashboard/settings" 
-            className="flex items-center px-3.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50 hover:text-[#0050CB] dark:hover:text-[#38BDF8] rounded-xl transition-colors"
+            title="Settings"
+            className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50 hover:text-[#0050CB] dark:hover:text-[#38BDF8] rounded-xl transition-colors`}
           >
-            <Settings className="h-4 w-4 mr-3 text-slate-400" />
-            <span>Settings</span>
+            <Settings className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} text-slate-400 shrink-0`} />
+            {!isCollapsed && <span>Settings</span>}
           </Link>
           <button 
             onClick={handleLogout} 
-            className="w-full flex items-center px-3.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-colors cursor-pointer"
+            title="Sign Out"
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-colors cursor-pointer`}
           >
-            <LogOut className="h-4 w-4 mr-3 text-slate-400 hover:text-rose-600" />
-            <span>Sign Out</span>
+            <LogOut className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} text-slate-400 hover:text-rose-600 shrink-0`} />
+            {!isCollapsed && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
@@ -146,10 +186,43 @@ export default function DashboardLayout({
             </span>
           </div>
 
-          {/* Right Controls: User Profile Pill */}
+          {/* Right Controls */}
           <div className="flex items-center gap-3">
+            {/* Quick Search Trigger */}
+            <div 
+              onClick={() => {
+                const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true });
+                window.dispatchEvent(event);
+              }}
+              className="hidden lg:flex items-center px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200/60 dark:border-slate-700"
+            >
+              <Search className="h-3.5 w-3.5 mr-2 text-slate-400" />
+              <span>Search (Ctrl+K)</span>
+            </div>
+
+            {/* RTL / LTR Direction Toggle */}
+            <button
+              onClick={() => setDirection(direction === 'ltr' ? 'rtl' : 'ltr')}
+              className="px-2.5 py-1 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+              title="Toggle Layout Direction (LTR/RTL)"
+            >
+              {direction.toUpperCase()}
+            </button>
+
+            {/* Notification Drawer */}
+            <NotificationDrawer />
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              title="Toggle Dark/Light Mode"
+            >
+              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            </button>
+
             {/* User Profile Pill */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-slate-800">
               <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#0050CB] to-[#38BDF8] flex items-center justify-center text-white font-black shadow-md text-sm ring-2 ring-white dark:ring-[#001438]">
                 {initial}
               </div>
@@ -174,5 +247,13 @@ export default function DashboardLayout({
 
       </main>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </ThemeProvider>
   );
 }

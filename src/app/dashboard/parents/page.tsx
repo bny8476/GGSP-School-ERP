@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, Search, Phone, Mail, MapPin } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ParentsPage() {
   const [parents, setParents] = useState<any[]>([]);
@@ -106,13 +107,15 @@ export default function ParentsPage() {
       });
 
       if (res.ok) {
+        toast.success(editingParentId ? 'Parent profile updated!' : 'Parent registered successfully!');
         resetForm();
         fetchParents();
       } else {
-        alert('Error saving parent data');
+        toast.error('Error saving parent data');
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error saving parent data');
     } finally {
       setIsSaving(false);
     }

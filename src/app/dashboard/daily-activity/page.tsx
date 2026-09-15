@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Calendar, Save, Sun, Moon, Utensils, Smile, Search, Activity, Palette, Music, BookOpen, Trees, Shapes } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AVAILABLE_ACTIVITIES = [
   { name: 'Art & Craft', icon: Palette, color: 'text-pink-500 bg-pink-50 ring-pink-200' },
@@ -116,10 +117,10 @@ export default function DailyDiaryPage() {
         setDiaries(diaryMap);
       }
 
-      alert('All daily diaries saved successfully!');
+      toast.success('All daily diaries saved successfully!');
     } catch (error) {
       console.error(error);
-      alert('Error saving diaries');
+      toast.error('Error saving diaries');
     } finally {
       setIsSaving(false);
     }

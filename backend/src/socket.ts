@@ -1,6 +1,8 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HttpServer } from 'http';
 
+import jwt from 'jsonwebtoken';
+
 let io: SocketIOServer;
 
 export const initSocket = (httpServer: HttpServer) => {
@@ -15,6 +17,28 @@ export const initSocket = (httpServer: HttpServer) => {
       methods: ['GET', 'POST'],
       credentials: true,
     },
+  });
+
+  // Socket.IO authentication middleware
+  io.use((socket, next) => {
+    const token =
+      socket.handshake.auth?.token ||
+      (socket.handshake.headers?.authorization
+        ? socket.handshake.headers.authorization.split(' ')[1]
+        : null);
+
+    if (token) {
+      try {
+        const secret = process.env.JWT_SECRET;
+        if (secret) {
+          const decoded = jwt.verify(token, secret);
+          socket.data.user = decoded;
+        }
+      } catch (err) {
+        console.warn(`Socket connection ${socket.id} auth failed: ${(err as Error).message}`);
+      }
+    }
+    next();
   });
 
   io.on('connection', (socket) => {

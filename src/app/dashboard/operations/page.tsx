@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bus, Stethoscope, ShieldCheck, CheckCircle2, Clock, Plus, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function OperationsPage() {
   const [activeTab, setActiveTab] = useState<'transport' | 'health'>('transport');
@@ -83,15 +84,17 @@ export default function OperationsPage() {
       });
       
       if (res.ok) {
+        toast.success('Transport event logged!');
         setShowTransportModal(false);
         setTransportForm({ studentId: '', routeNumber: '', pickupTime: new Date().toISOString().slice(0, 16), status: 'In Transit', authorizedPersonName: '', authorizedPersonRel: '', authorizedPersonContact: '', idVerified: false });
         fetchData();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error creating transport log');
     } finally {
       setIsSaving(false);
     }
@@ -122,15 +125,17 @@ export default function OperationsPage() {
       });
       
       if (res.ok) {
+        toast.success('Health event logged!');
         setShowHealthModal(false);
         setHealthForm({ studentId: '', temperature: '', symptoms: [], allergiesAlert: false, notes: '' });
         fetchData();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message}`);
+        toast.error(`Error: ${err.message}`);
       }
     } catch (error) {
       console.error(error);
+      toast.error('Network error creating health log');
     } finally {
       setIsSaving(false);
     }
