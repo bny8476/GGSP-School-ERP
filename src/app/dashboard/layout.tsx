@@ -8,7 +8,7 @@ import {
   HeartPulse, Image as ImageIcon, WalletCards, 
   BarChart3, Settings, LogOut, FileText, Activity, 
   Gift, Globe, Sun, Moon, Search, PanelLeftClose, PanelLeft,
-  Package, ShieldCheck, CheckCircle2, Lock, Database,
+  Package, ShieldCheck, CheckCircle2, Lock, Database, Menu, X,
   Sparkles, Brain, Zap, AlertTriangle, Trophy, Sliders,
   Building2, LifeBuoy, ShoppingCart, QrCode
 } from 'lucide-react';
@@ -25,6 +25,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme, direction, setDirection } = useTheme();
   const { t } = useLanguage();
 
@@ -37,6 +38,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       } catch (e) {}
     }
   }, []);
+
+  // Close mobile drawer on route navigation
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -163,7 +169,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-[#F7FAFE] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-sans">
       <CommandPalette />
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar */}
       <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-[#000E28] border-r border-slate-200/80 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 shadow-xs z-30 transition-all duration-300`}>
         
         {/* Sidebar Header */}
@@ -256,41 +262,134 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
+      {/* Mobile Drawer Backdrop & Drawer */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Drawer content */}
+          <div className="relative w-72 max-w-[85vw] bg-white dark:bg-[#000E28] h-full flex flex-col shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+            {/* Drawer Header */}
+            <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <Link href="/dashboard" className="flex items-center gap-2.5">
+                <AcademyLogo size="sm" />
+                <div className="leading-tight">
+                  <span className="text-base font-black tracking-tight text-[#000E28] dark:text-white">
+                    E.A.S.<span className="text-[#0050CB]">Academy</span>
+                  </span>
+                </div>
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                aria-label="Close navigation"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Nav list */}
+            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
+              {navItems.filter(item => item.show).map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      isActive
+                        ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <Icon className={`h-4 w-4 mr-3 shrink-0 ${
+                      isActive ? 'text-[#0050CB] dark:text-[#38BDF8]' : 'text-slate-400'
+                    }`} />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Drawer Footer */}
+            <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-1 shrink-0">
+              <button 
+                onClick={handleLogout} 
+                className="w-full flex items-center px-3.5 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer"
+              >
+                <LogOut className="h-4 w-4 mr-3 text-rose-600 shrink-0" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
         
         {/* Dashboard Topbar */}
-        <header className="h-16 bg-white/95 dark:bg-[#000E28]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-6 sm:px-8 shrink-0 z-20 transition-colors">
+        <header className="h-16 sm:h-[70px] bg-white/95 dark:bg-[#000E28]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-4 sm:px-8 shrink-0 sticky top-0 z-20 transition-colors shadow-2xs">
           
-          {/* Left: Portal Title & Role Pill */}
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white tracking-tight">
-              {portalName}
-            </h1>
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0050CB]/20 border border-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] text-[11px] font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live Portal</span>
-            </span>
+          {/* Left: Hamburger (mobile) + Portal Title & Live Badge */}
+          <div className="flex items-center gap-3.5">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline-block w-2.5 h-2.5 rounded-full bg-[#0050CB] ring-4 ring-[#0050CB]/15 shrink-0" />
+                <h1 className="text-lg sm:text-[22px] font-extrabold text-[#000E28] dark:text-white tracking-tight truncate max-w-[220px] sm:max-w-none">
+                  {portalName}
+                </h1>
+              </div>
+
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0050CB]/20 border border-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] text-[11px] font-bold shadow-2xs">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Live Portal</span>
+              </span>
+            </div>
           </div>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-3">
-            {/* Quick Search Trigger */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick Search Trigger (180-220px command pill) */}
             <div 
               onClick={() => {
                 const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true });
                 window.dispatchEvent(event);
               }}
-              className="hidden lg:flex items-center px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200/60 dark:border-slate-700"
+              className="hidden md:flex items-center justify-between w-[180px] lg:w-[210px] h-9 px-3 bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 cursor-pointer transition-all border border-slate-200/70 dark:border-slate-700 focus-within:ring-2 focus-within:ring-[#0050CB]/30"
+              title="Search command (Ctrl+K)"
             >
-              <Search className="h-3.5 w-3.5 mr-2 text-slate-400" />
-              <span>Search (Ctrl+K)</span>
+              <div className="flex items-center gap-2">
+                <Search className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-slate-600 dark:text-slate-300 font-medium">Search</span>
+              </div>
+              <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-md border border-slate-200 dark:border-slate-600 shadow-2xs">
+                Ctrl K
+              </kbd>
             </div>
 
             {/* RTL / LTR Direction Toggle */}
             <button
               onClick={() => setDirection(direction === 'ltr' ? 'rtl' : 'ltr')}
-              className="px-2.5 py-1 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+              className="h-9 px-2.5 sm:px-3 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
               title="Toggle Layout Direction (LTR/RTL)"
             >
               {direction.toUpperCase()}
@@ -302,19 +401,22 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="h-9 w-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/60 dark:border-slate-700"
               title="Toggle Dark/Light Mode"
             >
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
 
             {/* User Profile Pill */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-slate-800">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#0050CB] to-[#38BDF8] flex items-center justify-center text-white font-black shadow-md text-sm ring-2 ring-white dark:ring-[#001438]">
-                {initial}
+            <div className="flex items-center gap-2.5 pl-2.5 sm:pl-3 border-l border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 py-1 px-1.5 rounded-xl transition-colors cursor-pointer">
+              <div className="relative">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#0050CB] to-[#38BDF8] flex items-center justify-center text-white font-extrabold shadow-sm text-xs sm:text-sm ring-2 ring-white dark:ring-[#001438]">
+                  {initial}
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#000E28]" />
               </div>
-              <div className="hidden lg:block text-left leading-tight">
-                <p className="text-xs font-bold text-[#000E28] dark:text-white truncate max-w-[120px]">
+              <div className="hidden lg:block text-left leading-tight pr-1">
+                <p className="text-xs font-extrabold text-[#000E28] dark:text-white truncate max-w-[130px]">
                   {userName}
                 </p>
                 <p className="text-[10px] text-[#0050CB] dark:text-[#38BDF8] font-bold uppercase tracking-wider">
@@ -326,10 +428,26 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Scrollable Dashboard Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-8 bg-gradient-to-b from-[#F7FAFE] via-white to-[#F6F9FE] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] transition-colors">
-          <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-[#F7FAFE] via-white to-[#F6F9FE] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] transition-colors flex flex-col justify-between">
+          <div className="max-w-[1600px] w-full mx-auto space-y-6 sm:space-y-8">
             {children}
           </div>
+
+          {/* Dashboard Application Footer */}
+          <footer className="mt-12 pt-6 border-t border-slate-200/80 dark:border-slate-800 max-w-[1600px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-[#000E28] dark:text-white">E.A.S. Academy</span>
+              <span>&copy; {new Date().getFullYear()} School ERP. All rights reserved.</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Portal Active
+              </span>
+              <span>•</span>
+              <span>Support: admin@easacademy.com</span>
+            </div>
+          </footer>
         </div>
 
         {/* Global AI Assistant Floating Modal/Widget */}

@@ -44,10 +44,14 @@ export const initSocket = (httpServer: HttpServer) => {
   io.on('connection', (socket) => {
     console.log(`Client connected: ${socket.id}`);
     
-    // Parents can join a room using their child's ID or their own ID to receive targeted notifications
+    // Authenticated clients can join rooms for targeted notifications
     socket.on('join_room', (roomId) => {
+      if (!socket.data.user) {
+        console.warn(`Unauthenticated socket ${socket.id} attempted to join room ${roomId}`);
+        return;
+      }
       socket.join(roomId);
-      console.log(`Socket ${socket.id} joined room ${roomId}`);
+      console.log(`Socket ${socket.id} (user ${socket.data.user?.user?.id || 'unknown'}) joined room ${roomId}`);
     });
 
     socket.on('disconnect', () => {

@@ -112,7 +112,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       let res: Response;
 
       try {
@@ -132,7 +132,7 @@ export default function LoginPage() {
 
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
-        throw new Error("Backend server returned non-JSON/HTML. Please ensure backend server is running on port 5001.");
+        throw new Error("Backend server returned non-JSON/HTML. Please ensure the backend server is running.");
       }
 
       const data = await res.json();
@@ -163,7 +163,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full -mt-24 bg-gradient-to-b from-[#EBF2FE] via-[#F4F8FE] to-[#E6F0FD] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] flex flex-col justify-between overflow-x-hidden font-sans select-none transition-colors duration-200">
+    <div className="relative min-h-screen w-full bg-gradient-to-b from-[#EBF2FE] via-[#F4F8FE] to-[#E6F0FD] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] flex flex-col justify-between overflow-x-hidden font-sans select-none transition-colors duration-200">
       
       {/* ========================================================
           TOP HEADER BAR: BACK BUTTON & LOGO (LEFT) & THEME/LANGUAGE (RIGHT)

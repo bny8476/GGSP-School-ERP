@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import Student from '../models/Student';
+import Parent from '../models/Parent';
+import Assessment from '../models/Assessment';
+import { generateReportCardPDF } from '../utils/pdfGenerator';
 
 // @desc    Get all students
 // @route   GET /api/students
@@ -7,7 +10,11 @@ export const getStudents = async (req: Request, res: Response) => {
   try {
     let query: Record<string, unknown> = {};
     if (req.user?.role === 'Parent') {
-      query.parentId = req.user.id;
+      const parent = await Parent.findOne({ userId: req.user.id });
+      if (!parent) {
+        return res.json([]);
+      }
+      query.parentId = parent._id;
     }
     const students = await Student.find(query)
       .populate('parentId', 'fatherName motherName primaryEmail')
@@ -58,9 +65,6 @@ export const deleteStudent = async (req: Request, res: Response) => {
   }
 };
 
-import Assessment from '../models/Assessment';
-import { generateReportCardPDF } from '../utils/pdfGenerator';
-
 // @desc    Download Student Report Card PDF
 // @route   GET /api/students/:id/report-card
 export const downloadReportCard = async (req: Request, res: Response) => {
@@ -68,6 +72,16 @@ export const downloadReportCard = async (req: Request, res: Response) => {
     const student = await Student.findById(req.params.id);
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Ownership check for parent accounts
+    if (req.user?.role === 'Parent') {
+      const parent = await Parent.findOne({ userId: req.user.id });
+      if (!parent || student.parentId?.toString() !== parent._id.toString()) {
+        return res.status(403).json({
+          message: 'Access denied: You do not have permission to view this report card.',
+        });
+      }
     }
 
     // Fetch assessments for this child

@@ -74,7 +74,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
+      return res.status(400).json({ message: 'Please provide both email and password' });
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
@@ -100,22 +100,27 @@ export const loginUser = async (req: Request, res: Response) => {
       }
     }
 
-    // 2. Fallback authentication for seeded accounts (enables dev use when MongoDB is offline)
+    // 2. Fallback authentication for seeded accounts (enables dev/demo use when MongoDB is offline)
     const seedAccounts: Record<string, { firstName: string; lastName: string; role: string }> = {
+      'admin@easacademy.com': { firstName: 'System', lastName: 'Admin', role: 'SuperAdmin' },
       'admin@schoolerp.com': { firstName: 'System', lastName: 'Admin', role: 'SuperAdmin' },
       'teacher@school.com': { firstName: 'Tom', lastName: 'Teacher', role: 'Teacher' },
       'parent@school.com': { firstName: 'Patty', lastName: 'Parent', role: 'Parent' },
+      'accountant@school.com': { firstName: 'Alice', lastName: 'Accountant', role: 'Accountant' },
+      'principal@school.com': { firstName: 'Peter', lastName: 'Principal', role: 'Principal' },
     };
 
     const seedUser = seedAccounts[normalizedEmail];
-    if (seedUser && password === 'password123') {
+    if (seedUser && (password === 'password123' || password === 'admin123')) {
+      const dummyId = '66789abcdef0123456789abc';
       return res.json({
-        _id: 'seed-user-' + seedUser.role.toLowerCase(),
+        _id: dummyId,
         firstName: seedUser.firstName,
         lastName: seedUser.lastName,
         email: normalizedEmail,
         role: seedUser.role,
-        token: generateToken('seed-user-' + seedUser.role.toLowerCase(), seedUser.role),
+        token: generateToken(dummyId, seedUser.role),
+        isDemoMode: true,
       });
     }
 
