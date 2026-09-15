@@ -40,7 +40,7 @@ export default function PortalLayout({
       {/* Sidebar */}
       <aside className="w-64 bg-indigo-900 border-r border-indigo-800 flex flex-col hidden md:flex text-white">
         <div className="h-20 flex items-center px-6 border-b border-indigo-800/50">
-          <span className="text-xl font-black tracking-tight text-white">School ERP Portal</span>
+          <span className="text-xl font-black tracking-tight text-white">E.A.S. Academy School Portal</span>
         </div>
         
         <div className="p-6">

@@ -70,7 +70,7 @@ export const createTransportLog = async (req: Request, res: Response) => {
     const parentNumber = await getParentWhatsAppNumber(log.studentId.toString());
     if (parentNumber) {
       const student = await Student.findById(log.studentId);
-      const msg = `🚌 *School ERP Update*\n${student?.firstName} has been marked as ${log.status} at ${new Date(log.pickupTime || new Date()).toLocaleTimeString()}.\nRoute: ${log.routeNumber || 'N/A'}`;
+      const msg = `🚌 *E.A.S. Academy School Update*\n${student?.firstName} has been marked as ${log.status} at ${new Date(log.pickupTime || new Date()).toLocaleTimeString()}.\nRoute: ${log.routeNumber || 'N/A'}`;
       await sendWhatsAppMessage(parentNumber, msg);
     }
 
@@ -141,7 +141,7 @@ export const createHealthLog = async (req: Request, res: Response) => {
       if (parentNumber) {
         const student = await Student.findById(log.studentId);
         const alertType = log.temperature >= 99 ? `Fever (${log.temperature}°F)` : 'Allergy Alert';
-        const msg = `⚠️ *URGENT - School ERP Health Alert*\n${student?.firstName} has a reported health issue: ${alertType}.\nPlease contact the school reception immediately.`;
+        const msg = `⚠️ *URGENT - E.A.S. Academy School Health Alert*\n${student?.firstName} has a reported health issue: ${alertType}.\nPlease contact the school reception immediately.`;
         await sendWhatsAppMessage(parentNumber, msg);
       }
     }

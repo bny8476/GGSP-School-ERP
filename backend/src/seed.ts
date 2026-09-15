@@ -40,9 +40,9 @@ const seedDB = async () => {
     const staff = await User.findOneAndUpdate(
       { email: 'admin@schoolerp.com' },
       {
-        firstName: 'Alice',
-        lastName: 'Admin',
         email: 'admin@schoolerp.com',
+        firstName: 'System',
+        lastName: 'Admin',
         passwordHash: hashedPassword,
         role: adminRole._id,
         isActive: true,
