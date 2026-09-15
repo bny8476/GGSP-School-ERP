@@ -112,7 +112,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
       let res: Response;
 
       try {

@@ -79,30 +79,33 @@ export default function GlobalAIAssistantWidget() {
       {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 p-4 rounded-full bg-gradient-to-r from-[#0050CB] to-[#002B7A] text-white shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2.5 border border-white/20 cursor-pointer"
+        className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-full bg-gradient-to-r from-[#0757D5] via-[#0B1F3A] to-[#07152F] text-white shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-2.5 border border-white/20 ring-1 ring-[#C9A227]/40 cursor-pointer group"
         title="Open Global AI Assistant"
       >
-        <Sparkles className="w-5 h-5 text-[#FF690C] animate-pulse" />
-        <span className="font-extrabold text-xs tracking-wide hidden sm:inline">Global AI Assistant</span>
+        <div className="relative">
+          <Sparkles className="w-5 h-5 text-[#E4C766] group-hover:rotate-12 transition-transform" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#12B76A] animate-pulse" />
+        </div>
+        <span className="font-extrabold text-xs tracking-wide hidden sm:inline text-white">✦ Global AI Assistant</span>
       </button>
 
       {/* Slide-over Chat Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-end p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full sm:w-[440px] bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[580px] max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-end p-4 bg-[#07152F]/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full sm:w-[440px] bg-white dark:bg-[#07152F] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[580px] max-h-[90vh] animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
             
             {/* Modal Header */}
-            <div className="p-4 bg-gradient-to-r from-[#0050CB] to-[#002B7A] text-white flex items-center justify-between">
+            <div className="p-4 bg-gradient-to-r from-[#07152F] via-[#0B1F3A] to-[#0757D5] text-white flex items-center justify-between border-b border-white/10">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
-                  <Bot className="w-5 h-5 text-[#38BDF8]" />
+                <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-[#C9A227]/30">
+                  <Bot className="w-5 h-5 text-[#2F80ED]" />
                 </div>
                 <div>
                   <h3 className="font-black text-sm tracking-tight flex items-center gap-1.5">
                     Global AI Assistant
-                    <Sparkles className="w-3.5 h-3.5 text-[#FF690C]" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#E4C766]" />
                   </h3>
-                  <p className="text-[10px] text-blue-100 font-medium">Role-Aware Intelligent ERP Assistant</p>
+                  <p className="text-[10px] text-blue-100 font-semibold">Intelligent Enterprise ERP Co-Pilot</p>
                 </div>
               </div>
               <button
@@ -114,12 +117,12 @@ export default function GlobalAIAssistantWidget() {
             </div>
 
             {/* Quick Queries Bar */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800/80 overflow-x-auto custom-scrollbar flex items-center gap-2 shrink-0">
+            <div className="p-3 bg-slate-50 dark:bg-[#0B1F3A]/60 border-b border-slate-100 dark:border-slate-800/80 overflow-x-auto custom-scrollbar flex items-center gap-2 shrink-0">
               {quickQueries.map((qq, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSend(qq)}
-                  className="whitespace-nowrap px-3 py-1 bg-white dark:bg-[#001438] border border-slate-200 dark:border-slate-700/80 rounded-full text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#0050CB] dark:hover:text-[#38BDF8] hover:border-[#0050CB]/40 transition-all cursor-pointer shrink-0"
+                  className="whitespace-nowrap px-3 py-1 bg-white dark:bg-[#07152F] border border-slate-200 dark:border-slate-700/80 rounded-full text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#0757D5] dark:hover:text-[#2F80ED] hover:border-[#0757D5]/40 transition-all cursor-pointer shrink-0"
                 >
                   {qq}
                 </button>
@@ -127,7 +130,7 @@ export default function GlobalAIAssistantWidget() {
             </div>
 
             {/* Chat Body */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+            <div className="flex-1 p-4 overflow-y-auto space-y-3 custom-scrollbar">
               {chatLog.map((msg) => (
                 <div
                   key={msg.id}
@@ -137,8 +140,8 @@ export default function GlobalAIAssistantWidget() {
                   <div
                     className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs font-medium leading-relaxed ${
                       msg.sender === "You"
-                        ? "bg-[#0050CB] text-white rounded-br-none shadow-xs"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-none border border-slate-200/60 dark:border-slate-700"
+                        ? "bg-[#0757D5] text-white rounded-br-none shadow-xs"
+                        : "bg-slate-100 dark:bg-[#0B1F3A] text-slate-800 dark:text-slate-100 rounded-bl-none border border-slate-200/60 dark:border-slate-700/80"
                     }`}
                   >
                     {msg.text}
@@ -147,25 +150,25 @@ export default function GlobalAIAssistantWidget() {
               ))}
               {loading && (
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-400 p-2">
-                  <Bot className="w-4 h-4 animate-spin text-[#0050CB]" />
-                  <span>Global AI is searching ERP database...</span>
+                  <Bot className="w-4 h-4 animate-spin text-[#0757D5]" />
+                  <span>Global AI analyzing ERP records...</span>
                 </div>
               )}
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSend} className="p-3 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 bg-white dark:bg-[#000E28]">
+            <form onSubmit={handleSend} className="p-3 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 bg-white dark:bg-[#07152F]">
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask Global AI a question..."
-                className="flex-1 px-4 py-2 bg-slate-50 dark:bg-[#001438] border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-[#0050CB]"
+                className="flex-1 px-4 py-2 bg-slate-50 dark:bg-[#0B1F3A] border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-[#0757D5]"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="p-2.5 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white font-bold transition-all shadow-md cursor-pointer disabled:opacity-50"
+                className="p-2.5 rounded-xl bg-[#0757D5] hover:bg-[#1469E8] text-white font-bold transition-all shadow-md cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
               </button>

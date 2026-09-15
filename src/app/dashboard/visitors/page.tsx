@@ -21,13 +21,15 @@ export default function VisitorsPage() {
     fetchVisitors();
   }, []);
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+
   const fetchVisitors = async () => {
     setLoading(true);
     const token = localStorage.getItem('token');
     if (!token) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/visitors', {
+      const res = await fetch(`${API_BASE}/api/visitors`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -43,7 +45,7 @@ export default function VisitorsPage() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/visitors', {
+      const res = await fetch(`${API_BASE}/api/visitors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +65,7 @@ export default function VisitorsPage() {
   const handleCheckout = async (id: string) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/visitors/${id}/checkout`, {
+      const res = await fetch(`${API_BASE}/api/visitors/${id}/checkout`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       });

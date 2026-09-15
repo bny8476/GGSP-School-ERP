@@ -326,31 +326,31 @@ export default function DashboardOverview() {
   const attendanceRate = totalStudents > 0 ? Math.round((studentsPresent / totalStudents) * 100) : 96;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8 page-entrance">
       
       {/* ========================================================
           1. HERO WELCOME BANNER (SYNCHRONIZED TO HOMEPAGE BANNER)
       ======================================================== */}
-      <div className="relative overflow-hidden rounded-[32px] sm:rounded-[36px] bg-gradient-to-r from-[#000E28] via-[#002772] to-[#0050CB] p-7 sm:p-9 border border-white/15 shadow-[0_20px_50px_rgba(0,14,40,0.18)] text-white">
+      <div className="relative overflow-hidden rounded-[32px] sm:rounded-[36px] bg-gradient-to-r from-[#07152F] via-[#0B1F3A] to-[#0757D5] p-7 sm:p-9 border border-white/15 shadow-[0_20px_50px_rgba(7,21,47,0.25)] text-white">
         
         {/* Subtle glass reflection highlight along top border */}
-        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#C9A227]/50 to-transparent pointer-events-none" />
 
         {/* Ambient atmospheric lighting orb */}
-        <div className="absolute -top-24 -right-20 w-80 h-80 bg-[#38BDF8]/30 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-16 w-60 h-60 bg-[#0050CB]/40 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-24 -right-20 w-80 h-80 bg-[#2F80ED]/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-16 w-60 h-60 bg-[#0757D5]/40 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           
           {/* Left Text */}
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[#38BDF8] text-xs font-bold shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8] animate-pulse" />
-              <span>{t('stats.badge', 'E.A.S. Academy Platform')} • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[#2F80ED] text-xs font-bold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#12B76A] shadow-[0_0_8px_#12B76A] animate-pulse" />
+              <span>{t('stats.badge', 'Global International Platform')} • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
             </div>
 
             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
-              Welcome back, <span className="text-[#38BDF8] bg-clip-text text-transparent bg-gradient-to-r from-[#38BDF8] via-[#7DD3FC] to-sky-200">{userName}</span>
+              Good morning, <span className="text-[#2F80ED] bg-clip-text text-transparent bg-gradient-to-r from-[#2F80ED] via-sky-300 to-white">{userName}</span> 👋
             </h2>
 
             <p className="text-blue-100/90 text-xs sm:text-sm font-normal leading-relaxed">
@@ -362,7 +362,7 @@ export default function DashboardOverview() {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               href="/dashboard/admissions"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#FF690C] to-[#FF7E2E] text-white font-bold text-xs sm:text-sm tracking-wide shadow-[0_8px_20px_rgba(255,105,12,0.4)] hover:shadow-[0_12px_24px_rgba(255,105,12,0.55)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#0757D5] to-[#1469E8] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-[#0757D5]/30 hover:scale-105 active:scale-95 transition-all duration-200 border border-white/20"
             >
               <PlusCircle className="w-4 h-4" />
               <span>{t('cta.apply', 'Admissions')}</span>
@@ -370,7 +370,7 @@ export default function DashboardOverview() {
 
             <Link
               href="/dashboard/attendance"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs sm:text-sm shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs sm:text-sm shadow-sm hover:scale-105 active:scale-95 transition-all duration-200"
             >
               <UserCheck className="w-4 h-4" />
               <span>{t('card.attendance', 'Attendance')}</span>
@@ -386,14 +386,14 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* KPI 1: Total Students */}
-        <div className="group relative bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md rounded-[28px] p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-[0_10px_30px_rgba(0,14,40,0.04)] hover:border-[#0050CB]/40 dark:hover:border-blue-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full">
+        <div className="group relative bg-white dark:bg-[#07152F] rounded-[28px] p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm hover-card-elevation flex flex-col justify-between h-full">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#E5EEFF] dark:bg-[#0050CB]/25 text-[#0050CB] dark:text-[#38BDF8] flex items-center justify-center shadow-xs">
+              <div className="w-12 h-12 rounded-2xl bg-[#E5EEFF] dark:bg-[#0757D5]/20 text-[#0757D5] dark:text-[#2F80ED] flex items-center justify-center shadow-xs">
                 <Users className="w-6 h-6" strokeWidth={2.2} />
               </div>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0050CB] dark:bg-[#38BDF8]" />
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0757D5]/20 text-[#0757D5] dark:text-[#2F80ED]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0757D5] dark:bg-[#2F80ED]" />
                 Active Records
               </span>
             </div>
@@ -402,10 +402,10 @@ export default function DashboardOverview() {
               {t('card.activeStudents', 'Total Students')}
             </p>
             <div className="flex items-baseline justify-between">
-              <h3 className="text-3xl sm:text-4xl font-black text-[#000E28] dark:text-white tracking-tight">
+              <h3 className="text-3xl sm:text-4xl font-black text-[#07152F] dark:text-white tracking-tight">
                 {totalStudents.toLocaleString()}
               </h3>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-0.5 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-bold text-[#12B76A] dark:text-[#12B76A] inline-flex items-center gap-0.5 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full">
                 ↑ 12% MoM
               </span>
             </div>
@@ -413,7 +413,7 @@ export default function DashboardOverview() {
 
           <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
             <span>Verified Enrolled</span>
-            <span className="font-bold text-[#0050CB] dark:text-[#38BDF8]">100% Online</span>
+            <span className="font-bold text-[#0757D5] dark:text-[#2F80ED]">100% Online</span>
           </div>
         </div>
 
