@@ -112,12 +112,28 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      let res: Response;
+
+      try {
+        res = await fetch(`${apiBase}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+      } catch (directErr) {
+        // Fallback to relative URL proxied by Next.js rewrites
+        res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+      }
+
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Backend server returned non-JSON/HTML. Please ensure the backend server is running.");
+      }
 
       const data = await res.json();
 
@@ -134,9 +150,13 @@ export default function LoginPage() {
       } else {
         setError(data.message || "Invalid email or password");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error:", err);
-      setError("Failed to connect to the server. Please try again.");
+      if (err?.name === "TypeError" || err?.message?.includes("Failed to fetch")) {
+        setError("Unable to connect to backend server. Please run 'npm run dev:all' or start backend on port 5001.");
+      } else {
+        setError(err?.message || "Failed to connect to the server. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -379,7 +399,7 @@ export default function LoginPage() {
               </div>
 
               {/* Title & Subtitle */}
-              <div className="mb-5">
+              <div className="mb-4">
                 <span className="text-[11px] font-extrabold tracking-widest text-[#0050CB] dark:text-[#38BDF8] uppercase block mb-1">
                   {t("login.welcomeBack", "WELCOME BACK")}
                 </span>
@@ -389,6 +409,45 @@ export default function LoginPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal leading-relaxed">
                   {t("login.signInSubtitle", "Access your E.A.S. Academy School portal and manage your academic journey.")}
                 </p>
+              </div>
+
+              {/* Quick Role Fill Presets Bar */}
+              <div className="mb-4 p-3 bg-[#E5EEFF]/80 dark:bg-slate-800/80 rounded-2xl border border-[#0050CB]/20 dark:border-slate-700 space-y-1.5">
+                <span className="text-[10px] font-black uppercase text-[#0050CB] dark:text-[#38BDF8] tracking-wider block">
+                  ⚡ Quick Demo Login Presets
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("admin@schoolerp.com");
+                      setPassword("password123");
+                    }}
+                    className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-[#0050CB] hover:text-white text-[10px] font-bold text-[#0050CB] dark:text-[#38BDF8] rounded-lg transition-colors cursor-pointer border border-[#0050CB]/20 shadow-2xs"
+                  >
+                    Super Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("teacher@school.com");
+                      setPassword("password123");
+                    }}
+                    className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-[#0050CB] hover:text-white text-[10px] font-bold text-[#0050CB] dark:text-[#38BDF8] rounded-lg transition-colors cursor-pointer border border-[#0050CB]/20 shadow-2xs"
+                  >
+                    Teacher
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("parent@school.com");
+                      setPassword("password123");
+                    }}
+                    className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-[#0050CB] hover:text-white text-[10px] font-bold text-[#0050CB] dark:text-[#38BDF8] rounded-lg transition-colors cursor-pointer border border-[#0050CB]/20 shadow-2xs"
+                  >
+                    Parent
+                  </button>
+                </div>
               </div>
 
               {/* Error Alert */}

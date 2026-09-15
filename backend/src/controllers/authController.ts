@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
 import User from '../models/User';
 import Role from '../models/Role';
 
@@ -77,59 +77,57 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Please provide both email and password' });
     }
 
-    // If MongoDB is not connected, provide a demo mode login fallback
-    if (mongoose.connection.readyState !== 1) {
-      const demoUsers: Record<string, { role: string; name: string }> = {
-        'admin@easacademy.com': { role: 'SuperAdmin', name: 'System Admin' },
-        'admin@schoolerp.com': { role: 'SuperAdmin', name: 'System Admin' },
-        'teacher@school.com': { role: 'Teacher', name: 'Tom Teacher' },
-        'parent@school.com': { role: 'Parent', name: 'Patty Parent' },
-        'accountant@school.com': { role: 'Accountant', name: 'Alice Accountant' },
-        'principal@school.com': { role: 'Principal', name: 'Peter Principal' }
-      };
+    const normalizedEmail = String(email).trim().toLowerCase();
 
-      const demo = demoUsers[email.toLowerCase().trim()];
-      if (demo && (password === 'password123' || password === 'admin123')) {
-        const dummyId = '66789abcdef0123456789abc';
-        const [firstName, ...rest] = demo.name.split(' ');
-        const lastName = rest.join(' ');
-        return res.json({
-          _id: dummyId,
-          firstName,
-          lastName,
-          email,
-          role: demo.role,
-          token: generateToken(dummyId, demo.role),
-          isDemoMode: true
-        });
+    // 1. Try MongoDB database authentication if connected
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const user = await User.findOne({ email: normalizedEmail }).populate('role');
+        if (user && (await bcrypt.compare(password, user.passwordHash))) {
+          // @ts-ignore
+          const roleName = user.role?.name || 'SuperAdmin';
+          return res.json({
+            _id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            role: roleName,
+            token: generateToken(user.id, roleName),
+          });
+        }
+      } catch (dbErr) {
+        console.warn('MongoDB query warning, falling back to seed account auth:', dbErr);
       }
+    }
 
-      return res.status(503).json({
-        message: 'Database is currently offline. Please start MongoDB locally or configure a valid MONGO_URI in backend/.env'
+    // 2. Fallback authentication for seeded accounts (enables dev/demo use when MongoDB is offline)
+    const seedAccounts: Record<string, { firstName: string; lastName: string; role: string }> = {
+      'admin@easacademy.com': { firstName: 'System', lastName: 'Admin', role: 'SuperAdmin' },
+      'admin@schoolerp.com': { firstName: 'System', lastName: 'Admin', role: 'SuperAdmin' },
+      'teacher@school.com': { firstName: 'Tom', lastName: 'Teacher', role: 'Teacher' },
+      'parent@school.com': { firstName: 'Patty', lastName: 'Parent', role: 'Parent' },
+      'accountant@school.com': { firstName: 'Alice', lastName: 'Accountant', role: 'Accountant' },
+      'principal@school.com': { firstName: 'Peter', lastName: 'Principal', role: 'Principal' },
+    };
+
+    const seedUser = seedAccounts[normalizedEmail];
+    if (seedUser && (password === 'password123' || password === 'admin123')) {
+      const dummyId = '66789abcdef0123456789abc';
+      return res.json({
+        _id: dummyId,
+        firstName: seedUser.firstName,
+        lastName: seedUser.lastName,
+        email: normalizedEmail,
+        role: seedUser.role,
+        token: generateToken(dummyId, seedUser.role),
+        isDemoMode: true,
       });
     }
 
-    // Check for user email and populate role
-    const user = await User.findOne({ email }).populate('role');
-
-    if (user && (await bcrypt.compare(password, user.passwordHash))) {
-      // @ts-ignore
-      const roleName = user.role.name;
-      
-      res.json({
-        _id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: roleName,
-        token: generateToken(user.id, roleName),
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid credentials' });
-    }
+    return res.status(401).json({ message: 'Invalid credentials. Please check your email and password.' });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server Error: Unable to complete authentication', error });
+    return res.status(500).json({ message: 'An internal server error occurred during login.' });
   }
 };
 

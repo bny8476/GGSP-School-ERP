@@ -8,7 +8,9 @@ import {
   HeartPulse, Image as ImageIcon, WalletCards, 
   BarChart3, Settings, LogOut, FileText, Activity, 
   Gift, Globe, Sun, Moon, Search, PanelLeftClose, PanelLeft,
-  Package, ShieldCheck, CheckCircle2, Lock, Database, Menu, X
+  Package, ShieldCheck, CheckCircle2, Lock, Database, Menu, X,
+  Sparkles, Brain, Zap, AlertTriangle, Trophy, Sliders,
+  Building2, LifeBuoy, ShoppingCart, QrCode
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -16,6 +18,7 @@ import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import CommandPalette from '@/components/ui/CommandPalette';
 import NotificationDrawer from '@/components/ui/NotificationDrawer';
 import AcademyLogo from '@/components/AcademyLogo';
+import GlobalAIAssistantWidget from '@/components/GlobalAIAssistantWidget';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -65,31 +68,101 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const initial = user?.firstName ? user.firstName[0].toUpperCase() : 'A';
   const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
 
-  const navItems = [
-    { href: '/dashboard', label: t('nav.home', 'Dashboard'), icon: LayoutDashboard, show: true },
-    { href: '/dashboard/admissions', label: t('nav.admissions', 'Admissions'), icon: FileText, show: isSuperAdmin || isReceptionist },
-    { href: '/dashboard/students', label: t('footer.students', 'Student 360°'), icon: GraduationCap, show: isPrincipal || isTeacher },
-    { href: '/dashboard/parents', label: 'Parents & Guardians', icon: Users, show: isPrincipal || isReceptionist },
-    { href: '/dashboard/attendance', label: t('footer.attendance', 'Attendance'), icon: UserCheck, show: isPrincipal || isTeacher },
-    { href: '/dashboard/fees', label: t('footer.fees', 'Fees & Ledger'), icon: DollarSign, show: isAccountant || isPrincipal },
-    { href: '/dashboard/teachers', label: 'Staff Roster', icon: BookOpen, show: isPrincipal },
-    { href: '/dashboard/classes', label: 'Classes & Sections', icon: LayoutDashboard, show: isSuperAdmin },
-    { href: '/dashboard/daily-activity', label: 'Daily Diary', icon: Activity, show: isPrincipal || isTeacher },
-    { href: '/dashboard/classroom', label: 'Digital Classroom', icon: BookOpen, show: isPrincipal || isTeacher },
-    { href: '/dashboard/communication', label: 'Notices & Chat', icon: Megaphone, show: isPrincipal || isReceptionist },
-    { href: '/dashboard/events', label: 'Events & Calendar', icon: Gift, show: isPrincipal },
-    { href: '/dashboard/transport', label: 'Transport', icon: Bus, show: isSuperAdmin || isReceptionist },
-    { href: '/dashboard/daycare', label: 'Day Care', icon: Clock, show: isSuperAdmin || isTeacher },
-    { href: '/dashboard/health', label: 'Health Records', icon: HeartPulse, show: isSuperAdmin || isReceptionist },
-    { href: '/dashboard/gallery', label: 'Gallery', icon: ImageIcon, show: isSuperAdmin || isTeacher },
-    { href: '/dashboard/inventory', label: 'Inventory & PO', icon: Package, show: isSuperAdmin || isAccountant },
-    { href: '/dashboard/visitors', label: 'Visitor Gate Pass', icon: ShieldCheck, show: isSuperAdmin || isReceptionist },
-    { href: '/dashboard/approvals', label: 'Approval Center', icon: CheckCircle2, show: isSuperAdmin || isPrincipal },
-    { href: '/dashboard/timeline', label: 'Activity Stream', icon: Activity, show: isSuperAdmin || isPrincipal },
-    { href: '/dashboard/security', label: 'Security Center', icon: Lock, show: isSuperAdmin },
-    { href: '/dashboard/import-export', label: 'Import & Export', icon: Database, show: isSuperAdmin || isPrincipal },
-    { href: '/dashboard/payroll', label: t('footer.payroll', 'Staff Payroll'), icon: WalletCards, show: isSuperAdmin },
-    { href: '/dashboard/reports', label: 'Reports', icon: BarChart3, show: isPrincipal || isAccountant },
+  const navCategories = [
+    {
+      category: 'Main',
+      items: [
+        { href: '/dashboard', label: t('nav.home', 'Main Dashboard'), icon: LayoutDashboard, show: true },
+      ],
+    },
+    {
+      category: 'Enterprise & Multi-Campus',
+      items: [
+        { href: '/dashboard/campuses', label: 'Campuses & Branches', icon: Building2, show: isSuperAdmin },
+        { href: '/dashboard/academic-closing', label: 'Academic Year Closing', icon: Lock, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/master-data', label: 'Master Data Center', icon: Database, show: isSuperAdmin },
+        { href: '/dashboard/business-config', label: 'Business Config Rules', icon: Sliders, show: isSuperAdmin },
+        { href: '/dashboard/custom-fields', label: 'Custom Field Builder', icon: Sliders, show: isSuperAdmin },
+        { href: '/dashboard/form-builder', label: 'Form Builder & Surveys', icon: FileText, show: true },
+        { href: '/dashboard/approval-engine', label: 'Approval SLAs & Escalation', icon: ShieldCheck, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/service-center', label: 'Internal Service Requests', icon: LifeBuoy, show: true },
+        { href: '/dashboard/procurement', label: 'Procurement & PO System', icon: ShoppingCart, show: isSuperAdmin || isAccountant },
+        { href: '/dashboard/asset-qr', label: 'Asset QR & AMC Contracts', icon: QrCode, show: isSuperAdmin },
+        { href: '/dashboard/financial-audit', label: 'Financial Period Lock', icon: DollarSign, show: isAccountant || isSuperAdmin },
+        { href: '/dashboard/document-builder', label: 'Document Templates', icon: FileText, show: isSuperAdmin },
+      ],
+    },
+    {
+      category: 'Next-Gen AI & Tools',
+      items: [
+        { href: '/dashboard/ai-assistant', label: 'Global AI Assistant', icon: Sparkles, show: true },
+        { href: '/dashboard/early-warning', label: 'Early-Warning Risk Hub', icon: AlertTriangle, show: isPrincipal || isTeacher },
+        { href: '/dashboard/growth-profile', label: 'Growth & Portfolio', icon: GraduationCap, show: true },
+        { href: '/dashboard/lesson-planner', label: 'Lesson Planner & Syllabus', icon: BookOpen, show: isTeacher || isPrincipal },
+        { href: '/dashboard/digital-board', label: 'Digital Board & Live Polls', icon: Megaphone, show: isTeacher || isPrincipal },
+        { href: '/dashboard/paper-generator', label: 'Question Paper Generator', icon: FileText, show: isTeacher || isPrincipal },
+        { href: '/dashboard/seating-plan', label: 'Exam Seating Generator', icon: Users, show: isPrincipal || isSuperAdmin },
+        { href: '/dashboard/emergency-center', label: 'Emergency Control Hub', icon: ShieldCheck, show: true },
+        { href: '/dashboard/parent-booking', label: 'Parent-Teacher Booking', icon: Clock, show: true },
+        { href: '/dashboard/house-system', label: 'House System & Rewards', icon: Trophy, show: true },
+        { href: '/dashboard/workflows', label: 'Automation Rules Engine', icon: Zap, show: isSuperAdmin },
+        { href: '/dashboard/feature-flags', label: 'Feature Control Flags', icon: Sliders, show: isSuperAdmin },
+      ],
+    },
+    {
+      category: 'Applications',
+      items: [
+        { href: '/dashboard/chat', label: 'Chat & Messenger', icon: Megaphone, show: true },
+        { href: '/dashboard/call', label: 'Audio / Video Calls', icon: Activity, show: true },
+        { href: '/dashboard/calendar', label: 'School Calendar', icon: Gift, show: true },
+        { href: '/dashboard/email', label: 'Email Client', icon: FileText, show: true },
+        { href: '/dashboard/todo', label: 'To-Do Tasks', icon: CheckCircle2, show: true },
+        { href: '/dashboard/notes', label: 'Notes & Ideas', icon: FileText, show: true },
+        { href: '/dashboard/file-manager', label: 'File Manager', icon: Package, show: true },
+      ],
+    },
+    {
+      category: 'People & Academics',
+      items: [
+        { href: '/dashboard/admissions', label: t('nav.admissions', 'Admissions Pipeline'), icon: FileText, show: isSuperAdmin || isReceptionist },
+        { href: '/dashboard/students', label: t('footer.students', 'Student 360°'), icon: GraduationCap, show: isPrincipal || isTeacher },
+        { href: '/dashboard/parents', label: 'Parents & Guardians', icon: Users, show: isPrincipal || isReceptionist },
+        { href: '/dashboard/teachers', label: 'Teachers & Staff Roster', icon: BookOpen, show: isPrincipal },
+        { href: '/dashboard/attendance', label: t('footer.attendance', 'Attendance Engine'), icon: UserCheck, show: isPrincipal || isTeacher },
+        { href: '/dashboard/classes', label: 'Classes & Sections', icon: LayoutDashboard, show: isSuperAdmin },
+        { href: '/dashboard/daily-activity', label: 'Daily Diary', icon: Activity, show: isPrincipal || isTeacher },
+        { href: '/dashboard/classroom', label: 'Digital Classroom', icon: BookOpen, show: isPrincipal || isTeacher },
+        { href: '/dashboard/curriculum', label: 'Curriculum & Syllabus', icon: BookOpen, show: isPrincipal || isTeacher },
+        { href: '/dashboard/assessments', label: 'Exams & Assessment', icon: FileText, show: isPrincipal || isTeacher },
+        { href: '/dashboard/online-exams', label: 'Online Exam Engine', icon: CheckCircle2, show: isPrincipal || isTeacher },
+      ],
+    },
+    {
+      category: 'Management & Operations',
+      items: [
+        { href: '/dashboard/fees', label: t('footer.fees', 'Fees & Financial Ledger'), icon: DollarSign, show: isAccountant || isPrincipal },
+        { href: '/dashboard/payroll', label: t('footer.payroll', 'Staff Payroll'), icon: WalletCards, show: isSuperAdmin },
+        { href: '/dashboard/inventory', label: 'Inventory & PO', icon: Package, show: isSuperAdmin || isAccountant },
+        { href: '/dashboard/transport', label: 'Transport & GPS', icon: Bus, show: isSuperAdmin || isReceptionist },
+        { href: '/dashboard/daycare', label: 'Day Care Logs', icon: Clock, show: isSuperAdmin || isTeacher },
+        { href: '/dashboard/health', label: 'Health Records', icon: HeartPulse, show: isSuperAdmin || isReceptionist },
+        { href: '/dashboard/sports', label: 'Sports & Teams', icon: Activity, show: true },
+        { href: '/dashboard/discipline', label: 'Discipline Log', icon: ShieldCheck, show: isPrincipal || isSuperAdmin },
+        { href: '/dashboard/visitors', label: 'Visitor Gate Pass', icon: ShieldCheck, show: isSuperAdmin || isReceptionist },
+        { href: '/dashboard/approvals', label: 'Approval Center', icon: CheckCircle2, show: isSuperAdmin || isPrincipal },
+      ],
+    },
+    {
+      category: 'System & Reports',
+      items: [
+        { href: '/dashboard/reports', label: 'Reporting Center', icon: BarChart3, show: isPrincipal || isAccountant },
+        { href: '/dashboard/timeline', label: 'Activity Stream', icon: Activity, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/audit-logs', label: 'Audit Log Trail', icon: Database, show: isSuperAdmin },
+        { href: '/dashboard/security', label: 'Security Center', icon: Lock, show: isSuperAdmin },
+        { href: '/dashboard/import-export', label: 'Bulk Import & Export', icon: Database, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/settings', label: 'Global Settings', icon: Settings, show: isSuperAdmin || isPrincipal },
+      ],
+    },
   ];
 
   return (
@@ -126,30 +199,44 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Sidebar Nav Links */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
-          {navItems.filter(item => item.show).map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4 custom-scrollbar">
+          {navCategories.map((catGroup) => {
+            const visibleItems = catGroup.items.filter((item) => item.show);
+            if (visibleItems.length === 0) return null;
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={item.label}
-                className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                  isActive
-                    ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50 hover:text-[#0050CB] dark:hover:text-white'
-                }`}
-              >
-                <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-colors ${
-                  isActive ? 'text-[#0050CB] dark:text-[#38BDF8]' : 'text-slate-400 group-hover:text-[#0050CB]'
-                }`} strokeWidth={isActive ? 2.4 : 2} />
-                {!isCollapsed && <span className="truncate">{item.label}</span>}
-                {!isCollapsed && isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#0050CB] dark:bg-[#38BDF8] shrink-0" />
+              <div key={catGroup.category} className="space-y-1">
+                {!isCollapsed && (
+                  <div className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                    {catGroup.category}
+                  </div>
                 )}
-              </Link>
+                {visibleItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={item.label}
+                      className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                        isActive
+                          ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] shadow-xs'
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/50 hover:text-[#0050CB] dark:hover:text-white'
+                      }`}
+                    >
+                      <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-colors ${
+                        isActive ? 'text-[#0050CB] dark:text-[#38BDF8]' : 'text-slate-400 group-hover:text-[#0050CB]'
+                      }`} strokeWidth={isActive ? 2.4 : 2} />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                      {!isCollapsed && isActive && (
+                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#0050CB] dark:bg-[#38BDF8] shrink-0" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>
@@ -362,6 +449,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
           </footer>
         </div>
+
+        {/* Global AI Assistant Floating Modal/Widget */}
+        <GlobalAIAssistantWidget />
 
       </main>
     </div>

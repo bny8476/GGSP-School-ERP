@@ -262,7 +262,7 @@ export default function IdCardGenerator() {
           </div>
 
           <p className="text-sm font-medium text-slate-500 mt-8 print:hidden text-center max-w-sm">
-            Standard CR80 size (2.13" x 3.38"). Ready for PVC printing.
+            Standard CR80 size (2.13&quot; &times; 3.38&quot;). Ready for PVC printing.
           </p>
 
         </div>
