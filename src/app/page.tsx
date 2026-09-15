@@ -5,6 +5,7 @@ import Image from 'next/image';
 import SmarterEducationStats from '@/components/SmarterEducationStats';
 import ModernAcademicExcellence from '@/components/ModernAcademicExcellence';
 import CtaBanner from '@/components/CtaBanner';
+import TextType from '@/components/ui/TextType';
 import { useLanguage } from '@/context/LanguageContext';
 import { ScrollProgress } from "@/registry/magicui/scroll-progress";
 import { 
@@ -51,13 +52,26 @@ export default function Home() {
               <span>{t('hero.badge', 'Complete School ERP Platform')}</span>
             </div>
 
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[62px] font-black tracking-tight text-[#000E28] dark:text-white leading-[1.12] mb-6">
-              {t('hero.title1', 'Smarter School')}<br />
-              {t('hero.title2', 'ERP Platform.')}<br />
-              <span className="text-[#0050CB] dark:text-[#38BDF8]">
-                {t('hero.title3', 'Seamless Operations.')}<br />
-                {t('hero.title4', 'Better Learning.')}
+            {/* Headline with React Bits TextType typing effect */}
+            <h1 className="text-4xl sm:text-5xl lg:text-[62px] font-black tracking-tight text-[#000E28] dark:text-white leading-[1.14] mb-6">
+              <span>{t('hero.title1', 'Smarter School')}</span><br />
+              <span>{t('hero.title2', 'ERP Platform.')}</span><br />
+              <span className="text-[#0050CB] dark:text-[#38BDF8] inline-flex items-center min-h-[1.15em]">
+                <TextType 
+                  text={[
+                    "Seamless Operations.",
+                    "Better Learning.",
+                    "Smarter School.",
+                    "ERP Platform."
+                  ]}
+                  typingSpeed={65}
+                  pauseDuration={1800}
+                  deletingSpeed={35}
+                  loop={true}
+                  showCursor={true}
+                  cursorCharacter="|"
+                  cursorClassName="text-[#FF690C] font-black ml-1"
+                />
               </span>
             </h1>
 
