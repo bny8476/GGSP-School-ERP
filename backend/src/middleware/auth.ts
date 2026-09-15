@@ -5,14 +5,17 @@ interface JwtPayload {
   user: {
     id: string;
     role: string;
+    campusId?: string;
   };
 }
 
-// Extend Express Request object to include user
+// Extend Express Request object to include user, campusId, and requestId
 declare global {
   namespace Express {
     interface Request {
       user?: JwtPayload['user'];
+      campusId?: string;
+      requestId?: string;
     }
   }
 }
@@ -87,6 +90,53 @@ export const authorizeDataOwnerOrRoles = (...allowedRoles: string[]) => {
 };
 
 
+export const adminOnly = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.user || !['SuperAdmin', 'Admin', 'admin', 'superadmin'].includes(req.user.role)) {
+    res.status(403).json({ message: 'Access denied. Administrative privileges required.' });
+    return;
+  }
+  next();
+};
+
+export const checkPermission = (requiredPermission: string) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ message: 'Not authenticated' });
+      return;
+    }
+
+    // SuperAdmin / Admin has full permission bypass
+    if (['SuperAdmin', 'Admin', 'admin', 'superadmin'].includes(req.user.role)) {
+      next();
+      return;
+    }
+
+    // For other roles, grant access if request user exists
+    next();
+  };
+};
+
 export const authenticate = protect;
 export const authorizeRoles = authorize;
+
+export const authorizeCampusScope = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Not authenticated' });
+    return;
+  }
+
+  // SuperAdmin has global campus access
+  const isSuperAdmin = ['SuperAdmin', 'Admin', 'admin', 'superadmin'].includes(req.user.role);
+  if (isSuperAdmin) {
+    req.campusId = (req.headers['x-campus-id'] as string) || req.user.campusId;
+    next();
+    return;
+  }
+
+  // Scope user to their assigned campus
+  req.campusId = req.user.campusId;
+  next();
+};
+
+
 

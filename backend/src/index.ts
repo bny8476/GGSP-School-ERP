@@ -55,6 +55,12 @@ import broadcastRoutes from './routes/broadcastRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
 import visitorRoutes from './routes/visitorRoutes';
 import recruitmentRoutes from './routes/recruitmentRoutes';
+import appsRoutes from './routes/appsRoutes';
+import settingsRoutes from './routes/settingsRoutes';
+import aiRoutes from './routes/aiRoutes';
+import nextGenRoutes from './routes/nextGenRoutes';
+import campusRoutes from './routes/campusRoutes';
+import enterpriseRoutes from './routes/enterpriseRoutes';
 
 
 // Connect to database
@@ -66,39 +72,47 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'http://127.0.0.1:3000',
   'https://schoolerp-livid.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean) as string[];
 
-  // Middleware - CORS
-  app.use(cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS: origin '${origin}' not allowed`));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }));
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  if (process.env.NODE_ENV !== 'production' && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+    return true;
+  }
+  return false;
+};
 
-  // Security middlewares
-  app.use(helmet());
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-  app.use(limiter);
+// Middleware - CORS
+app.use(cors({
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Security middlewares
+app.use(helmet());
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
 
 // Handle OPTIONS preflight for all routes explicitly
 app.options(/.*/, cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (isOriginAllowed(origin)) return callback(null, true);
     return callback(new Error(`CORS: origin '${origin}' not allowed`));
   },
   credentials: true,
@@ -149,10 +163,16 @@ app.use('/api/broadcasts', broadcastRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/visitors', visitorRoutes);
 app.use('/api/recruitment', recruitmentRoutes);
+app.use('/api/apps', appsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/nextgen', nextGenRoutes);
+app.use('/api/campuses', campusRoutes);
+app.use('/api/enterprise', enterpriseRoutes);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Create HTTP server instead of listening directly on Express app
 const httpServer = createServer(app);

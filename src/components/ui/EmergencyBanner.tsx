@@ -24,7 +24,8 @@ export function EmergencyBanner() {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/broadcasts/active', {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const res = await fetch(`${apiBase}/api/broadcasts/active`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -80,3 +81,5 @@ export function EmergencyBanner() {
     </div>
   );
 }
+
+export default EmergencyBanner;

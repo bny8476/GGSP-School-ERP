@@ -250,7 +250,6 @@ export default function IdCardGenerator() {
                   <p className="text-[8px] font-medium text-slate-500 mt-0.5">123 Education Lane, Learning City</p>
                   <p className="text-[8px] font-medium text-slate-500">Ph: +1 (800) EAS-ACADEMY</p>
                 </div>
-                </div>
               </div>
               
               <div className="absolute bottom-4 w-full text-center">
@@ -263,7 +262,7 @@ export default function IdCardGenerator() {
           </div>
 
           <p className="text-sm font-medium text-slate-500 mt-8 print:hidden text-center max-w-sm">
-            Standard CR80 size (2.13" x 3.38"). Ready for PVC printing.
+            Standard CR80 size (2.13&quot; &times; 3.38&quot;). Ready for PVC printing.
           </p>
 
         </div>

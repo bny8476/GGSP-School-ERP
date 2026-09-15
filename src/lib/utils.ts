@@ -21,3 +21,28 @@ export function cn(...inputs: ClassValue[]): string {
 
   return classes.join(" ");
 }
+
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
+export async function safeFetchJson<T = any>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, options);
+  const contentType = res.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    const text = await res.text();
+    if (text.startsWith("<!DOCTYPE") || text.includes("<html")) {
+      throw new Error(
+        `Backend endpoint '${url}' returned an HTML page instead of JSON. Ensure the backend server is running on port 5001 (npm run dev:all).`
+      );
+    }
+    throw new Error(`Unexpected response content type: ${contentType || "unknown"}`);
+  }
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || `Request failed with status ${res.status}`);
+  }
+
+  return data as T;
+}
+
