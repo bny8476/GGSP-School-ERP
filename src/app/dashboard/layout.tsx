@@ -118,7 +118,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex h-screen bg-[#F0F4FA] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#F0F4FA] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-saas">
       <CommandPalette />
 
       {/* Desktop Sidebar */}
@@ -186,7 +186,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                       {hasSubItems ? (
                         <button
                           onClick={() => setExpandedSubmenu(isExpanded ? null : item.label)}
-                          className={`w-full flex items-center justify-between ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer group hover:translate-x-0.5 ${
+                          className={`w-full flex items-center justify-between ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer group hover:translate-x-1 ${
                             isItemActive
                               ? 'bg-[#0757D5] text-white shadow-lg shadow-[#0757D5]/30'
                               : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
@@ -194,7 +194,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                           title={isCollapsed ? item.label : undefined}
                         >
                           <div className="flex items-center">
-                            <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform`} strokeWidth={2.2} />
+                            <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform duration-200`} strokeWidth={2.2} />
                             {!isCollapsed && <span className="truncate">{item.label}</span>}
                           </div>
                           {!isCollapsed && (
@@ -205,18 +205,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                         <Link
                           href={item.href}
                           title={item.label}
-                          className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group hover:translate-x-0.5 ${
+                          className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group hover:translate-x-1 ${
                             isItemActive
                               ? 'bg-[#0757D5] text-white shadow-lg shadow-[#0757D5]/30 ring-1 ring-blue-400/20'
                               : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                           }`}
                         >
-                          <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform group-hover:scale-105 ${
+                          <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform duration-200 group-hover:scale-105 ${
                             isItemActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
                           }`} strokeWidth={2} />
                           {!isCollapsed && <span className="truncate">{item.label}</span>}
                           {!isCollapsed && isItemActive && (
-                            <span className="ml-auto w-2 h-2 rounded-full bg-[#2F80ED] shadow-xs shrink-0" />
+                            <span className="ml-auto w-2 h-2 rounded-full bg-[#2F80ED] shadow-xs shrink-0 animate-pulse" />
                           )}
                         </Link>
                       )}

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight, ArrowRight, AlertTriangle, RefreshCw } from 'lucide-react';
+import AnimatedNumber from './AnimatedNumber';
 
 /* ==========================================================================
    1. BASE CARD PRIMITIVES
@@ -21,7 +22,7 @@ export function Card({
   className = '',
   ...props
 }: CardProps) {
-  const baseStyles = "rounded-[24px] sm:rounded-[28px] p-6 transition-all duration-200";
+  const baseStyles = "group rounded-[24px] sm:rounded-[28px] p-6 transition-all duration-200";
   
   const variantStyles = {
     default: "bg-white dark:bg-[#07152F] border border-slate-200/80 dark:border-slate-800 shadow-sm text-slate-900 dark:text-slate-100",
@@ -49,7 +50,7 @@ export function CardHeader({ children, className = '' }: { children: React.React
 
 export function CardTitle({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <h3 className={`text-base sm:text-lg font-black tracking-tight text-[#07152F] dark:text-white ${className}`}>
+    <h3 className={`text-base sm:text-lg font-black tracking-tight text-[#07152F] dark:text-white transition-colors duration-200 group-hover:text-[#0050CB] dark:group-hover:text-[#38BDF8] ${className}`}>
       {children}
     </h3>
   );
@@ -57,7 +58,7 @@ export function CardTitle({ children, className = '' }: { children: React.ReactN
 
 export function CardDescription({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <p className={`text-xs text-slate-500 dark:text-slate-400 font-medium ${className}`}>
+    <p className={`text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed transition-colors duration-200 ${className}`}>
       {children}
     </p>
   );
@@ -107,6 +108,28 @@ export function StatCard({
   className = "",
   onClick,
 }: StatCardProps) {
+  // Parse numerical value for count-up animation if possible
+  const renderValue = () => {
+    if (typeof value === 'number') {
+      return <AnimatedNumber to={value} />;
+    }
+    if (typeof value === 'string') {
+      const match = value.match(/^([^0-9.-]*)([0-9,.]+)([^0-9.]*)$/);
+      if (match) {
+        const prefix = match[1] || '';
+        const numStr = match[2].replace(/,/g, '');
+        const suffix = match[3] || '';
+        const num = parseFloat(numStr);
+        if (!isNaN(num)) {
+          const hasDecimals = match[2].includes('.');
+          const decimals = hasDecimals ? match[2].split('.')[1].length : 0;
+          return <AnimatedNumber to={num} prefix={prefix} suffix={suffix} decimals={decimals} />;
+        }
+      }
+    }
+    return value;
+  };
+
   return (
     <Card 
       className={`flex flex-col justify-between h-full ${onClick ? 'cursor-pointer' : ''} ${className}`}
@@ -114,12 +137,12 @@ export function StatCard({
     >
       <div>
         <div className="flex items-center justify-between mb-4">
-          <div className={`w-12 h-12 rounded-2xl ${iconBgColor} ${iconTextColor} flex items-center justify-center shadow-xs shrink-0`}>
+          <div className={`w-12 h-12 rounded-2xl ${iconBgColor} ${iconTextColor} flex items-center justify-center shadow-xs shrink-0 transition-transform duration-200 group-hover:scale-105`}>
             <Icon className="w-6 h-6" strokeWidth={2.2} />
           </div>
           {badgeText && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0757D5]/20 text-[#0757D5] dark:text-[#2F80ED]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0757D5] dark:bg-[#2F80ED]" />
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-3 py-1 rounded-full bg-[#E5EEFF] dark:bg-[#0757D5]/20 text-[#0757D5] dark:text-[#2F80ED] border border-blue-200/50 dark:border-[#0757D5]/40 transition-transform group-hover:scale-105">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0757D5] dark:bg-[#2F80ED] animate-pulse" />
               {badgeText}
             </span>
           )}
@@ -131,7 +154,7 @@ export function StatCard({
         
         <div className="flex items-baseline justify-between gap-2">
           <h3 className="text-3xl sm:text-4xl font-black text-[#07152F] dark:text-white tracking-tight">
-            {value}
+            {renderValue()}
           </h3>
           {trend && (
             <span className={`text-xs font-bold inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full ${
