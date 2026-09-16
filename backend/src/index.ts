@@ -69,17 +69,23 @@ connectDB();
 const app = express();
 
 // Allowed origins
-const allowedOrigins = [
+const rawAllowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'https://schoolerp-livid.vercel.app',
+  'https://school-erp-bny2.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean) as string[];
 
+const normalizeUrl = (url?: string) => url ? url.replace(/\/+$/, '').toLowerCase() : '';
+const allowedOrigins = rawAllowedOrigins.map(normalizeUrl);
+
 const isOriginAllowed = (origin: string | undefined): boolean => {
   if (!origin) return true;
-  if (allowedOrigins.includes(origin)) return true;
+  const cleanOrigin = normalizeUrl(origin);
+  if (allowedOrigins.includes(cleanOrigin)) return true;
+  if (cleanOrigin.endsWith('.vercel.app')) return true;
   if (process.env.NODE_ENV !== 'production' && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
     return true;
   }

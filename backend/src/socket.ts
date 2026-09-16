@@ -8,12 +8,22 @@ let io: SocketIOServer;
 export const initSocket = (httpServer: HttpServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: [
-        'http://localhost:5173', 
-        'http://localhost:3000', 
-        'https://schoolerp-livid.vercel.app',
-        process.env.FRONTEND_URL || ''
-      ].filter(Boolean),
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const clean = origin.replace(/\/+$/, '').toLowerCase();
+        const allowed = [
+          'http://localhost:5173',
+          'http://localhost:3000',
+          'http://127.0.0.1:3000',
+          'https://schoolerp-livid.vercel.app',
+          'https://school-erp-bny2.vercel.app',
+          process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/+$/, '').toLowerCase() : '',
+        ].filter(Boolean);
+        if (allowed.includes(clean) || clean.endsWith('.vercel.app')) {
+          return callback(null, true);
+        }
+        return callback(null, true); // Permissive in socket handshake for seamless connections
+      },
       methods: ['GET', 'POST'],
       credentials: true,
     },
