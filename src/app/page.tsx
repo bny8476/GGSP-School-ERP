@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, useScroll, useTransform, useInView, useReducedMotion, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView, useReducedMotion, AnimatePresence, type Variants } from 'framer-motion';
 import ModernAcademicExcellence from '@/components/ModernAcademicExcellence';
 import CtaBanner from '@/components/CtaBanner';
 import { useLanguage } from '@/context/LanguageContext';
@@ -16,6 +16,7 @@ import {
   Settings, 
   Smile, 
   CreditCard, 
+  Wallet,
   FileText, 
   ShieldCheck, 
   CheckCircle2, 
@@ -95,14 +96,14 @@ function AnimatedCount({
 }
 
 // Spring Zoom-In Scroll Animation Variant Generator
-const springZoomIn = {
+const springZoomIn: Variants = {
   hidden: { opacity: 0, scale: 0.85, y: 35 },
   visible: (i: number = 0) => ({
     opacity: 1,
     scale: 1,
     y: 0,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
       damping: 14,
       delay: i * 0.08
@@ -134,7 +135,6 @@ export default function Home() {
     offset: ["start start", "end start"]
   });
 
-  const yDoodles = useTransform(scrollYProgress, [0, 1], [0, -50]);
   const yHeroImage = useTransform(scrollYProgress, [0, 1], [0, 30]);
 
   // Testimonials Auto-rotate timer
@@ -332,164 +332,24 @@ export default function Home() {
 
           </motion.div>
 
-          {/* RIGHT COLUMN: Photo Collage Grid + Vector Doodles (Zoom-In Reveal) */}
+          {/* RIGHT COLUMN: Hero Visual Showcase (Natural image, no box container) */}
           <motion.div 
             style={{ y: yHeroImage }}
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-7 relative flex items-center justify-center mt-6 lg:mt-0"
           >
-            
-            {/* Wavy Blob Container Background holding Collage Cards */}
-            <div className="relative w-full max-w-[620px] aspect-[1.1/1] bg-gradient-to-tr from-sky-100/70 via-blue-50/60 to-blue-100/70 dark:from-blue-950/40 dark:via-[#001438]/50 dark:to-sky-950/30 rounded-[44px] p-6 border border-white/60 dark:border-slate-800 shadow-xl overflow-hidden flex items-center justify-center">
-              
-              {/* Central Main Student Girl Photo (Zoom-In) */}
-              <motion.div 
-                custom={1}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.03 }}
-                className="absolute right-4 bottom-0 w-[270px] sm:w-[320px] h-[360px] sm:h-[420px] rounded-[32px] overflow-hidden shadow-2xl border-4 border-white dark:border-[#001438] z-20 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/hero-girl-student.png"
-                  alt="Student at E.A.S. Academy"
-                  fill
-                  priority
-                  className="object-cover object-top"
-                />
-              </motion.div>
-
-              {/* Top-Left Photo Card: School Campus */}
-              <motion.div 
-                custom={2}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.06, rotate: -2 }}
-                className="absolute left-6 top-6 w-[180px] sm:w-[210px] h-[130px] sm:h-[150px] rounded-2xl overflow-hidden shadow-lg border-3 border-white dark:border-[#001438] z-10 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/school-campus.jpg"
-                  alt="School Campus"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-
-              {/* Top-Right Photo Card: Classroom Boy Writing + Animated Crown Doodle */}
-              <motion.div 
-                custom={3}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.06, rotate: 2 }}
-                className="absolute right-6 top-6 w-[130px] sm:w-[150px] h-[100px] sm:h-[120px] rounded-2xl overflow-hidden shadow-lg border-3 border-white dark:border-[#001438] z-10 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/student-raising-hand.png"
-                  alt="Classroom Student"
-                  fill
-                  className="object-cover object-top"
-                />
-                {/* Crown Doodle over student head with subtle bob float */}
-                <motion.div 
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-1 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
-                >
-                  <svg width="28" height="20" viewBox="0 0 30 22" fill="none">
-                    <path d="M2 18 L6 6 L15 14 L24 6 L28 18 Z" stroke="#FBBF24" strokeWidth="2.5" fill="#FEF08A" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="6" cy="4" r="2" fill="#FBBF24" />
-                    <circle cx="15" cy="11" r="2" fill="#FBBF24" />
-                    <circle cx="24" cy="4" r="2" fill="#FBBF24" />
-                  </svg>
-                </motion.div>
-              </motion.div>
-
-              {/* Bottom-Left Photo Card: Student Studying */}
-              <motion.div 
-                custom={4}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.06, rotate: -2 }}
-                className="absolute left-6 bottom-8 w-[160px] sm:w-[185px] h-[110px] sm:h-[130px] rounded-2xl overflow-hidden shadow-lg border-3 border-white dark:border-[#001438] z-10 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/mother-daughter-study.png"
-                  alt="Home Learning"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-
-              {/* Bottom-Right Yellow Sticky Note Box: Interactive Tilt Doodle */}
-              <motion.div 
-                custom={5}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.1, rotate: 0 }}
-                className="absolute right-4 bottom-6 bg-[#FEF08A] text-slate-800 rounded-2xl p-4 shadow-xl border-2 border-yellow-200 rotate-[4deg] z-30 max-w-[140px] text-center cursor-pointer transition-transform"
-              >
-                <p className="font-sans italic font-bold text-slate-800 text-sm leading-snug">
-                  Learn<br />Grow<br />Achieve
-                </p>
-                <div className="flex justify-center gap-1 text-amber-600 mt-1">
-                  <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>♡</motion.span>
-                  <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, delay: 0.3, repeat: Infinity }}>♡</motion.span>
-                </div>
-              </motion.div>
-
-              {/* CONTINUOUS ANIMATED VECTOR DOODLES */}
-              <motion.div style={{ y: yDoodles }} className="absolute inset-0 pointer-events-none z-30">
-                {/* Yellow Smiling Sun Doodle with Continuous Spin */}
-                <div className="absolute top-2 left-2 sm:left-4">
-                  <motion.svg 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    width="60" 
-                    height="60" 
-                    viewBox="0 0 100 100" 
-                    fill="none"
-                  >
-                    <circle cx="50" cy="50" r="22" stroke="#FBBF24" strokeWidth="4" fill="#FEF08A" fillOpacity="0.4" />
-                    <line x1="50" y1="12" x2="50" y2="2" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <line x1="50" y1="88" x2="50" y2="98" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <line x1="12" y1="50" x2="2" y2="50" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <line x1="88" y1="50" x2="98" y2="50" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <circle cx="43" cy="45" r="2.5" fill="#B45309" />
-                    <circle cx="57" cy="45" r="2.5" fill="#B45309" />
-                    <path d="M42 56 Q50 63 58 56" stroke="#B45309" strokeWidth="3" strokeLinecap="round" fill="none" />
-                  </motion.svg>
-                </div>
-
-                {/* Blue Paper Airplane with Floating Motion */}
-                <motion.div 
-                  animate={{ y: [0, -12, 0], x: [0, 8, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-2 left-[44%]"
-                >
-                  <svg width="120" height="60" viewBox="0 0 160 80" fill="none">
-                    <path d="M10 65 Q 40 15, 90 35 T 125 25" stroke="#3B82F6" strokeWidth="2.5" strokeDasharray="4 5" strokeLinecap="round" fill="none" />
-                    <g transform="translate(120, 10) rotate(-10)">
-                      <polygon points="0,20 30,0 20,30 10,22" fill="#60A5FA" />
-                      <polygon points="0,20 30,0 12,18" fill="#3B82F6" />
-                    </g>
-                  </svg>
-                </motion.div>
-              </motion.div>
-
+            <div className="relative w-full max-w-[680px] flex items-center justify-center">
+              <Image
+                src="/hero-banner.jpg"
+                alt="E.A.S. Academy Modern School Management Platform"
+                width={1200}
+                height={900}
+                priority
+                className="w-full h-auto object-contain select-none pointer-events-none"
+              />
             </div>
-
           </motion.div>
 
         </div>
@@ -514,90 +374,281 @@ export default function Home() {
       </div>
 
       {/* ========================================== */}
-      {/* 2. HIGHLIGHT KEY METRICS CONTAINER (BAR) */}
+      {/* 2. HIGHLIGHT KEY METRICS BANNER (Exact Design) */}
       {/* ========================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           custom={0}
           variants={springZoomIn}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-[#E5EEFF]/80 dark:bg-[#001438]/80 backdrop-blur-md border border-[#0050CB]/15 dark:border-[#0050CB]/30 rounded-[32px] p-6 sm:p-9 shadow-sm hover:shadow-md transition-shadow"
+          className="relative bg-gradient-to-r from-[#EBF3FE] via-[#F2F7FE] to-[#EAF3FE] dark:from-[#001438] dark:via-[#001742] dark:to-[#001233] rounded-[36px] sm:rounded-[48px] p-6 sm:p-8 lg:p-10 border border-blue-200/60 dark:border-blue-900/40 shadow-[0_15px_40px_rgba(0,80,203,0.06)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] overflow-hidden"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y sm:divide-y-0 lg:divide-x divide-blue-200/60 dark:divide-slate-800">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
             
-            {/* Metric 1 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 first:pl-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-white dark:bg-[#0050CB]/30 text-[#0050CB] dark:text-[#38BDF8] flex items-center justify-center shrink-0 shadow-xs">
-                <Users className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  <AnimatedCount to={99.8} decimals={1} suffix="%" />
+            {/* LEFT WING: "Trusted by Schools Across the World" + Line-art School + Stacked Books with Sprout */}
+            <div className="lg:col-span-3 flex flex-col justify-between h-full relative">
+              {/* Handwritten text + curved arrow */}
+              <div className="flex items-start justify-between sm:justify-start gap-4 mb-2">
+                <div className="rotate-[-6deg] origin-left">
+                  <p 
+                    style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                    className="text-[#0050CB] dark:text-[#38BDF8] text-2xl sm:text-3xl font-bold leading-[1.1] tracking-tight select-none"
+                  >
+                    Trusted<br />
+                    by Schools<br />
+                    Across the World
+                  </p>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Attendance Accuracy
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Real-time biometric & mobile logs
-                </p>
-              </div>
-            </motion.div>
 
-            {/* Metric 2 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 pt-6 sm:pt-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
-                <CreditCard className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  <AnimatedCount to={100} decimals={0} suffix="%" />
+                {/* Curved Arrow pointing down-right towards cards */}
+                <div className="pt-2 text-[#0050CB] dark:text-[#38BDF8] shrink-0">
+                  <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
+                    <path d="M6 8 C 22 6, 36 16, 30 34" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M22 28 L30 35 L37 27" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Paperless Fee Collection
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Automated receipts & reminders
-                </p>
               </div>
-            </motion.div>
 
-            {/* Metric 3 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 pt-6 lg:pt-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-xs">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  1-Click
+              {/* Middle: Blue Line-Art School Icon + Outline Heart */}
+              <div className="flex items-center gap-2.5 my-2">
+                <div className="w-14 h-14 rounded-2xl bg-white/90 dark:bg-slate-900/80 p-2 shadow-xs border border-blue-100 dark:border-slate-800 flex items-center justify-center text-[#0050CB] dark:text-[#38BDF8]">
+                  <svg width="44" height="44" viewBox="0 0 64 64" fill="none">
+                    {/* Roof & Clock Tower */}
+                    <path d="M32 8 L14 22 H50 Z" stroke="currentColor" strokeWidth="2.4" fill="#E5EEFF" strokeLinejoin="round" />
+                    <path d="M32 8 V3 M32 3 L39 6 L32 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="#60A5FA" />
+                    <circle cx="32" cy="18" r="3" stroke="currentColor" strokeWidth="1.8" fill="white" />
+                    {/* Main Building Body */}
+                    <rect x="18" y="22" width="28" height="28" rx="2" stroke="currentColor" strokeWidth="2.4" fill="white" />
+                    {/* Arched Door */}
+                    <path d="M28 50 V39 C28 36.5 36 36.5 36 39 V50" stroke="currentColor" strokeWidth="2.2" fill="#BFDBFE" />
+                    {/* Windows */}
+                    <rect x="21" y="27" width="5" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" fill="#E0E7FF" />
+                    <rect x="38" y="27" width="5" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" fill="#E0E7FF" />
+                  </svg>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Report Cards & Timetables
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Instant generation & export
-                </p>
+                <span 
+                  style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                  className="text-2xl text-[#0050CB] dark:text-[#38BDF8] font-bold select-none"
+                >
+                  ♡
+                </span>
               </div>
-            </motion.div>
 
-            {/* Metric 4 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 pt-6 lg:pt-0 last:pr-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#FF690C] flex items-center justify-center shrink-0 shadow-xs">
-                <Users className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  24/7
+              {/* Bottom Left: Stack of 3 Colorful Books with Sprout Leaves */}
+              <div className="hidden lg:block mt-1">
+                <div className="relative w-28 h-20 select-none">
+                  <svg viewBox="0 0 130 100" fill="none" className="w-full h-full">
+                    {/* Sprout Leaves */}
+                    <path d="M26 30 C 15 16, 2 24, 16 35 C 23 40, 26 30, 26 30 Z" fill="#22C55E" stroke="#16A34A" strokeWidth="1.8" />
+                    <path d="M26 30 C 30 12, 48 15, 38 29 C 33 37, 26 30, 26 30 Z" fill="#4ADE80" stroke="#16A34A" strokeWidth="1.8" />
+                    <path d="M26 30 Q 24 42, 26 46" stroke="#15803D" strokeWidth="2.2" strokeLinecap="round" />
+
+                    {/* Book 1 (Top - Blue) */}
+                    <rect x="2" y="44" width="80" height="13" rx="2.5" fill="#2563EB" stroke="#1D4ED8" strokeWidth="1.8" />
+                    <rect x="8" y="47" width="71" height="7" rx="1" fill="#FFFFFF" />
+
+                    {/* Book 2 (Middle - Orange) */}
+                    <rect x="2" y="59" width="94" height="14" rx="2.5" fill="#F97316" stroke="#EA580C" strokeWidth="1.8" />
+                    <rect x="9" y="62" width="84" height="8" rx="1" fill="#FFFBEB" />
+
+                    {/* Book 3 (Bottom - Green) */}
+                    <rect x="2" y="75" width="108" height="15" rx="2.5" fill="#059669" stroke="#047857" strokeWidth="1.8" />
+                    <rect x="10" y="78" width="97" height="9" rx="1" fill="#FFFFFF" />
+                  </svg>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Parent Portal Access
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Mobile diary & live updates
-                </p>
               </div>
-            </motion.div>
+
+            </div>
+
+            {/* RIGHT WING: The 4 Metric Cards in a Row */}
+            <div className="lg:col-span-9 relative">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-4.5">
+                
+                {/* CARD 1: 99.8% Attendance Accuracy */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Light Blue) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#93C5FD'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-blue-100/90 dark:bg-blue-950/60 text-[#0050CB] dark:text-[#38BDF8] flex items-center justify-center shadow-2xs">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    {/* Blue Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-blue-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      <AnimatedCount to={99.8} decimals={1} suffix="%" />
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Attendance Accuracy
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Real-time biometric & mobile logs.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* CARD 2: 100% Paperless Fee Collection */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Mint Green) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#86EFAC'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+                      <Wallet className="w-5 h-5" />
+                    </div>
+                    {/* Emerald Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-emerald-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      <AnimatedCount to={100} decimals={0} suffix="%" />
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Paperless Fee Collection
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Automated receipts & reminders.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* CARD 3: 1-Click Report Cards & Timetables */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Lavender Purple) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#D8B4FE'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-purple-100/90 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-2xs">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    {/* Purple Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-purple-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      1-Click
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Report Cards & Timetables
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Instant generation & export.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* CARD 4: 24/7 Parent Portal Access */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Warm Amber Yellow) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#FDE047'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-amber-100/90 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    {/* Amber Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      24/7
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Parent Portal Access
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Mobile diary & live updates.
+                    </p>
+                  </div>
+                </motion.div>
+
+              </div>
+
+              {/* Bottom Right Doodle: Dashed Trail + "Small Steps Big Dreams ♡" */}
+              <div className="flex items-center justify-end gap-2 mt-4 pr-2 select-none">
+                <svg width="120" height="24" viewBox="0 0 140 28" fill="none" className="text-blue-400/70">
+                  <path d="M4 22 Q 60 4, 136 18" stroke="currentColor" strokeWidth="2" strokeDasharray="4 5" strokeLinecap="round" fill="none" />
+                </svg>
+                <span 
+                  style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                  className="text-[#0050CB] dark:text-[#38BDF8] text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap"
+                >
+                  Small Steps Big Dreams ♡
+                </span>
+              </div>
+            </div>
 
           </div>
         </motion.div>
@@ -744,119 +795,267 @@ export default function Home() {
       </section>
 
       {/* ========================================== */}
-      {/* 4. "OUR SOLUTIONS" SECTION */}
+      {/* 4. "DESIGNED FOR MODERN ACADEMIC EXCELLENCE" SECTION (Exact Design) */}
       {/* ========================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 overflow-hidden">
         
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-14 relative">
-          <div className="inline-flex items-center gap-2 text-[#0050CB] dark:text-[#38BDF8] text-xs font-bold uppercase tracking-wider mb-2">
-            <span>OUR SOLUTIONS</span>
-          </div>
-
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#000E28] dark:text-white tracking-tight mb-4">
-            Everything Your School Needs
-          </h2>
-
-          <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            Powerful features designed to make school management simple, smart and efficient — for everyone.
-          </p>
-
-          {/* Doodle Arrow Text on Right */}
-          <motion.div 
-            animate={{ y: [0, -6, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-4 right-0 hidden xl:flex items-center gap-2 text-sky-500 font-sans italic text-sm rotate-[-8deg] pointer-events-none"
-          >
-            <span>Built for<br />Modern Schools</span>
-            <svg width="40" height="40" viewBox="0 0 50 50" fill="none">
-              <path d="M10 10 Q 30 5, 40 35 M 40 35 L 30 30 M 40 35 L 45 22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-            </svg>
-          </motion.div>
+        {/* Decorative Outer Sprout Leaves & Star */}
+        <div className="absolute top-1/3 -left-1 hidden sm:block pointer-events-none select-none text-amber-400">
+          <svg width="26" height="26" viewBox="0 0 30 30" fill="none">
+            <path d="M15 2 L18 12 L28 15 L18 18 L15 28 L12 18 L2 15 L12 12 Z" stroke="#FBBF24" strokeWidth="2.4" strokeLinejoin="round" fill="#FEF08A" />
+          </svg>
+        </div>
+        <div className="absolute -bottom-1 -left-2 pointer-events-none select-none">
+          <svg width="44" height="44" viewBox="0 0 50 50" fill="none">
+            <path d="M12 40 C 2 30, 6 12, 24 20 C 32 25, 24 38, 12 40 Z" fill="#4ADE80" stroke="#22C55E" strokeWidth="2" />
+            <path d="M18 42 C 28 35, 42 38, 38 22 C 28 16, 20 28, 18 42 Z" fill="#22C55E" stroke="#16A34A" strokeWidth="2" />
+          </svg>
+        </div>
+        <div className="absolute -bottom-1 -right-2 pointer-events-none select-none">
+          <svg width="44" height="44" viewBox="0 0 50 50" fill="none">
+            <path d="M38 40 C 48 30, 44 12, 26 20 C 18 25, 26 38, 38 40 Z" fill="#4ADE80" stroke="#22C55E" strokeWidth="2" />
+            <path d="M32 42 C 22 35, 8 38, 12 22 C 22 16, 30 28, 32 42 Z" fill="#22C55E" stroke="#16A34A" strokeWidth="2" />
+          </svg>
         </div>
 
-        {/* 3 Solution Cards Grid (Zoom-In Entrance) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
+        {/* Section Header with Floating Airplane & "Better Learning Together" */}
+        <div className="relative mb-12 sm:mb-14">
+          <div className="max-w-2xl">
+            {/* Top Tagline */}
+            <div className="inline-flex items-center gap-2 text-[#0050CB] dark:text-[#38BDF8] text-xs font-black uppercase tracking-wider mb-2.5">
+              <span>✦ POWERFUL FEATURES</span>
+              <span className="w-10 h-[2px] bg-[#0050CB]/40 dark:bg-[#38BDF8]/40" />
+            </div>
+
+            {/* Main Headline */}
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#000E28] dark:text-white tracking-tight leading-[1.14] mb-4">
+              Designed for Modern<br />
+              <span className="text-[#0050CB] dark:text-[#38BDF8]">Academic Excellence</span>
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl">
+              Everything your school needs to operate smoothly, engage parents, empower educators, and guide student achievement.
+            </p>
+          </div>
+
+          {/* Doodled Flying Airplane & "Better Learning Together" Cursive Note */}
+          <div className="absolute top-0 right-4 lg:right-12 hidden md:flex items-center gap-4 pointer-events-none select-none">
+            <svg width="95" height="60" viewBox="0 0 110 65" fill="none">
+              <path d="M8 50 C 26 58, 48 40, 44 22 C 40 10, 22 14, 30 30 C 38 48, 65 35, 85 14" stroke="#60A5FA" strokeWidth="2" strokeDasharray="4 4" strokeLinecap="round" />
+              <g transform="translate(80, 8) rotate(-15)">
+                <polygon points="0,16 24,0 16,24 8,17" fill="#93C5FD" />
+                <polygon points="0,16 24,0 9,15" fill="#2563EB" />
+              </g>
+            </svg>
+            
+            <div className="flex flex-col items-center rotate-[8deg]">
+              <p 
+                style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                className="text-[#0050CB] dark:text-[#38BDF8] text-2xl lg:text-3xl font-bold leading-tight text-center"
+              >
+                Better<br />Learning<br />Together
+              </p>
+              <svg width="22" height="26" viewBox="0 0 28 32" fill="none" className="text-[#0050CB] dark:text-[#38BDF8] mt-0.5">
+                <path d="M14 2 C 20 9, 20 18, 10 26 M 10 26 L 16 24 M 10 26 L 12 19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Solution Graphic Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-7">
           
-          {/* Solution 1: Intelligent Operations */}
+          {/* CARD 1: Intelligent Operations (Green Theme) */}
           <motion.div
             custom={1}
             variants={springZoomIn}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            whileHover={{ y: -8, scale: 1.02 }}
-            className="bg-white dark:bg-[#001438] rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-[0_10px_35px_rgba(0,14,40,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+            whileHover={{ y: -6, scale: 1.015 }}
+            transition={{ duration: 0.3 }}
+            className="relative bg-white dark:bg-[#00102E] rounded-[32px] sm:rounded-[36px] p-6 sm:p-7 border border-emerald-100/70 dark:border-emerald-900/30 shadow-[0_12px_35px_rgba(16,185,129,0.08)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] flex flex-col justify-between overflow-hidden cursor-default group"
           >
-            <div>
-              <div className="w-13 h-13 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center mb-6 shadow-2xs group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-6 h-6" />
+            {/* Bottom-right diagonal corner wedge (Emerald) */}
+            <div 
+              className="absolute bottom-0 right-0 w-14 h-14 pointer-events-none rounded-tl-[32px] bg-[#10B981]"
+            />
+
+            <div className="grid grid-cols-12 gap-4 items-center h-full">
+              {/* Left Details */}
+              <div className="col-span-7 flex flex-col justify-between h-full pr-1 z-10">
+                <div>
+                  {/* Square Green Icon Badge */}
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-md mb-3.5 group-hover:scale-105 transition-transform">
+                    <Settings className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-[#000E28] dark:text-white leading-snug mb-2">
+                    Intelligent Operations
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4">
+                    Automate class scheduling, admissions workflows, transport management, and staff payroll with zero paperwork.
+                  </p>
+                </div>
+
+                <Link 
+                  href="/admissions" 
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:gap-2.5 transition-all group-hover:underline"
+                >
+                  <span>Learn More</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform" />
+                </Link>
               </div>
-              <h3 className="text-xl font-extrabold text-[#000E28] dark:text-white mb-3 group-hover:text-[#0050CB] dark:group-hover:text-[#38BDF8] transition-colors">
-                Intelligent Operations
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 font-normal">
-                Automate class scheduling, admissions workflows, transport management, and staff payroll with zero paperwork.
-              </p>
+
+              {/* Right Cutout Photo of Student Girl */}
+              <div className="col-span-5 relative h-48 sm:h-52 flex items-end justify-center">
+                {/* Soft Mint Curved Backdrop Shape */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-100/80 via-emerald-50/60 to-teal-100/50 dark:from-emerald-950/40 dark:to-teal-950/30 rounded-2xl sm:rounded-3xl -z-10" />
+                
+                <div className="relative w-full h-[180px] sm:h-[195px]">
+                  <Image
+                    src="/hero-girl-student.png"
+                    alt="Intelligent Operations Student"
+                    fill
+                    className="object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              </div>
             </div>
-            <Link href="/admissions" className="inline-flex items-center gap-2 text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] group-hover:underline">
-              <span>Learn More</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </motion.div>
 
-          {/* Solution 2: Performance & Rubrics */}
+          {/* CARD 2: Performance & Rubrics (Purple Theme) */}
           <motion.div
             custom={2}
             variants={springZoomIn}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            whileHover={{ y: -8, scale: 1.02 }}
-            className="bg-white dark:bg-[#001438] rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-[0_10px_35px_rgba(0,14,40,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+            whileHover={{ y: -6, scale: 1.015 }}
+            transition={{ duration: 0.3 }}
+            className="relative bg-white dark:bg-[#00102E] rounded-[32px] sm:rounded-[36px] p-6 sm:p-7 border border-purple-100/70 dark:border-purple-900/30 shadow-[0_12px_35px_rgba(168,85,247,0.08)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] flex flex-col justify-between overflow-hidden cursor-default group"
           >
-            <div>
-              <div className="w-13 h-13 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center mb-6 shadow-2xs group-hover:scale-110 transition-transform">
-                <TrendingUp className="w-6 h-6" />
+            {/* Bottom-right diagonal corner wedge (Purple) */}
+            <div 
+              className="absolute bottom-0 right-0 w-14 h-14 pointer-events-none rounded-tl-[32px] bg-[#A855F7]"
+            />
+
+            <div className="grid grid-cols-12 gap-4 items-center h-full">
+              {/* Left Details */}
+              <div className="col-span-7 flex flex-col justify-between h-full pr-1 z-10">
+                <div>
+                  {/* Square Purple Icon Badge */}
+                  <div className="w-11 h-11 rounded-2xl bg-purple-500 text-white flex items-center justify-center shadow-md mb-3.5 group-hover:scale-105 transition-transform">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-[#000E28] dark:text-white leading-snug mb-2">
+                    Performance & Rubrics
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4">
+                    Track cognitive, motor, and academic milestones with teacher grading, rubrics, and automated report cards.
+                  </p>
+                </div>
+
+                <Link 
+                  href="/admissions" 
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-purple-600 dark:text-purple-400 hover:gap-2.5 transition-all group-hover:underline"
+                >
+                  <span>Learn More</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform" />
+                </Link>
               </div>
-              <h3 className="text-xl font-extrabold text-[#000E28] dark:text-white mb-3 group-hover:text-[#0050CB] dark:group-hover:text-[#38BDF8] transition-colors">
-                Performance & Rubrics
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 font-normal">
-                Track cognitive, motor, and academic milestones with teacher grading, rubrics, and automated report cards.
-              </p>
+
+              {/* Right Cutout Photo of Student Boy Writing + A+ Badge */}
+              <div className="col-span-5 relative h-48 sm:h-52 flex items-end justify-center">
+                {/* Soft Purple Backdrop Shape */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-purple-100/80 via-purple-50/60 to-fuchsia-100/50 dark:from-purple-950/40 dark:to-fuchsia-950/30 rounded-2xl sm:rounded-3xl -z-10" />
+
+                {/* Floating A+ Badge */}
+                <motion.div 
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-2 left-1 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-900 border-2 border-purple-400 text-purple-600 dark:text-purple-300 font-extrabold text-xs flex items-center justify-center shadow-md select-none"
+                >
+                  A+
+                </motion.div>
+                
+                <div className="relative w-full h-[180px] sm:h-[195px]">
+                  <Image
+                    src="/student-raising-hand.png"
+                    alt="Performance & Rubrics Student"
+                    fill
+                    className="object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              </div>
             </div>
-            <Link href="/admissions" className="inline-flex items-center gap-2 text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] group-hover:underline">
-              <span>Learn More</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </motion.div>
 
-          {/* Solution 3: Secure & Connected */}
+          {/* CARD 3: Secure & Connected (Amber/Orange Theme) */}
           <motion.div
             custom={3}
             variants={springZoomIn}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            whileHover={{ y: -8, scale: 1.02 }}
-            className="bg-white dark:bg-[#001438] rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-[0_10px_35px_rgba(0,14,40,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+            whileHover={{ y: -6, scale: 1.015 }}
+            transition={{ duration: 0.3 }}
+            className="relative bg-white dark:bg-[#00102E] rounded-[32px] sm:rounded-[36px] p-6 sm:p-7 border border-amber-100/70 dark:border-amber-900/30 shadow-[0_12px_35px_rgba(255,105,12,0.08)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.5)] flex flex-col justify-between overflow-hidden cursor-default group"
           >
-            <div>
-              <div className="w-13 h-13 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#0050CB] flex items-center justify-center mb-6 shadow-2xs group-hover:scale-110 transition-transform">
-                <Users className="w-6 h-6" />
+            {/* Bottom-right diagonal corner wedge (Amber) */}
+            <div 
+              className="absolute bottom-0 right-0 w-14 h-14 pointer-events-none rounded-tl-[32px] bg-[#FF690C]"
+            />
+
+            <div className="grid grid-cols-12 gap-4 items-center h-full">
+              {/* Left Details */}
+              <div className="col-span-7 flex flex-col justify-between h-full pr-1 z-10">
+                <div>
+                  {/* Square Amber Icon Badge */}
+                  <div className="w-11 h-11 rounded-2xl bg-[#FF690C] text-white flex items-center justify-center shadow-md mb-3.5 group-hover:scale-105 transition-transform">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-[#000E28] dark:text-white leading-snug mb-2">
+                    Secure & Connected
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4">
+                    Role-based access control for Admins, Teachers, and Parents; instant announcements, WhatsApp updates, real-time alerts.
+                  </p>
+                </div>
+
+                <Link 
+                  href="/admissions" 
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#FF690C] hover:gap-2.5 transition-all group-hover:underline"
+                >
+                  <span>Learn More</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform" />
+                </Link>
               </div>
-              <h3 className="text-xl font-extrabold text-[#000E28] dark:text-white mb-3 group-hover:text-[#0050CB] dark:group-hover:text-[#38BDF8] transition-colors">
-                Secure & Connected
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 font-normal">
-                Role-based access control for Admins, Teachers, and Parents; instant announcements, WhatsApp updates, real-time alerts.
-              </p>
+
+              {/* Right Cutout Photo of Mother & Daughter Studying + Shield Badge */}
+              <div className="col-span-5 relative h-48 sm:h-52 flex items-end justify-center">
+                {/* Soft Amber Backdrop Shape */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-amber-100/80 via-orange-50/60 to-amber-100/50 dark:from-amber-950/40 dark:to-orange-950/30 rounded-2xl sm:rounded-3xl -z-10" />
+
+                {/* Floating Shield Badge */}
+                <motion.div 
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 2.5, delay: 0.3, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-2 left-1 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-900 border-2 border-amber-400 text-amber-500 flex items-center justify-center shadow-md select-none"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                </motion.div>
+                
+                <div className="relative w-full h-[180px] sm:h-[195px]">
+                  <Image
+                    src="/mother-daughter-study.png"
+                    alt="Secure & Connected"
+                    fill
+                    className="object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              </div>
             </div>
-            <Link href="/admissions" className="inline-flex items-center gap-2 text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] group-hover:underline">
-              <span>Learn More</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </motion.div>
 
         </div>
