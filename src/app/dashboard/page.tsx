@@ -10,6 +10,7 @@ import {
   Shield, Check, PlusCircle, CreditCard, Activity, Star
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 
 export default function DashboardOverview() {
   const { t } = useLanguage();
@@ -362,7 +363,7 @@ export default function DashboardOverview() {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               href="/dashboard/admissions"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#0757D5] to-[#1469E8] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-[#0757D5]/30 hover:scale-105 active:scale-95 transition-all duration-200 border border-white/20"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#0757D5] to-[#1469E8] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-[#0757D5]/30 btn-interactive transition-all duration-200 border border-white/20"
             >
               <PlusCircle className="w-4 h-4" />
               <span>{t('cta.apply', 'Admissions')}</span>
@@ -370,7 +371,7 @@ export default function DashboardOverview() {
 
             <Link
               href="/dashboard/attendance"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs sm:text-sm shadow-sm hover:scale-105 active:scale-95 transition-all duration-200"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs sm:text-sm shadow-sm btn-interactive transition-all duration-200"
             >
               <UserCheck className="w-4 h-4" />
               <span>{t('card.attendance', 'Attendance')}</span>
@@ -403,7 +404,7 @@ export default function DashboardOverview() {
             </p>
             <div className="flex items-baseline justify-between">
               <h3 className="text-3xl sm:text-4xl font-black text-[#07152F] dark:text-white tracking-tight">
-                {totalStudents.toLocaleString()}
+                <AnimatedNumber to={totalStudents} />
               </h3>
               <span className="text-xs font-bold text-[#12B76A] dark:text-[#12B76A] inline-flex items-center gap-0.5 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full">
                 ↑ 12% MoM
@@ -435,7 +436,7 @@ export default function DashboardOverview() {
             </p>
             <div className="flex items-baseline justify-between">
               <h3 className="text-3xl sm:text-4xl font-black text-[#000E28] dark:text-white tracking-tight">
-                {attendanceRate}%
+                <AnimatedNumber to={attendanceRate} suffix="%" decimals={1} />
               </h3>
               <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full">
                 {studentsPresent} Present
@@ -467,9 +468,9 @@ export default function DashboardOverview() {
             </p>
             <div className="flex items-baseline justify-between">
               <h3 className="text-3xl sm:text-4xl font-black text-[#000E28] dark:text-white tracking-tight">
-                {stats?.pendingAdmissions || 0}
+                <AnimatedNumber to={stats?.pendingAdmissions || 0} />
               </h3>
-              <Link href="/dashboard/admissions" className="text-xs font-bold text-[#FF690C] hover:underline flex items-center gap-0.5 bg-[#FFF3EB] dark:bg-[#FF690C]/20 px-2.5 py-0.5 rounded-full">
+              <Link href="/dashboard/admissions" className="text-xs font-bold text-[#FF690C] hover:underline flex items-center gap-0.5 bg-[#FFF3EB] dark:bg-[#FF690C]/20 px-2.5 py-0.5 rounded-full btn-interactive">
                 Review <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -499,7 +500,7 @@ export default function DashboardOverview() {
             </p>
             <div className="flex items-baseline justify-between">
               <h3 className="text-3xl sm:text-4xl font-black text-[#000E28] dark:text-white tracking-tight">
-                ₹{(stats?.feeCollectionSummary || 0).toLocaleString()}
+                <AnimatedNumber to={stats?.feeCollectionSummary || 0} prefix="₹" />
               </h3>
               <span className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] bg-[#E5EEFF] dark:bg-[#0050CB]/20 px-2.5 py-0.5 rounded-full">
                 This Term

@@ -99,23 +99,23 @@ export default function NotificationDrawer() {
             {/* Header */}
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <Bell className="h-5 w-5 text-[#0050CB] dark:text-[#38BDF8]" />
                 <h3 className="font-extrabold text-base text-slate-800 dark:text-slate-100">
-                  Notification Center 2.0
+                  Notification Center
                 </h3>
               </div>
               <div className="flex items-center space-x-2">
                 {unreadCount > 0 && (
                   <button
                     onClick={handleMarkAllRead}
-                    className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center"
+                    className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline flex items-center cursor-pointer"
                   >
                     <CheckCheck className="h-3.5 w-3.5 mr-1" /> Mark all read
                   </button>
                 )}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -123,7 +123,7 @@ export default function NotificationDrawer() {
             </div>
 
             {/* Content List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
               {loading ? (
                 <div className="p-8 text-center text-slate-400 text-sm font-medium animate-pulse">
                   Loading notifications...
@@ -140,7 +140,7 @@ export default function NotificationDrawer() {
                       key={item._id}
                       className={`p-4 rounded-2xl border transition-all ${
                         !item.read
-                          ? 'bg-indigo-50/60 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900'
+                          ? 'bg-[#E5EEFF]/60 dark:bg-[#0050CB]/15 border-blue-200 dark:border-[#0050CB]/30'
                           : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
                       }`}
                     >

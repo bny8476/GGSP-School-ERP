@@ -105,7 +105,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex h-screen bg-[#F4F7FC] dark:bg-[#030A17] text-[#07152F] dark:text-white transition-colors duration-200 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#F0F4FA] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-saas">
       <CommandPalette />
 
       {/* Desktop Sidebar (260px expanded / 70px collapsed) */}
@@ -183,7 +183,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                           title={isCollapsed ? item.label : undefined}
                         >
                           <div className="flex items-center">
-                            <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform`} strokeWidth={2.2} />
+                            <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform duration-200`} strokeWidth={2.2} />
                             {!isCollapsed && <span className="truncate">{item.label}</span>}
                           </div>
                           {!isCollapsed && (
@@ -200,12 +200,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                               : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                           }`}
                         >
-                          <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform group-hover:scale-105 ${
+                          <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform duration-200 group-hover:scale-105 ${
                             isItemActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
                           }`} strokeWidth={2} />
                           {!isCollapsed && <span className="truncate">{item.label}</span>}
                           {!isCollapsed && isItemActive && (
-                            <span className="ml-auto w-2 h-2 rounded-full bg-[#2F80ED] shadow-xs shrink-0" />
+                            <span className="ml-auto w-2 h-2 rounded-full bg-[#2F80ED] shadow-xs shrink-0 animate-pulse" />
                           )}
                         </Link>
                       )}

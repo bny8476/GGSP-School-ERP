@@ -478,7 +478,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t("login.emailPlaceholder", "Enter your email address")}
-                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#0050CB] focus:ring-2 focus:ring-[#0050CB]/15 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 input-focus-glow transition-all"
                     />
                   </div>
                 </div>
@@ -509,7 +509,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={t("login.passwordPlaceholder", "Enter your password")}
-                      className="w-full pl-10 pr-11 py-2.5 sm:py-3 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#0050CB] focus:ring-2 focus:ring-[#0050CB]/15 transition-all"
+                      className="w-full pl-10 pr-11 py-2.5 sm:py-3 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 input-focus-glow transition-all"
                     />
                     <button
                       type="button"
@@ -548,13 +548,13 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 sm:py-3.5 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white font-bold text-sm shadow-[0_8px_20px_rgba(0,80,203,0.3)] hover:shadow-[0_10px_25px_rgba(0,80,203,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                  className="w-full py-3 sm:py-3.5 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white font-bold text-sm shadow-[0_8px_20px_rgba(0,80,203,0.3)] hover:shadow-[0_10px_25px_rgba(0,80,203,0.45)] btn-interactive transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
                 >
                   {isLoading ? (
                     <span>{t("login.signingIn", "Signing in...")}</span>
                   ) : (
                     <>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       <span>{t("login.signInBtn", "Sign In")}</span>
                     </>
                   )}

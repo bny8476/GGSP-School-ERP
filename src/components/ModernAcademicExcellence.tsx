@@ -54,7 +54,7 @@ export default function ModernAcademicExcellence() {
             initial={{ opacity: 0, y: 16 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-black text-[#000E28] dark:text-white tracking-tight leading-[1.12]"
+            className="font-saas text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-black text-[#000E28] dark:text-white tracking-tight leading-[1.12]"
           >
             {t("features.title1", "Designed for Modern")} <br className="hidden sm:block" />
             <span className="text-[#0050CB] dark:text-[#38BDF8] inline-block">{t("features.title2", "Academic Excellence")}</span>
