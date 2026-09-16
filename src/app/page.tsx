@@ -16,6 +16,7 @@ import {
   Settings, 
   Smile, 
   CreditCard, 
+  Wallet,
   FileText, 
   ShieldCheck, 
   CheckCircle2, 
@@ -373,90 +374,281 @@ export default function Home() {
       </div>
 
       {/* ========================================== */}
-      {/* 2. HIGHLIGHT KEY METRICS CONTAINER (BAR) */}
+      {/* 2. HIGHLIGHT KEY METRICS BANNER (Exact Design) */}
       {/* ========================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           custom={0}
           variants={springZoomIn}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-[#E5EEFF]/80 dark:bg-[#001438]/80 backdrop-blur-md border border-[#0050CB]/15 dark:border-[#0050CB]/30 rounded-[32px] p-6 sm:p-9 shadow-sm hover:shadow-md transition-shadow"
+          className="relative bg-gradient-to-r from-[#EBF3FE] via-[#F2F7FE] to-[#EAF3FE] dark:from-[#001438] dark:via-[#001742] dark:to-[#001233] rounded-[36px] sm:rounded-[48px] p-6 sm:p-8 lg:p-10 border border-blue-200/60 dark:border-blue-900/40 shadow-[0_15px_40px_rgba(0,80,203,0.06)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] overflow-hidden"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 divide-y sm:divide-y-0 lg:divide-x divide-blue-200/60 dark:divide-slate-800">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
             
-            {/* Metric 1 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 first:pl-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-white dark:bg-[#0050CB]/30 text-[#0050CB] dark:text-[#38BDF8] flex items-center justify-center shrink-0 shadow-xs">
-                <Users className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  <AnimatedCount to={99.8} decimals={1} suffix="%" />
+            {/* LEFT WING: "Trusted by Schools Across the World" + Line-art School + Stacked Books with Sprout */}
+            <div className="lg:col-span-3 flex flex-col justify-between h-full relative">
+              {/* Handwritten text + curved arrow */}
+              <div className="flex items-start justify-between sm:justify-start gap-4 mb-2">
+                <div className="rotate-[-6deg] origin-left">
+                  <p 
+                    style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                    className="text-[#0050CB] dark:text-[#38BDF8] text-2xl sm:text-3xl font-bold leading-[1.1] tracking-tight select-none"
+                  >
+                    Trusted<br />
+                    by Schools<br />
+                    Across the World
+                  </p>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Attendance Accuracy
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Real-time biometric & mobile logs
-                </p>
-              </div>
-            </motion.div>
 
-            {/* Metric 2 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 pt-6 sm:pt-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
-                <CreditCard className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  <AnimatedCount to={100} decimals={0} suffix="%" />
+                {/* Curved Arrow pointing down-right towards cards */}
+                <div className="pt-2 text-[#0050CB] dark:text-[#38BDF8] shrink-0">
+                  <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
+                    <path d="M6 8 C 22 6, 36 16, 30 34" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M22 28 L30 35 L37 27" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Paperless Fee Collection
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Automated receipts & reminders
-                </p>
               </div>
-            </motion.div>
 
-            {/* Metric 3 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 pt-6 lg:pt-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-xs">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  1-Click
+              {/* Middle: Blue Line-Art School Icon + Outline Heart */}
+              <div className="flex items-center gap-2.5 my-2">
+                <div className="w-14 h-14 rounded-2xl bg-white/90 dark:bg-slate-900/80 p-2 shadow-xs border border-blue-100 dark:border-slate-800 flex items-center justify-center text-[#0050CB] dark:text-[#38BDF8]">
+                  <svg width="44" height="44" viewBox="0 0 64 64" fill="none">
+                    {/* Roof & Clock Tower */}
+                    <path d="M32 8 L14 22 H50 Z" stroke="currentColor" strokeWidth="2.4" fill="#E5EEFF" strokeLinejoin="round" />
+                    <path d="M32 8 V3 M32 3 L39 6 L32 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="#60A5FA" />
+                    <circle cx="32" cy="18" r="3" stroke="currentColor" strokeWidth="1.8" fill="white" />
+                    {/* Main Building Body */}
+                    <rect x="18" y="22" width="28" height="28" rx="2" stroke="currentColor" strokeWidth="2.4" fill="white" />
+                    {/* Arched Door */}
+                    <path d="M28 50 V39 C28 36.5 36 36.5 36 39 V50" stroke="currentColor" strokeWidth="2.2" fill="#BFDBFE" />
+                    {/* Windows */}
+                    <rect x="21" y="27" width="5" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" fill="#E0E7FF" />
+                    <rect x="38" y="27" width="5" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" fill="#E0E7FF" />
+                  </svg>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Report Cards & Timetables
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Instant generation & export
-                </p>
+                <span 
+                  style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                  className="text-2xl text-[#0050CB] dark:text-[#38BDF8] font-bold select-none"
+                >
+                  ♡
+                </span>
               </div>
-            </motion.div>
 
-            {/* Metric 4 */}
-            <motion.div whileHover={{ scale: 1.03 }} className="flex items-start gap-4 lg:px-6 pt-6 lg:pt-0 last:pr-0 cursor-default">
-              <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#FF690C] flex items-center justify-center shrink-0 shadow-xs">
-                <Users className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="text-3xl font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
-                  24/7
+              {/* Bottom Left: Stack of 3 Colorful Books with Sprout Leaves */}
+              <div className="hidden lg:block mt-1">
+                <div className="relative w-28 h-20 select-none">
+                  <svg viewBox="0 0 130 100" fill="none" className="w-full h-full">
+                    {/* Sprout Leaves */}
+                    <path d="M26 30 C 15 16, 2 24, 16 35 C 23 40, 26 30, 26 30 Z" fill="#22C55E" stroke="#16A34A" strokeWidth="1.8" />
+                    <path d="M26 30 C 30 12, 48 15, 38 29 C 33 37, 26 30, 26 30 Z" fill="#4ADE80" stroke="#16A34A" strokeWidth="1.8" />
+                    <path d="M26 30 Q 24 42, 26 46" stroke="#15803D" strokeWidth="2.2" strokeLinecap="round" />
+
+                    {/* Book 1 (Top - Blue) */}
+                    <rect x="2" y="44" width="80" height="13" rx="2.5" fill="#2563EB" stroke="#1D4ED8" strokeWidth="1.8" />
+                    <rect x="8" y="47" width="71" height="7" rx="1" fill="#FFFFFF" />
+
+                    {/* Book 2 (Middle - Orange) */}
+                    <rect x="2" y="59" width="94" height="14" rx="2.5" fill="#F97316" stroke="#EA580C" strokeWidth="1.8" />
+                    <rect x="9" y="62" width="84" height="8" rx="1" fill="#FFFBEB" />
+
+                    {/* Book 3 (Bottom - Green) */}
+                    <rect x="2" y="75" width="108" height="15" rx="2.5" fill="#059669" stroke="#047857" strokeWidth="1.8" />
+                    <rect x="10" y="78" width="97" height="9" rx="1" fill="#FFFFFF" />
+                  </svg>
                 </div>
-                <h4 className="text-sm font-bold text-[#000E28] dark:text-white mb-1">
-                  Parent Portal Access
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Mobile diary & live updates
-                </p>
               </div>
-            </motion.div>
+
+            </div>
+
+            {/* RIGHT WING: The 4 Metric Cards in a Row */}
+            <div className="lg:col-span-9 relative">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-4.5">
+                
+                {/* CARD 1: 99.8% Attendance Accuracy */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Light Blue) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#93C5FD'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-blue-100/90 dark:bg-blue-950/60 text-[#0050CB] dark:text-[#38BDF8] flex items-center justify-center shadow-2xs">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    {/* Blue Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-blue-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      <AnimatedCount to={99.8} decimals={1} suffix="%" />
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Attendance Accuracy
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Real-time biometric & mobile logs.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* CARD 2: 100% Paperless Fee Collection */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Mint Green) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#86EFAC'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+                      <Wallet className="w-5 h-5" />
+                    </div>
+                    {/* Emerald Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-emerald-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      <AnimatedCount to={100} decimals={0} suffix="%" />
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Paperless Fee Collection
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Automated receipts & reminders.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* CARD 3: 1-Click Report Cards & Timetables */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Lavender Purple) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#D8B4FE'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-purple-100/90 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-2xs">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    {/* Purple Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-purple-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      1-Click
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Report Cards & Timetables
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Instant generation & export.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* CARD 4: 24/7 Parent Portal Access */}
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.015 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative bg-white dark:bg-[#00102E] rounded-[24px] p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,80,203,0.08)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] border border-blue-100/60 dark:border-blue-900/30 flex flex-col justify-between overflow-hidden cursor-default group"
+                >
+                  {/* Bottom-right diagonal corner wedge (Warm Amber Yellow) */}
+                  <div 
+                    className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none"
+                    style={{
+                      clipPath: 'polygon(100% 0, 0 100%, 100% 100%)',
+                      backgroundColor: '#FDE047'
+                    }}
+                  />
+
+                  {/* Top Row: Icon Badge + Sparkle Doodle */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 rounded-full bg-amber-100/90 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    {/* Amber Sparkle */}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" fill="currentColor" />
+                      <circle cx="19" cy="5" r="1.5" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Middle Content */}
+                  <div>
+                    <div className="text-3xl sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none mb-1.5">
+                      24/7
+                    </div>
+                    <h4 className="text-sm sm:text-[15px] font-extrabold text-[#000E28] dark:text-white leading-snug mb-1">
+                      Parent Portal Access
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pr-3">
+                      Mobile diary & live updates.
+                    </p>
+                  </div>
+                </motion.div>
+
+              </div>
+
+              {/* Bottom Right Doodle: Dashed Trail + "Small Steps Big Dreams ♡" */}
+              <div className="flex items-center justify-end gap-2 mt-4 pr-2 select-none">
+                <svg width="120" height="24" viewBox="0 0 140 28" fill="none" className="text-blue-400/70">
+                  <path d="M4 22 Q 60 4, 136 18" stroke="currentColor" strokeWidth="2" strokeDasharray="4 5" strokeLinecap="round" fill="none" />
+                </svg>
+                <span 
+                  style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                  className="text-[#0050CB] dark:text-[#38BDF8] text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap"
+                >
+                  Small Steps Big Dreams ♡
+                </span>
+              </div>
+            </div>
 
           </div>
         </motion.div>
