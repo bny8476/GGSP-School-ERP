@@ -18,8 +18,6 @@ import { useLanguage } from '@/context/LanguageContext';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import CommandPalette from '@/components/ui/CommandPalette';
 import NotificationDrawer from '@/components/ui/NotificationDrawer';
-import AcademyLogo from '@/components/AcademyLogo';
-import GlobalAIAssistantWidget from '@/components/GlobalAIAssistantWidget';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -40,7 +38,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Close mobile drawer on route navigation
+  // Close mobile menu on path change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
@@ -57,17 +55,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const isSuperAdmin = r === 'superadmin' || r === 'admin';
   const isPrincipal = r === 'principal' || isSuperAdmin;
   const isTeacher = r === 'teacher' || isSuperAdmin;
-  const isAccountant = r === 'accountant' || isSuperAdmin;
-  const isReceptionist = r === 'receptionist' || isSuperAdmin;
-  
-  const portalName = isSuperAdmin ? 'Super Admin Workspace' 
-    : r === 'principal' ? 'Principal Workspace'
-    : r === 'teacher' ? 'Teacher Workspace'
-    : r === 'accountant' ? 'Accounts Workspace'
-    : 'Staff Workspace';
-
-  const initial = user?.firstName ? user.firstName[0].toUpperCase() : 'A';
-  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
 
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>('Form Builder & Surveys');
 
@@ -121,11 +108,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-[#F0F4FA] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-saas">
       <CommandPalette />
 
-      {/* Desktop Sidebar */}
-      <aside className={`${isCollapsed ? 'w-20' : 'w-68'} bg-[#07152F] text-white flex flex-col hidden md:flex shrink-0 shadow-2xl z-30 transition-all duration-300 ease-in-out border-r border-slate-800/60`}>
+      {/* Desktop Sidebar (260px expanded / 70px collapsed) */}
+      <aside className={`${isCollapsed ? 'w-20' : 'w-68'} bg-[#07152F] text-white flex flex-col hidden md:flex shrink-0 shadow-2xl z-30 transition-all duration-300 ease-in-out border-r border-slate-800/80`}>
         
-        {/* Sidebar Header with Gold Accent Emblem */}
-        <div className="h-18 flex items-center justify-between px-4 border-b border-slate-800/80 shrink-0 bg-[#0B1F3A]/60">
+        {/* Sidebar Header with Emblem */}
+        <div className="h-18 flex items-center justify-between px-4 border-b border-slate-800/80 shrink-0 bg-[#0B1F3A]/70">
           {!isCollapsed && (
             <Link href="/dashboard" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0757D5] to-[#2F80ED] flex items-center justify-center text-white shadow-lg ring-1 ring-[#C9A227]/40 group-hover:scale-105 transition-transform duration-200">
@@ -154,6 +141,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
           <button
+            type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer hover:bg-slate-800/60"
             title="Toggle sidebar"
@@ -185,6 +173,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                     <div key={item.label} className="space-y-1">
                       {hasSubItems ? (
                         <button
+                          type="button"
                           onClick={() => setExpandedSubmenu(isExpanded ? null : item.label)}
                           className={`w-full flex items-center justify-between ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer group hover:translate-x-1 ${
                             isItemActive
@@ -251,7 +240,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Sidebar Bottom Banner Widget */}
+        {/* Sidebar Bottom Emblem Card */}
         {!isCollapsed && (
           <div className="mx-3 my-2 p-3 rounded-xl bg-gradient-to-r from-[#0B1F3A] to-[#07152F] border border-[#C9A227]/20 text-white flex items-center gap-2.5 shadow-sm">
             <div className="w-7 h-7 rounded-lg bg-[#C9A227]/20 text-[#E4C766] flex items-center justify-center font-bold text-sm shrink-0">
@@ -269,15 +258,16 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           <Link 
             href="/dashboard/settings" 
             title="Settings"
-            className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2 text-xs font-bold text-slate-300 hover:bg-slate-800/60 hover:text-white rounded-xl transition-all hover:translate-x-0.5`}
+            className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2 text-xs font-bold text-slate-300 hover:bg-slate-800/60 hover:text-white rounded-xl transition-all hover:translate-x-1`}
           >
             <Settings className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} text-slate-400 shrink-0`} />
             {!isCollapsed && <span>Settings</span>}
           </Link>
           <button 
+            type="button"
             onClick={handleLogout} 
             title="Sign Out"
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2 text-xs font-bold text-slate-300 hover:bg-rose-950/40 hover:text-rose-400 rounded-xl transition-all hover:translate-x-0.5 cursor-pointer`}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2 text-xs font-bold text-slate-300 hover:bg-rose-950/40 hover:text-rose-400 rounded-xl transition-all hover:translate-x-1 cursor-pointer`}
           >
             <LogOut className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} text-slate-400 hover:text-rose-400 shrink-0`} />
             {!isCollapsed && <span>Sign Out</span>}
@@ -285,88 +275,16 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Mobile Drawer Backdrop & Drawer */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-
-          <div className="relative w-72 max-w-[85vw] bg-[#000E28] text-white h-full flex flex-col shadow-2xl z-10 animate-in slide-in-from-left duration-200">
-            <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 shrink-0">
-              <Link href="/dashboard" className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#0050CB] to-[#38BDF8] flex items-center justify-center text-white">
-                  <GraduationCap className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-sm font-black text-white">Global International ERP</span>
-              </Link>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white"
-                aria-label="Close navigation"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4 custom-scrollbar">
-              {navCategories.map((catGroup) => {
-                const visibleItems = catGroup.items.filter((item) => item.show);
-                if (visibleItems.length === 0) return null;
-
-                return (
-                  <div key={catGroup.category} className="space-y-1">
-                    <div className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
-                      {catGroup.category}
-                    </div>
-                    {visibleItems.map((item: any) => {
-                      const Icon = item.icon;
-                      const isActive = pathname === item.href;
-
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={`flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                            isActive
-                              ? 'bg-[#0050CB] text-white shadow-xs'
-                              : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                          }`}
-                        >
-                          <Icon className={`h-4 w-4 mr-3 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </nav>
-
-            <div className="p-3 border-t border-slate-800 space-y-1 shrink-0">
-              <button 
-                onClick={handleLogout} 
-                className="w-full flex items-center px-3.5 py-2.5 text-xs font-bold text-rose-400 hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer"
-              >
-                <LogOut className="h-4 w-4 mr-3 text-rose-400 shrink-0" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
         
-        {/* Dashboard Topbar */}
-        <header className="h-16 bg-white dark:bg-[#000E28] border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-20 shadow-2xs">
+        {/* Dashboard Topbar (72px) */}
+        <header className="h-18 bg-white dark:bg-[#07152F] border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-20 shadow-2xs">
           
-          {/* Left: Hamburger (mobile) + Campus Pill & Academic Year Dropdowns */}
+          {/* Left: Mobile Toggle + School Selector + Academic Year */}
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(true)}
               className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Open navigation menu"
@@ -376,15 +294,21 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
             {/* Campus Selector Dropdown Pill */}
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer">
-                <Building2 className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#38BDF8]" />
+              <button 
+                type="button"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-[#07152F] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Building2 className="w-3.5 h-3.5 text-[#0757D5] dark:text-[#2F80ED]" />
                 <span>Global International School</span>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" />
               </button>
 
               {/* Academic Year Selector Dropdown Pill */}
-              <button className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer">
-                <Calendar className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#38BDF8]" />
+              <button 
+                type="button"
+                className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-[#07152F] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5 text-[#0757D5] dark:text-[#2F80ED]" />
                 <span>Academic Year 2025 - 2026</span>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" />
               </button>
@@ -411,7 +335,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               </span>
             </div>
 
-            {/* Notification Bell with red badge 3 */}
+            {/* Notification Bell */}
             <div className="relative flex items-center justify-center">
               <NotificationDrawer />
             </div>
@@ -427,6 +351,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
             {/* Dark/Light Theme Toggle */}
             <button
+              type="button"
               onClick={toggleTheme}
               className="h-9 w-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/70 dark:border-slate-700"
               title="Toggle Dark/Light Mode"
@@ -436,6 +361,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
             {/* Language / Globe Toggle */}
             <button
+              type="button"
               onClick={() => setDirection(direction === 'ltr' ? 'rtl' : 'ltr')}
               className="h-9 w-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/70 dark:border-slate-700"
               title="Language / Direction"
@@ -449,17 +375,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 <img
                   src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop"
                   alt="Mrs. Sarah Johnson"
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-[#0050CB]/20"
-                  onError={(e: any) => {
-                    e.target.style.display = 'none';
-                  }}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-[#0757D5]/20"
                 />
-                <div className="h-9 w-9 rounded-full bg-[#0050CB] text-white font-bold flex items-center justify-center text-xs hidden">
-                  SJ
-                </div>
               </div>
               <div className="hidden sm:block text-left leading-tight pr-1">
-                <p className="text-xs font-extrabold text-[#000E28] dark:text-white truncate">
+                <p className="text-xs font-extrabold text-[#07152F] dark:text-white truncate">
                   Mrs. Sarah Johnson
                 </p>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
@@ -471,7 +391,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Scrollable Dashboard Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 bg-[#F4F7FC] dark:bg-[#000a1f] transition-colors flex flex-col justify-between">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 bg-[#F4F7FC] dark:bg-[#030A17] transition-colors flex flex-col justify-between">
           <div className="max-w-[1680px] w-full mx-auto space-y-6">
             {children}
           </div>
