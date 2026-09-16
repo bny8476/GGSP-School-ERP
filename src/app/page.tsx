@@ -113,6 +113,7 @@ const springZoomIn: Variants = {
 
 export default function Home() {
   const { t } = useLanguage();
+  const prefersReduced = useReducedMotion();
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -332,23 +333,217 @@ export default function Home() {
 
           </motion.div>
 
-          {/* RIGHT COLUMN: Hero Visual Showcase (Natural image, no box container) */}
+          {/* RIGHT COLUMN: Seamless Editorial Hero Composition (No box, organic blending) */}
           <motion.div 
             style={{ y: yHeroImage }}
-            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            initial={{ opacity: 0, scale: 0.96, y: 18 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-7 relative flex items-center justify-center mt-6 lg:mt-0"
+            transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-7 relative flex items-center justify-center mt-8 lg:mt-0 select-none"
           >
-            <div className="relative w-full max-w-[680px] flex items-center justify-center">
-              <Image
-                src="/hero-banner.jpg"
-                alt="E.A.S. Academy Modern School Management Platform"
-                width={1200}
-                height={900}
-                priority
-                className="w-full h-auto object-contain select-none pointer-events-none"
-              />
+            <div className="relative w-full max-w-[760px] lg:-mr-4 xl:-mr-8 flex items-center justify-center">
+              
+              {/* 1. Large Asymmetric Organic Atmospheric Backing Glows */}
+              <div className="absolute -inset-6 sm:-inset-10 bg-gradient-to-tr from-[#0050CB]/15 via-sky-300/20 to-indigo-200/15 dark:from-blue-600/15 dark:via-sky-400/10 dark:to-indigo-500/10 rounded-[48%_52%_65%_35%/50%_45%_55%_50%] blur-3xl pointer-events-none -z-10 animate-pulse" />
+              <div className="absolute top-2 right-4 w-72 sm:w-96 h-72 sm:h-96 bg-sky-200/35 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+              <div className="absolute bottom-6 left-6 w-60 sm:w-80 h-60 sm:h-80 bg-blue-100/40 dark:bg-indigo-900/15 rounded-full blur-2xl pointer-events-none -z-10" />
+
+              {/* 2. Soft Floating Organic Background Blob Silhouette */}
+              <svg 
+                className="absolute inset-0 w-full h-full text-[#E5EEFF]/40 dark:text-blue-950/20 pointer-events-none -z-10 scale-105" 
+                viewBox="0 0 600 500" 
+                fill="currentColor"
+              >
+                <path d="M420,120 C490,160, 560,230, 540,320 C520,410, 430,460, 330,470 C230,480, 130,450, 80,370 C30,290, 40,190, 100,120 C160,50, 260,30, 340,60 C370,70, 395,95, 420,120 Z" />
+              </svg>
+
+              {/* 3. Main Editorial Image with Soft Radial & Feathered Masking */}
+              <div 
+                className="relative w-full overflow-hidden flex items-center justify-center"
+                style={{
+                  maskImage: "radial-gradient(ellipse 82% 78% at 52% 48%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.85) 56%, rgba(0,0,0,0.3) 74%, rgba(0,0,0,0) 95%)",
+                  WebkitMaskImage: "radial-gradient(ellipse 82% 78% at 52% 48%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.85) 56%, rgba(0,0,0,0.3) 74%, rgba(0,0,0,0) 95%)"
+                }}
+              >
+                <Image
+                  src="/hero-banner.jpg"
+                  alt="E.A.S. Academy Modern School Management Platform - Empowering Students"
+                  width={1200}
+                  height={900}
+                  priority
+                  className="w-full h-auto object-cover scale-[1.03] pointer-events-none"
+                />
+
+                {/* Soft White-to-Light-Blue Edge Dissolves (Completely eliminates any remaining straight edge) */}
+                {/* Left Edge Fade into Text Area */}
+                <div className="absolute inset-y-0 left-0 w-28 sm:w-40 bg-gradient-to-r from-[#F2F7FE] via-[#F2F7FE]/70 to-transparent dark:from-[#000a1f] dark:via-[#000a1f]/70 pointer-events-none" />
+                {/* Bottom Edge Fade */}
+                <div className="absolute bottom-0 inset-x-0 h-24 sm:h-32 bg-gradient-to-t from-[#F2F7FE] via-[#F2F7FE]/75 to-transparent dark:from-[#000a1f] dark:via-[#000a1f]/75 pointer-events-none" />
+                {/* Top Edge Fade */}
+                <div className="absolute top-0 inset-x-0 h-16 sm:h-20 bg-gradient-to-b from-[#F2F7FE]/80 via-[#F2F7FE]/30 to-transparent dark:from-[#000a1f]/80 dark:via-[#000a1f]/30 pointer-events-none" />
+                {/* Right Edge Fade */}
+                <div className="absolute inset-y-0 right-0 w-24 sm:w-32 bg-gradient-to-l from-[#F2F7FE] via-[#F2F7FE]/60 to-transparent dark:from-[#000a1f] dark:via-[#000a1f]/60 pointer-events-none" />
+              </div>
+
+              {/* 4. Live Floating Digital Notification Badges (Unique & Complementary School ERP Actions) */}
+              
+              {/* Badge 1: Biometric Sync Active (Top-Left) */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: prefersReduced ? 0 : [0, -6, 0] 
+                }}
+                transition={{ 
+                  opacity: { duration: 0.6, delay: 0.3 },
+                  y: { duration: 4.5, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className="absolute top-[8%] left-[2%] sm:left-[6%] z-20 inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md border border-white/80 dark:border-blue-900/60 shadow-[0_8px_25px_rgba(0,80,203,0.12)] pointer-events-none"
+              >
+                <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <ShieldCheck className="w-3.5 sm:w-4 h-3.5 sm:h-4 stroke-[2.5]" />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">Biometric Sync Active</span>
+                  <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 dark:text-slate-500">Campus Gate · 99.8% Sync</span>
+                </div>
+              </motion.div>
+
+              {/* Badge 2: WhatsApp Alert Sent (Top-Right) */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: prefersReduced ? 0 : [0, 6, 0] 
+                }}
+                transition={{ 
+                  opacity: { duration: 0.6, delay: 0.5 },
+                  y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }
+                }}
+                className="absolute top-[6%] right-[4%] sm:right-[10%] z-20 inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md border border-white/80 dark:border-blue-900/60 shadow-[0_8px_25px_rgba(0,80,203,0.12)] pointer-events-none"
+              >
+                <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-[#38BDF8] flex items-center justify-center">
+                  <Sparkles className="w-3.5 sm:w-4 h-3.5 sm:h-4 stroke-[2.2]" />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">WhatsApp Alert Sent</span>
+                  <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 dark:text-slate-500">Daily Homework · 10:45 AM</span>
+                </div>
+              </motion.div>
+
+              {/* Badge 3: Library Book Issued (Mid-Right) */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: prefersReduced ? 0 : [0, -5, 0] 
+                }}
+                transition={{ 
+                  opacity: { duration: 0.6, delay: 0.7 },
+                  y: { duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: 0.8 }
+                }}
+                className="absolute top-[48%] right-[1%] sm:right-[4%] z-20 hidden sm:inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md border border-white/80 dark:border-blue-900/60 shadow-[0_8px_25px_rgba(0,80,203,0.12)] pointer-events-none"
+              >
+                <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <BookOpen className="w-3.5 sm:w-4 h-3.5 sm:h-4 stroke-[2.2]" />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">Library Book Issued</span>
+                  <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 dark:text-slate-500">Science & Nature · 11:30 AM</span>
+                </div>
+              </motion.div>
+
+              {/* Badge 4: Report Card Generated (Bottom-Left) */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: prefersReduced ? 0 : [0, 5, 0] 
+                }}
+                transition={{ 
+                  opacity: { duration: 0.6, delay: 0.9 },
+                  y: { duration: 5.2, repeat: Infinity, ease: "easeInOut", delay: 1.1 }
+                }}
+                className="absolute bottom-[16%] left-[1%] sm:left-[5%] z-20 hidden sm:inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md border border-white/80 dark:border-blue-900/60 shadow-[0_8px_25px_rgba(0,80,203,0.12)] pointer-events-none"
+              >
+                <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                  <Award className="w-3.5 sm:w-4 h-3.5 sm:h-4 stroke-[2.2]" />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">Report Card Generated</span>
+                  <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 dark:text-slate-500">Grade A+ Honors · Verified</span>
+                </div>
+              </motion.div>
+
+              {/* Badge 5: Class Timetable Ready (Bottom-Right) */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: prefersReduced ? 0 : [0, -4, 0] 
+                }}
+                transition={{ 
+                  opacity: { duration: 0.6, delay: 1.1 },
+                  y: { duration: 4.6, repeat: Infinity, ease: "easeInOut", delay: 1.5 }
+                }}
+                className="absolute bottom-[4%] right-[10%] sm:right-[16%] z-20 hidden md:inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md border border-white/80 dark:border-blue-900/60 shadow-[0_8px_25px_rgba(0,80,203,0.12)] pointer-events-none"
+              >
+                <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                  <GraduationCap className="w-3.5 sm:w-4 h-3.5 sm:h-4 stroke-[2.2]" />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">Class Timetable Ready</span>
+                  <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 dark:text-slate-500">Grade 5-A · Active</span>
+                </div>
+              </motion.div>
+
+              {/* 5. Delicate Hand-drawn Educational Doodles & Accents */}
+              
+              {/* Paper Airplane Flying Trajectory */}
+              <motion.div
+                animate={{ 
+                  y: prefersReduced ? 0 : [0, -8, 0],
+                  x: prefersReduced ? 0 : [0, 4, 0]
+                }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-4 left-[20%] sm:left-[24%] z-10 pointer-events-none opacity-85"
+              >
+                <svg width="70" height="42" viewBox="0 0 80 46" fill="none">
+                  <path 
+                    d="M5 36 C 18 42, 32 30, 28 18 C 24 8, 12 12, 18 22 C 24 32, 44 24, 60 8" 
+                    stroke="#60A5FA" 
+                    strokeWidth="1.8" 
+                    strokeDasharray="3.5 3.5" 
+                    strokeLinecap="round" 
+                  />
+                  <g transform="translate(56, 2) rotate(-14)">
+                    <polygon points="0,15 22,0 14,22 7,16" fill="#93C5FD" />
+                    <polygon points="0,15 22,0 8,14" fill="#0050CB" />
+                  </g>
+                </svg>
+              </motion.div>
+
+              {/* Cute Tilted Sticky Note: "Learn Grow Achieve ♡" */}
+              <motion.div 
+                whileHover={{ rotate: 0, scale: 1.05 }}
+                className="absolute bottom-[20%] right-[3%] sm:right-[7%] z-10 hidden sm:flex flex-col items-center justify-center p-3 rounded-md bg-amber-100/90 dark:bg-amber-900/60 border border-amber-200/80 shadow-md rotate-[6deg] pointer-events-none select-none"
+              >
+                <span 
+                  style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+                  className="text-amber-900 dark:text-amber-200 text-sm sm:text-base font-bold leading-tight text-center"
+                >
+                  Learn<br />Grow<br />Achieve ♡
+                </span>
+              </motion.div>
+
+              {/* Sparkle Stars */}
+              <div className="absolute top-[18%] right-[2%] z-10 pointer-events-none text-amber-400 animate-pulse">
+                <Star className="w-4 h-4 fill-current drop-shadow-sm" />
+              </div>
+              <div className="absolute bottom-[35%] left-[2%] z-10 pointer-events-none text-sky-400 animate-pulse">
+                <Sparkles className="w-4 h-4 drop-shadow-sm" />
+              </div>
+
             </div>
           </motion.div>
 
@@ -1291,63 +1486,127 @@ export default function Home() {
       {/* ========================================== */}
       {/* 7. BOTTOM CTA BANNER */}
       {/* ========================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-10">
+      {/* ========================================== */}
+      {/* 7. BOTTOM CTA BANNER (Coded Component Redesign) */}
+      {/* ========================================== */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 mb-10">
         <motion.div
           custom={0}
           variants={springZoomIn}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          whileHover={{ scale: 1.01 }}
-          className="relative bg-gradient-to-r from-[#000E28] via-[#0050CB] to-[#001438] text-white rounded-[36px] p-8 sm:p-12 overflow-hidden shadow-2xl transition-transform"
+          whileHover={{ scale: 1.008 }}
+          transition={{ duration: 0.3 }}
+          className="relative bg-gradient-to-r from-[#0047B6] via-[#004EB8] to-[#120D4E] text-white rounded-[32px] sm:rounded-[42px] lg:rounded-[50px] p-6 sm:p-8 lg:p-10 min-h-[220px] sm:min-h-[240px] lg:min-h-[250px] flex items-center overflow-hidden shadow-[0_20px_60px_rgba(0,71,182,0.3)] border-2 border-white/20 dark:border-blue-900/40"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            
-            {/* Left Content */}
-            <div className="lg:col-span-8">
-              <div className="text-xs font-bold uppercase tracking-wider text-blue-200 mb-2">
-                READY TO GET STARTED?
-              </div>
+          {/* Left Visual Artwork: Close-Up School Campus & Students */}
+          <div 
+            className="absolute left-0 top-0 bottom-0 w-[36%] md:w-[32%] lg:w-[28%] max-w-[360px] hidden md:block overflow-hidden pointer-events-none select-none z-0"
+            style={{
+              maskImage: "linear-gradient(to right, rgba(0,0,0,1) 62%, rgba(0,0,0,0) 100%)",
+              WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 62%, rgba(0,0,0,0) 100%)"
+            }}
+          >
+            <Image
+              src="/cta-students-school.jpg"
+              alt="E.A.S. Academy Students"
+              fill
+              priority
+              className="object-cover object-bottom"
+            />
+            {/* Soft blue gradient blend overlay */}
+            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-r from-transparent to-[#0047B6]/80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0047B6]/25 via-transparent to-transparent" />
+          </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-4">
-                Join E.A.S. Academy Today
-              </h2>
+          {/* Doodled Flying Airplane + "A Brighter Future Awaits" */}
+          <div className="absolute top-2.5 sm:top-3 lg:top-4 left-[18%] md:left-[20%] lg:left-[22%] xl:left-[22%] hidden md:flex items-center gap-2 pointer-events-none select-none z-10">
+            <svg width="56" height="32" viewBox="0 0 76 42" fill="none" className="shrink-0 drop-shadow">
+              <path 
+                d="M5 34 C 15 38, 26 28, 24 18 C 22 8, 11 12, 17 21 C 23 29, 39 23, 52 10" 
+                stroke="#93C5FD" 
+                strokeWidth="1.8" 
+                strokeDasharray="3.5 3.5" 
+                strokeLinecap="round" 
+              />
+              <g transform="translate(50, 2) rotate(-18)">
+                <polygon points="0,15 22,0 14,22 7,16" fill="#BFDBFE" />
+                <polygon points="0,15 22,0 8,14" fill="#FFFFFF" />
+                <polyline points="0,15 22,0 14,22 7,16 0,15" stroke="#FFFFFF" strokeWidth="0.8" />
+              </g>
+            </svg>
+            <span 
+              style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+              className="text-white text-sm sm:text-base lg:text-lg font-bold tracking-tight rotate-[-4deg] whitespace-nowrap drop-shadow leading-tight"
+            >
+              A Brighter<br />Future Awaits
+            </span>
+          </div>
 
-              <p className="text-blue-100 text-base sm:text-lg max-w-xl mb-8 font-normal">
-                Give your school the tools it needs to grow, succeed and make a lasting impact.
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap items-center gap-4">
-                <Link
-                  href="/admissions"
-                  className="group relative inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-[#0050CB] hover:bg-blue-50 font-bold text-base shadow-lg transition-all duration-300 hover:scale-105 overflow-hidden"
-                >
-                  <span className="relative z-10">Apply for Admission</span>
-                  <ArrowRight className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
-
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-base transition-all duration-300 hover:scale-105"
-                >
-                  <span>Admin Sign In</span>
-                </Link>
-              </div>
+          {/* Center Main Content (Positioned with clear breathing room from doodle) */}
+          <div className="relative z-10 w-full md:w-auto md:ml-[43%] lg:ml-[44%] xl:ml-[44%] max-w-xl flex flex-col justify-center">
+            {/* Tagline Pill */}
+            <div className="self-start inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full border border-sky-300/40 bg-sky-400/15 text-sky-200 text-[11px] font-extrabold tracking-wider uppercase mb-2 select-none backdrop-blur-sm">
+              <span>&lt; READY TO GET STARTED? &gt;</span>
             </div>
 
-            {/* Right Graphic: Book Stack Illustration + Doodle Text */}
-            <div className="lg:col-span-4 flex flex-col items-center justify-center relative hidden lg:flex">
-              <div className="space-y-1.5 transform rotate-[-6deg]">
-                <div className="w-44 h-5 bg-amber-400 rounded-sm shadow-md" />
-                <div className="w-48 h-6 bg-[#FF690C] rounded-sm shadow-md" />
-                <div className="w-52 h-6 bg-sky-400 rounded-sm shadow-md" />
-              </div>
-              <div className="mt-4 text-center font-sans italic text-sm font-bold text-blue-200">
-                Better<br />Education<br />Brighter<br />Future ♡
-              </div>
-            </div>
+            {/* Main Headline */}
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] xl:text-[36px] font-black text-white tracking-tight leading-[1.15] mb-2 lg:whitespace-nowrap">
+              Join E.A.S. Academy Today
+            </h2>
 
+            {/* Subtitle */}
+            <p className="text-blue-100/90 text-xs sm:text-sm lg:text-[14px] leading-relaxed mb-4 font-normal max-w-lg">
+              Give your school the tools it needs to grow, succeed and make a lasting impact.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-3.5">
+              {/* Primary Button */}
+              <Link
+                href="/admissions"
+                className="group relative inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white hover:bg-blue-50 text-[#0050CB] font-extrabold text-xs sm:text-sm shadow-[0_4px_18px_rgba(0,0,0,0.18)] transition-all duration-300 hover:scale-[1.04] active:scale-95"
+              >
+                <span>Apply for Admission</span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+
+              {/* Secondary Button */}
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#002D7A]/50 hover:bg-[#002D7A]/80 border border-white/40 hover:border-white/70 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:scale-[1.04] active:scale-95 backdrop-blur-sm shadow-sm"
+              >
+                <div className="w-4 h-4 rounded-full border-[1.5px] border-white/90 flex items-center justify-center text-[8px]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                </div>
+                <span>Admin Sign In</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Side Looping Trail + "Education Builds Tomorrow ♡" */}
+          <div className="absolute right-4 sm:right-6 lg:right-8 bottom-3 sm:bottom-4 hidden lg:flex items-center gap-2.5 pointer-events-none select-none z-10">
+            {/* Looping dotted trajectory */}
+            <div className="relative">
+              <svg width="90" height="42" viewBox="0 0 110 52" fill="none" className="text-sky-300/80">
+                <path 
+                  d="M5 38 C 25 44, 52 48, 66 30 C 76 17, 62 8, 54 18 C 45 29, 66 42, 102 20" 
+                  stroke="currentColor" 
+                  strokeWidth="1.8" 
+                  strokeDasharray="3.5 3.5" 
+                  strokeLinecap="round" 
+                />
+                {/* Yellow star / sparkle */}
+                <polygon points="96,15 97.5,18.5 101,18.5 98,20.5 99,24 96,21.5 93,24 94,20.5 91,18.5 94.5,18.5" fill="#FDE047" />
+              </svg>
+            </div>
+            <span 
+              style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
+              className="text-white text-lg sm:text-xl lg:text-[24px] font-bold leading-tight tracking-tight rotate-[6deg] whitespace-nowrap drop-shadow"
+            >
+              Education<br />Builds<br />Tomorrow ♡
+            </span>
           </div>
         </motion.div>
       </section>
