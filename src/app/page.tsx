@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, useScroll, useTransform, useInView, useReducedMotion, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView, useReducedMotion, AnimatePresence, type Variants } from 'framer-motion';
 import ModernAcademicExcellence from '@/components/ModernAcademicExcellence';
 import CtaBanner from '@/components/CtaBanner';
 import { useLanguage } from '@/context/LanguageContext';
@@ -95,14 +95,14 @@ function AnimatedCount({
 }
 
 // Spring Zoom-In Scroll Animation Variant Generator
-const springZoomIn = {
+const springZoomIn: Variants = {
   hidden: { opacity: 0, scale: 0.85, y: 35 },
   visible: (i: number = 0) => ({
     opacity: 1,
     scale: 1,
     y: 0,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
       damping: 14,
       delay: i * 0.08
@@ -134,7 +134,6 @@ export default function Home() {
     offset: ["start start", "end start"]
   });
 
-  const yDoodles = useTransform(scrollYProgress, [0, 1], [0, -50]);
   const yHeroImage = useTransform(scrollYProgress, [0, 1], [0, 30]);
 
   // Testimonials Auto-rotate timer
@@ -332,164 +331,24 @@ export default function Home() {
 
           </motion.div>
 
-          {/* RIGHT COLUMN: Photo Collage Grid + Vector Doodles (Zoom-In Reveal) */}
+          {/* RIGHT COLUMN: Hero Visual Showcase (Natural image, no box container) */}
           <motion.div 
             style={{ y: yHeroImage }}
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-7 relative flex items-center justify-center mt-6 lg:mt-0"
           >
-            
-            {/* Wavy Blob Container Background holding Collage Cards */}
-            <div className="relative w-full max-w-[620px] aspect-[1.1/1] bg-gradient-to-tr from-sky-100/70 via-blue-50/60 to-blue-100/70 dark:from-blue-950/40 dark:via-[#001438]/50 dark:to-sky-950/30 rounded-[44px] p-6 border border-white/60 dark:border-slate-800 shadow-xl overflow-hidden flex items-center justify-center">
-              
-              {/* Central Main Student Girl Photo (Zoom-In) */}
-              <motion.div 
-                custom={1}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.03 }}
-                className="absolute right-4 bottom-0 w-[270px] sm:w-[320px] h-[360px] sm:h-[420px] rounded-[32px] overflow-hidden shadow-2xl border-4 border-white dark:border-[#001438] z-20 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/hero-girl-student.png"
-                  alt="Student at E.A.S. Academy"
-                  fill
-                  priority
-                  className="object-cover object-top"
-                />
-              </motion.div>
-
-              {/* Top-Left Photo Card: School Campus */}
-              <motion.div 
-                custom={2}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.06, rotate: -2 }}
-                className="absolute left-6 top-6 w-[180px] sm:w-[210px] h-[130px] sm:h-[150px] rounded-2xl overflow-hidden shadow-lg border-3 border-white dark:border-[#001438] z-10 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/school-campus.jpg"
-                  alt="School Campus"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-
-              {/* Top-Right Photo Card: Classroom Boy Writing + Animated Crown Doodle */}
-              <motion.div 
-                custom={3}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.06, rotate: 2 }}
-                className="absolute right-6 top-6 w-[130px] sm:w-[150px] h-[100px] sm:h-[120px] rounded-2xl overflow-hidden shadow-lg border-3 border-white dark:border-[#001438] z-10 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/student-raising-hand.png"
-                  alt="Classroom Student"
-                  fill
-                  className="object-cover object-top"
-                />
-                {/* Crown Doodle over student head with subtle bob float */}
-                <motion.div 
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-1 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
-                >
-                  <svg width="28" height="20" viewBox="0 0 30 22" fill="none">
-                    <path d="M2 18 L6 6 L15 14 L24 6 L28 18 Z" stroke="#FBBF24" strokeWidth="2.5" fill="#FEF08A" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="6" cy="4" r="2" fill="#FBBF24" />
-                    <circle cx="15" cy="11" r="2" fill="#FBBF24" />
-                    <circle cx="24" cy="4" r="2" fill="#FBBF24" />
-                  </svg>
-                </motion.div>
-              </motion.div>
-
-              {/* Bottom-Left Photo Card: Student Studying */}
-              <motion.div 
-                custom={4}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.06, rotate: -2 }}
-                className="absolute left-6 bottom-8 w-[160px] sm:w-[185px] h-[110px] sm:h-[130px] rounded-2xl overflow-hidden shadow-lg border-3 border-white dark:border-[#001438] z-10 cursor-pointer transition-transform"
-              >
-                <Image
-                  src="/mother-daughter-study.png"
-                  alt="Home Learning"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-
-              {/* Bottom-Right Yellow Sticky Note Box: Interactive Tilt Doodle */}
-              <motion.div 
-                custom={5}
-                variants={springZoomIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.1, rotate: 0 }}
-                className="absolute right-4 bottom-6 bg-[#FEF08A] text-slate-800 rounded-2xl p-4 shadow-xl border-2 border-yellow-200 rotate-[4deg] z-30 max-w-[140px] text-center cursor-pointer transition-transform"
-              >
-                <p className="font-sans italic font-bold text-slate-800 text-sm leading-snug">
-                  Learn<br />Grow<br />Achieve
-                </p>
-                <div className="flex justify-center gap-1 text-amber-600 mt-1">
-                  <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>♡</motion.span>
-                  <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, delay: 0.3, repeat: Infinity }}>♡</motion.span>
-                </div>
-              </motion.div>
-
-              {/* CONTINUOUS ANIMATED VECTOR DOODLES */}
-              <motion.div style={{ y: yDoodles }} className="absolute inset-0 pointer-events-none z-30">
-                {/* Yellow Smiling Sun Doodle with Continuous Spin */}
-                <div className="absolute top-2 left-2 sm:left-4">
-                  <motion.svg 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    width="60" 
-                    height="60" 
-                    viewBox="0 0 100 100" 
-                    fill="none"
-                  >
-                    <circle cx="50" cy="50" r="22" stroke="#FBBF24" strokeWidth="4" fill="#FEF08A" fillOpacity="0.4" />
-                    <line x1="50" y1="12" x2="50" y2="2" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <line x1="50" y1="88" x2="50" y2="98" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <line x1="12" y1="50" x2="2" y2="50" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <line x1="88" y1="50" x2="98" y2="50" stroke="#FBBF24" strokeWidth="4" strokeLinecap="round" />
-                    <circle cx="43" cy="45" r="2.5" fill="#B45309" />
-                    <circle cx="57" cy="45" r="2.5" fill="#B45309" />
-                    <path d="M42 56 Q50 63 58 56" stroke="#B45309" strokeWidth="3" strokeLinecap="round" fill="none" />
-                  </motion.svg>
-                </div>
-
-                {/* Blue Paper Airplane with Floating Motion */}
-                <motion.div 
-                  animate={{ y: [0, -12, 0], x: [0, 8, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-2 left-[44%]"
-                >
-                  <svg width="120" height="60" viewBox="0 0 160 80" fill="none">
-                    <path d="M10 65 Q 40 15, 90 35 T 125 25" stroke="#3B82F6" strokeWidth="2.5" strokeDasharray="4 5" strokeLinecap="round" fill="none" />
-                    <g transform="translate(120, 10) rotate(-10)">
-                      <polygon points="0,20 30,0 20,30 10,22" fill="#60A5FA" />
-                      <polygon points="0,20 30,0 12,18" fill="#3B82F6" />
-                    </g>
-                  </svg>
-                </motion.div>
-              </motion.div>
-
+            <div className="relative w-full max-w-[680px] flex items-center justify-center">
+              <Image
+                src="/hero-banner.jpg"
+                alt="E.A.S. Academy Modern School Management Platform"
+                width={1200}
+                height={900}
+                priority
+                className="w-full h-auto object-contain select-none pointer-events-none"
+              />
             </div>
-
           </motion.div>
 
         </div>
