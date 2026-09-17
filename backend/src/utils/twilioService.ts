@@ -1,17 +1,26 @@
 import twilio from 'twilio';
 
 // Use environment variables or fallback to empty strings for safe local dev
-const accountSid = process.env.TWILIO_ACCOUNT_SID || '';
-const authToken = process.env.TWILIO_AUTH_TOKEN || '';
-const twilioWhatsAppNumber = process.env.TWILIO_WHATSAPP_NUMBER || '';
+const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
+const authToken = (process.env.TWILIO_AUTH_TOKEN || '').trim();
+const twilioWhatsAppNumber = (process.env.TWILIO_WHATSAPP_NUMBER || '').trim();
 
 let client: twilio.Twilio | null = null;
 
-if (accountSid && authToken) {
+// Only initialize Twilio if a valid SID starting with 'AC' and a non-placeholder token are provided
+const isValidTwilioSid = accountSid.startsWith('AC') && accountSid.length >= 20;
+const isValidAuthToken = authToken.length >= 10 && !authToken.includes('your_');
+
+if (isValidTwilioSid && isValidAuthToken) {
   try {
     client = twilio(accountSid, authToken);
+    console.log('✓ Twilio client initialized successfully.');
   } catch (err) {
-    console.error('Failed to initialize Twilio client:', err);
+    console.warn('⚠️ Twilio initialization warning:', err instanceof Error ? err.message : err);
+  }
+} else {
+  if (accountSid || authToken) {
+    console.log('ℹ️ Twilio credentials are placeholder or invalid (Account SID must start with "AC"). WhatsApp alerts will run in simulation mode.');
   }
 }
 
