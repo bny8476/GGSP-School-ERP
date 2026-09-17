@@ -329,7 +329,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Scrollable Portal Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-[#F7FAFE] via-white to-[#F6F9FE] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] transition-colors flex flex-col justify-between">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-[#F7FAFE] via-white to-[#F6F9FE] dark:from-[#000a1f] dark:via-[#000E28] dark:to-[#000a1f] transition-colors flex flex-col justify-between">
           <div className="max-w-[1600px] w-full mx-auto space-y-6 sm:space-y-8">
             {children}
           </div>

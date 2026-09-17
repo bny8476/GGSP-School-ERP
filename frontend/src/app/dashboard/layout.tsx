@@ -391,7 +391,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Scrollable Dashboard Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 bg-[#F4F7FC] dark:bg-[#030A17] transition-colors flex flex-col justify-between">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-7 bg-[#F4F7FC] dark:bg-[#030A17] transition-colors flex flex-col justify-between">
           <div className="max-w-[1680px] w-full mx-auto space-y-6">
             {children}
           </div>
