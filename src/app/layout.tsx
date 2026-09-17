@@ -16,6 +16,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "E.A.S. Academy School ERP",
   description: "Comprehensive management system for E.A.S. Academy School",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 import MainWrapper from "@/components/MainWrapper";
