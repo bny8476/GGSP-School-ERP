@@ -85,7 +85,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     {
       category: 'MANAGEMENT & OPERATIONS',
       items: [
-        { href: '/dashboard/daycare', label: 'Day Care Logs', icon: Clock, show: true },
         { href: '/dashboard/sports', label: 'Sports & Teams', icon: Activity, show: true },
         { 
           href: '/dashboard/form-builder', 

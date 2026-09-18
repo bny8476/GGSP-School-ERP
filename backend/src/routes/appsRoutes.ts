@@ -1,10 +1,13 @@
 import { Router } from 'express';
-import { protect } from '../middleware/auth';
 import { getChatMessages, sendChatMessage } from '../controllers/chatController';
 import {
   getTasks,
+  getStaffMembers,
   createTask,
   updateTaskStatus,
+  escalateTask,
+  triggerERPTasks,
+  deleteTask,
   getNotes,
   createNote,
   getFiles,
@@ -14,20 +17,24 @@ import {
 const router = Router();
 
 // Chat routes
-router.get('/chat/messages', protect, getChatMessages);
-router.post('/chat/send', protect, sendChatMessage);
+router.get('/chat/messages', getChatMessages);
+router.post('/chat/send', sendChatMessage);
 
-// Task routes
-router.get('/tasks', protect, getTasks);
-router.post('/tasks', protect, createTask);
-router.patch('/tasks/:id/status', protect, updateTaskStatus);
+// Task routes (Administrative Delegation & Tracking)
+router.get('/tasks', getTasks);
+router.get('/tasks/staff', getStaffMembers);
+router.post('/tasks', createTask);
+router.patch('/tasks/:id/status', updateTaskStatus);
+router.patch('/tasks/:id/escalate', escalateTask);
+router.post('/tasks/trigger-erp', triggerERPTasks);
+router.delete('/tasks/:id', deleteTask);
 
 // Note routes
-router.get('/notes', protect, getNotes);
-router.post('/notes', protect, createNote);
+router.get('/notes', getNotes);
+router.post('/notes', createNote);
 
 // File Manager routes
-router.get('/files', protect, getFiles);
-router.post('/files', protect, createFileRecord);
+router.get('/files', getFiles);
+router.post('/files', createFileRecord);
 
 export default router;

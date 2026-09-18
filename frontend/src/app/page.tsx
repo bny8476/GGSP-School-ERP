@@ -141,7 +141,7 @@ export default function Home() {
   // Testimonials Auto-rotate timer
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % 3);
+      setActiveTestimonial((prev: number) => (prev + 1) % 3);
     }, 4500);
     return () => clearInterval(timer);
   }, []);

@@ -61,6 +61,8 @@ import aiRoutes from './routes/aiRoutes';
 import nextGenRoutes from './routes/nextGenRoutes';
 import campusRoutes from './routes/campusRoutes';
 import enterpriseRoutes from './routes/enterpriseRoutes';
+import emailRoutes from './routes/emailRoutes';
+import noteRoutes from './routes/noteRoutes';
 
 
 // Connect to database
@@ -175,6 +177,8 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/nextgen', nextGenRoutes);
 app.use('/api/campuses', campusRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
+app.use('/api/email', emailRoutes);
+app.use('/api/notes', noteRoutes);
 
 app.use(errorHandler);
 
