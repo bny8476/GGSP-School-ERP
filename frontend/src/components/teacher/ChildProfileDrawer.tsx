@@ -1,0 +1,397 @@
+"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  User,
+  Phone,
+  Calendar,
+  CheckCircle2,
+  HeartPulse,
+  BookOpen,
+  Smile,
+  FileText,
+  TrendingUp,
+  MessageSquare,
+  Printer,
+  ShieldCheck,
+  AlertCircle
+} from "lucide-react";
+
+export interface StudentProfileData {
+  id: string;
+  rollNo: string;
+  name: string;
+  photo: string;
+  status: "Present" | "Absent" | "Late";
+  age: string;
+  gender: "Male" | "Female";
+  parentLabel: string;
+  parentName: string;
+  phone: string;
+  attendanceRate: number;
+}
+
+interface ChildProfileDrawerProps {
+  student: StudentProfileData | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onMessageParent?: (student: StudentProfileData) => void;
+}
+
+type TabKey =
+  | "Overview"
+  | "Attendance"
+  | "Learning"
+  | "Activities"
+  | "Growth"
+  | "Homework"
+  | "Health"
+  | "Documents";
+
+export default function ChildProfileDrawer({
+  student,
+  isOpen,
+  onClose,
+  onMessageParent,
+}: ChildProfileDrawerProps) {
+  const [activeTab, setActiveTab] = useState<TabKey>("Overview");
+
+  if (!student) return null;
+
+  const tabs: TabKey[] = [
+    "Overview",
+    "Attendance",
+    "Learning",
+    "Activities",
+    "Growth",
+    "Homework",
+    "Health",
+    "Documents",
+  ];
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-[#071126]/60 backdrop-blur-xs"
+          />
+
+          {/* Drawer Content */}
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-xl bg-white dark:bg-[#111827] h-full shadow-2xl z-10 flex flex-col overflow-hidden border-l border-slate-200 dark:border-slate-800"
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-blue-50/50 via-indigo-50/30 to-purple-50/40 dark:from-slate-900 dark:to-slate-900/80">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={student.photo}
+                    alt={student.name}
+                    className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-500/20 shadow-md"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-black text-slate-800 dark:text-white">
+                        {student.name}
+                      </h2>
+                      <span className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-black">
+                        ✓
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      Roll No: <span className="font-bold text-slate-700 dark:text-slate-300">{student.rollNo}</span> • LKG - Section A
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          student.status === "Present"
+                            ? "bg-emerald-50 text-emerald-600"
+                            : student.status === "Absent"
+                            ? "bg-rose-50 text-rose-600"
+                            : "bg-amber-50 text-amber-600"
+                        }`}
+                      >
+                        • {student.status} Today
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                        {student.attendanceRate}% Term Rate
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* 8-Tabs Navigation Bar */}
+              <div className="flex items-center gap-2 mt-5 overflow-x-auto custom-scrollbar pb-1">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      activeTab === tab
+                        ? "bg-[#2563EB] text-white shadow-xs"
+                        : "text-slate-500 hover:text-slate-800 dark:hover:text-white bg-white/60 dark:bg-slate-800/60"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tab Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar text-xs">
+              {/* TAB 1: OVERVIEW */}
+              {activeTab === "Overview" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Age</span>
+                      <span className="font-bold text-slate-800 dark:text-white">{student.age}</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Gender</span>
+                      <span className="font-bold text-slate-800 dark:text-white">{student.gender}</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Admission No.</span>
+                      <span className="font-bold text-slate-800 dark:text-white">GGPS-2026-LKG-{student.rollNo}</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Blood Group</span>
+                      <span className="font-bold text-rose-600">B+ Positive</span>
+                    </div>
+                  </div>
+
+                  {/* Parent Details Card */}
+                  <div className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-3">
+                    <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-2">
+                      <User className="w-4 h-4 text-blue-600" />
+                      Primary Guardian Details
+                    </span>
+                    <div className="space-y-1.5 pt-1 text-slate-600 dark:text-slate-300">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">{student.parentLabel}:</span>
+                        <span className="font-bold text-slate-800 dark:text-white">{student.parentName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Phone Contact:</span>
+                        <span className="font-bold text-blue-600">{student.phone}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Emergency Alert:</span>
+                        <span className="font-bold text-emerald-600">SMS & WhatsApp Active</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Residential Address</span>
+                    <p className="font-medium text-slate-700 dark:text-slate-200 leading-relaxed">
+                      Flat 402, Sunshine Meadows, Green Valley Road, Sector 4, Bangalore - 560034
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: ATTENDANCE */}
+              {activeTab === "Attendance" && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] text-blue-600 font-bold uppercase tracking-wider block">Term Attendance Rate</span>
+                      <span className="text-2xl font-black text-blue-700 dark:text-blue-300 mt-0.5 block">{student.attendanceRate}%</span>
+                      <span className="text-[10px] text-slate-500">Above minimum threshold (85%)</span>
+                    </div>
+                    <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold">
+                      ✓
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700">
+                      <span className="text-lg font-black block">44</span>
+                      <span className="text-[10px] font-bold">Days Present</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-rose-50 text-rose-700">
+                      <span className="text-lg font-black block">2</span>
+                      <span className="text-[10px] font-bold">Days Absent</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-amber-50 text-amber-700">
+                      <span className="text-lg font-black block">1</span>
+                      <span className="text-[10px] font-bold">Late Arrivals</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: LEARNING */}
+              {activeTab === "Learning" && (
+                <div className="space-y-3">
+                  {[
+                    { skill: "Letter Recognition & Phonics Sounds", level: "Exemplary", pct: 95 },
+                    { skill: "Numbers & Counting (1 to 10)", level: "Proficient", pct: 90 },
+                    { skill: "Pencil & Crayon Grip Control", level: "Proficient", pct: 85 },
+                    { skill: "Rhyme Recitation & Actions", level: "Exemplary", pct: 98 },
+                    { skill: "Sharing & Turn Taking", level: "Developing", pct: 75 },
+                  ].map((item, i) => (
+                    <div key={i} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-slate-800 dark:text-white">{item.skill}</span>
+                        <span className="text-[10px] font-bold text-blue-600">{item.level}</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-600 rounded-full" style={{ width: `${item.pct}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* TAB 4: ACTIVITIES */}
+              {activeTab === "Activities" && (
+                <div className="space-y-3">
+                  {[
+                    { title: "Animal Mask Finger Painting", date: "Yesterday", status: "Completed with High Engagement" },
+                    { title: "Sensory Bin Rice & Bean Sorting", date: "16 Sep", status: "Completed" },
+                    { title: "Rhyme Time: The Lion and The Mouse", date: "15 Sep", status: "Actively Participated" },
+                  ].map((act, i) => (
+                    <div key={i} className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase">{act.date}</span>
+                      <h4 className="font-bold text-slate-800 dark:text-white text-xs">{act.title}</h4>
+                      <p className="text-[11px] text-emerald-600 font-medium">✓ {act.status}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* TAB 5: GROWTH */}
+              {activeTab === "Growth" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase">Height</span>
+                      <span className="text-base font-black text-slate-800 dark:text-white block">103.2 cm</span>
+                      <span className="text-[10px] text-emerald-600 font-medium">55th WHO Percentile</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase">Weight</span>
+                      <span className="text-base font-black text-slate-800 dark:text-white block">16.4 kg</span>
+                      <span className="text-[10px] text-emerald-600 font-medium">50th WHO Percentile</span>
+                    </div>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Developmental Milestones</span>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                      Child runs smoothly, kicks a ball, jumps in place with two feet, and follows three-step directions cheerfully.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 6: HOMEWORK */}
+              {activeTab === "Homework" && (
+                <div className="space-y-3">
+                  {[
+                    { title: "Alphabet Tracing Booklet (Letters A–E)", status: "Submitted & Star Awarded", date: "Due 18 Sep" },
+                    { title: "Count 5 Round Objects at Home", status: "Submitted", date: "Due 15 Sep" },
+                  ].map((hw, i) => (
+                    <div key={i} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                      <div className="flex justify-between">
+                        <span className="font-bold text-slate-800 dark:text-white">{hw.title}</span>
+                        <span className="text-emerald-600 font-bold text-[10px]">✓ Done</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">{hw.date} • {hw.status}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* TAB 7: HEALTH */}
+              {activeTab === "Health" && (
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 space-y-1">
+                    <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" />
+                      No Known Medical Allergies
+                    </span>
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                      Immunization schedule is 100% up to date for kindergarten entry.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Pediatrician Info</span>
+                    <p className="font-bold text-slate-800 dark:text-white">Dr. Arvind Rao, MD Pediatrics</p>
+                    <p className="text-slate-500 text-[11px]">Apollo Children&apos;s Clinic • +91 98765 11223</p>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 8: DOCUMENTS */}
+              {activeTab === "Documents" && (
+                <div className="space-y-2">
+                  {[
+                    "Birth_Certificate_Aarav.pdf",
+                    "Immunization_Record_Card.pdf",
+                    "Admissions_Enrollment_Form.pdf",
+                    "Proof_Of_Residence.pdf",
+                  ].map((doc, i) => (
+                    <div key={i} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span className="font-bold text-slate-700 dark:text-slate-200 text-xs">{doc}</span>
+                      </div>
+                      <button className="text-blue-600 hover:underline font-bold text-[11px] cursor-pointer">
+                        View
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sticky Footer Actions */}
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#111827] flex items-center justify-between gap-3">
+              <button
+                onClick={() => {
+                  onMessageParent?.(student);
+                  onClose();
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Message {student.parentLabel}</span>
+              </button>
+              <button
+                onClick={onClose}
+                className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}

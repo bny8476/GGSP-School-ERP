@@ -1,7 +1,48 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 import Role from '../models/Role';
+import Employee from '../models/Employee';
+import TeacherProfile from '../models/TeacherProfile';
 import bcrypt from 'bcryptjs';
+
+// Helper to sync Employee & TeacherProfile from User
+const syncEmployeeAndTeacher = async (userDoc: any, payload: any) => {
+  try {
+    const isStaffRole = userDoc.role?.name !== 'Parent';
+    if (isStaffRole) {
+      const employee = await Employee.findOneAndUpdate(
+        { userId: userDoc._id },
+        {
+          userId: userDoc._id,
+          firstName: userDoc.firstName,
+          lastName: userDoc.lastName,
+          designation: payload.designation || userDoc.designation || 'Staff Member',
+          qualification: payload.qualification || userDoc.qualification,
+          experienceYears: payload.experienceYears ?? userDoc.experienceYears ?? 0,
+          salary: payload.salary ?? userDoc.salary ?? 0,
+          joiningDate: payload.joinDate ? new Date(payload.joinDate) : (userDoc.joinDate || new Date()),
+          performanceNotes: payload.performanceNotes || userDoc.performanceNotes,
+          employmentStatus: userDoc.isActive === false ? 'Terminated' : 'Active',
+        },
+        { upsert: true, new: true }
+      );
+
+      if (payload.teachingAssignments || userDoc.teachingAssignments?.length > 0) {
+        await TeacherProfile.findOneAndUpdate(
+          { userId: userDoc._id },
+          {
+            userId: userDoc._id,
+            employeeId: employee._id,
+            teachingAssignments: payload.teachingAssignments || userDoc.teachingAssignments || [],
+          },
+          { upsert: true, new: true }
+        );
+      }
+    }
+  } catch (err) {
+    console.warn('Non-blocking Employee/TeacherProfile sync warning:', err);
+  }
+};
 
 // @desc    Get all staff/users
 // @route   GET /api/users
@@ -10,21 +51,10 @@ export const getUsers = async (req: Request, res: Response) => {
     const userRole = req.user?.role;
     const isFullAccess = ['Admin', 'SuperAdmin', 'Principal'].includes(userRole || '');
 
-    let query = User.find()
-      .populate('role', 'name')
-      .populate('teachingAssignments.classId', 'name')
-      .populate('teachingAssignments.subjectId', 'name');
-
-    if (!isFullAccess) {
-      query = query.select('-passwordHash -salary -performanceNotes -qualification -experienceYears');
-    } else {
-      query = query.select('-passwordHash');
-    }
-
-    const users = await query;
+    const users = await User.find().select('-passwordHash').populate('role');
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: 'Server Error', error });
   }
 };
 
@@ -62,6 +92,9 @@ export const createUser = async (req: Request, res: Response) => {
       teachingAssignments,
       joinDate: joinDate ? new Date(joinDate) : undefined,
     });
+
+    // Relational Sync: Employee & TeacherProfile
+    await syncEmployeeAndTeacher(user, req.body);
 
     res.status(201).json({
       _id: user._id,
@@ -113,6 +146,9 @@ export const updateUser = async (req: Request, res: Response) => {
       .populate('teachingAssignments.classId', 'name')
       .populate('teachingAssignments.subjectId', 'name');
     if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Relational Sync: Employee & TeacherProfile
+    await syncEmployeeAndTeacher(user, req.body);
     
     res.json(user);
   } catch (error) {

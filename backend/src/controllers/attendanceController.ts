@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Attendance from '../models/Attendance';
+import StudentAttendance from '../models/StudentAttendance';
+import EmployeeAttendance from '../models/EmployeeAttendance';
+import Student from '../models/Student';
+import Parent from '../models/Parent';
+import StudentParent from '../models/StudentParent';
 import { getIO } from '../socket';
 
 // @desc    Get attendance records for a specific date
@@ -26,17 +31,23 @@ export const getAttendance = async (req: Request, res: Response) => {
       query.entityType = entityType;
     }
 
-    // Role-based filtering for Parents
+    // Role-based filtering for Parents (query both StudentParent and direct parentId)
     if (req.user?.role === 'Parent') {
-      const Student = require('../models/Student').default;
-      const students = await Student.find({ parentId: req.user.id });
-      const studentIds = students.map((s: { _id: mongoose.Types.ObjectId }) => s._id);
-      query.entityId = { $in: studentIds };
+      const parent = await Parent.findOne({ userId: req.user.id });
+      if (!parent) {
+        return res.json([]);
+      }
+      const linkedRecords = await StudentParent.find({ parentId: parent._id }).select('studentId');
+      const linkedStudentIds = linkedRecords.map((r) => r.studentId);
+      const directStudents = await Student.find({ parentId: parent._id }).select('_id');
+      const allStudentIds = [...new Set([...linkedStudentIds.map(String), ...directStudents.map((s) => String(s._id))])];
+
+      query.entityId = { $in: allStudentIds.map((id) => new mongoose.Types.ObjectId(id)) };
       query.entityType = 'Student';
     }
 
     const attendance = await Attendance.find(query)
-      .populate('entityId', 'firstName lastName grade name') // Works dynamically
+      .populate('entityId', 'firstName lastName grade name classId sectionId')
       .populate('markedBy', 'firstName lastName');
       
     res.json(attendance);
@@ -56,9 +67,8 @@ export const markAttendance = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Records must be an array' });
     }
 
-    // Upsert each record (update if exists for that day, else insert)
-    const operations = records.map((record) => {
-      // Normalize date to start of day
+    // Upsert each record into legacy Attendance
+    const legacyOperations = records.map((record) => {
       const recordDate = new Date(record.date);
       recordDate.setHours(0, 0, 0, 0);
 
@@ -81,7 +91,48 @@ export const markAttendance = async (req: Request, res: Response) => {
       };
     });
 
-    await Attendance.bulkWrite(operations);
+    await Attendance.bulkWrite(legacyOperations);
+
+    // Non-blocking Relational Sync into domain collections
+    try {
+      for (const record of records) {
+        const recordDate = new Date(record.date);
+        recordDate.setHours(0, 0, 0, 0);
+
+        if (record.entityType === 'Student') {
+          const studentDoc = await Student.findById(record.entityId).select('classId sectionId');
+          if (studentDoc && studentDoc.classId) {
+            await StudentAttendance.findOneAndUpdate(
+              { studentId: record.entityId, date: recordDate },
+              {
+                studentId: record.entityId,
+                classId: studentDoc.classId,
+                sectionId: studentDoc.sectionId,
+                date: recordDate,
+                status: record.status,
+                remarks: record.remarks,
+                markedBy: markedById ? new mongoose.Types.ObjectId(markedById) : undefined,
+              },
+              { upsert: true }
+            );
+          }
+        } else if (record.entityType === 'User') {
+          await EmployeeAttendance.findOneAndUpdate(
+            { userId: record.entityId, date: recordDate },
+            {
+              userId: record.entityId,
+              date: recordDate,
+              status: record.status,
+              remarks: record.remarks,
+              markedBy: markedById ? new mongoose.Types.ObjectId(markedById) : undefined,
+            },
+            { upsert: true }
+          );
+        }
+      }
+    } catch (domainSyncErr) {
+      console.warn('Domain attendance sync warning:', domainSyncErr);
+    }
 
     res.status(200).json({ message: 'Attendance marked successfully' });
   } catch (error) {

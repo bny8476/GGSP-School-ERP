@@ -7,49 +7,106 @@ import {
   Cake, Clock, AlertTriangle, FileText, Image as ImageIcon, 
   HeartPulse, CheckCircle2, ArrowRight, TrendingUp, 
   Sparkles, CalendarCheck, Bus, Megaphone, ChevronRight,
-  Shield, Check, PlusCircle, CreditCard, Activity, Star
+  Shield, Check, PlusCircle, CreditCard, Activity, Star,
+  BookOpen, Award, MessageSquare, ClipboardList, Send,
+  ListTodo, CheckSquare, Layers, BookmarkCheck, UserX, AlertCircle,
+  Bell
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import TeacherWorkspace from '@/components/teacher/TeacherWorkspace';
 
 export default function DashboardOverview() {
   const { t } = useLanguage();
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [userName, setUserName] = useState("Administrator");
-
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
+  const [userName, setUserName] = useState("Faculty Member");
+  const [userRole, setUserRole] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
       try {
-        const parsed = JSON.parse(userStr);
-        if (parsed?.firstName) {
-          setUserName(`${parsed.firstName} ${parsed.lastName || ''}`.trim());
+        const u = localStorage.getItem('user');
+        if (u) {
+          const parsed = JSON.parse(u);
+          return ((typeof parsed.role === 'string' ? parsed.role : parsed.role?.name) || '').toLowerCase();
         }
       } catch (e) {}
     }
-
-    const fetchStats = async () => {
+    return '';
+  });
+  const [currentUser, setCurrentUser] = useState<any>(() => {
+    if (typeof window !== 'undefined') {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/stats`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch dashboard stats', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        const u = localStorage.getItem('user');
+        return u ? JSON.parse(u) : null;
+      } catch (e) {}
+    }
+    return null;
+  });
 
+  const fetchStats = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const res = await fetch(`${apiBase}/api/v1/dashboard/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token || ''}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ggps_cached_stats', JSON.stringify(data));
+        }
+      }
+    } catch (error) {
+      console.warn('Dashboard stats sync notice:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // 1. Instant optimistic state from localStorage cache for 0ms load
+    const userStr = localStorage.getItem('user');
+    let currentRole = '';
+    if (userStr) {
+      try {
+        const parsed = JSON.parse(userStr);
+        setCurrentUser(parsed);
+        if (parsed?.firstName) {
+          setUserName(`${parsed.firstName} ${parsed.lastName || ''}`.trim());
+        }
+        currentRole = ((typeof parsed.role === 'string' ? parsed.role : parsed.role?.name) || '').toLowerCase();
+        setUserRole(currentRole);
+      } catch (e) {}
+    }
+
+    const cachedStatsStr = localStorage.getItem('ggps_cached_stats');
+    if (cachedStatsStr) {
+      try {
+        const parsedStats = JSON.parse(cachedStatsStr);
+        setStats(parsedStats);
+        setIsLoading(false);
+      } catch (e) {}
+    } else if (currentRole === 'teacher') {
+      // Teachers render instant workspace without waiting on network
+      setIsLoading(false);
+    }
+
+    // 2. Background fresh fetch
     fetchStats();
   }, []);
 
-  if (isLoading) {
+  if (isLoading && !stats && userRole !== 'teacher') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
         <div className="w-12 h-12 rounded-full border-4 border-[#0050CB]/20 border-t-[#0050CB] animate-spin" />
@@ -316,6 +373,19 @@ export default function DashboardOverview() {
           </>
         )}
       </div>
+    );
+  }
+
+  // ==========================================
+  // TEACHER ACADEMIC & CLASSROOM WORKSPACE
+  // ==========================================
+  if (userRole === 'teacher' || stats?.isTeacherPortal) {
+    return (
+      <TeacherWorkspace 
+        user={currentUser} 
+        stats={stats} 
+        onRefresh={fetchStats} 
+      />
     );
   }
 

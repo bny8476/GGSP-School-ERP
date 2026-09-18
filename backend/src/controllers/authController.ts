@@ -5,14 +5,94 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import Role from '../models/Role';
 
-// Generate JWT
-const generateToken = (id: string, role: string) => {
+// Capability permission matrix per role
+export const ROLE_PERMISSIONS: Record<string, string[]> = {
+  SuperAdmin: ['*'],
+  Admin: [
+    'students:*',
+    'teachers:*',
+    'parents:*',
+    'academics:*',
+    'attendance:*',
+    'admissions:*',
+    'finance:*',
+    'reports:*',
+    'settings:*',
+  ],
+  Principal: [
+    'students:read',
+    'teachers:read',
+    'academics:*',
+    'reports:*',
+    'attendance:read',
+    'announcements:*',
+  ],
+  Teacher: [
+    'attendance:read',
+    'attendance:mark',
+    'students:read',
+    'diary:create',
+    'diary:read',
+    'assessments:create',
+    'assessments:read',
+    'academics:read',
+    'timetable:read',
+  ],
+  Parent: [
+    'child:read',
+    'attendance:read',
+    'diary:read',
+    'fees:read',
+    'assessments:read',
+    'announcements:read',
+  ],
+  Accountant: [
+    'finance:*',
+    'fees:*',
+    'payroll:*',
+    'reports:read',
+  ],
+  Receptionist: [
+    'visitors:*',
+    'admissions:read',
+    'announcements:read',
+  ],
+};
+
+// Generate JWT with permissions in payload
+export const generateToken = (id: string, role: string, permissions?: string[]) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new Error('JWT_SECRET is missing from environment');
   }
-  return jwt.sign({ user: { id, role } }, secret, {
+  const resolvedPermissions = permissions && permissions.length > 0
+    ? permissions
+    : (ROLE_PERMISSIONS[role] || []);
+
+  return jwt.sign({ user: { id, role, permissions: resolvedPermissions } }, secret, {
     expiresIn: '30d',
+  });
+};
+
+// Cookie options for HttpOnly JWT session
+export const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: (process.env.NODE_ENV === 'production' ? 'none' : 'lax') as 'none' | 'lax',
+  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  path: '/',
+};
+
+export const setAuthCookie = (res: Response, token: string) => {
+  res.cookie('token', token, COOKIE_OPTIONS);
+};
+
+export const clearAuthCookie = (res: Response) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: (process.env.NODE_ENV === 'production' ? 'none' : 'lax') as 'none' | 'lax',
+    path: '/',
   });
 };
 
@@ -33,7 +113,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const defaultRoleName = 'Parent';
     let role = await Role.findOne({ name: defaultRoleName });
     if (!role) {
-      role = await Role.create({ name: defaultRoleName, permissions: [] });
+      role = await Role.create({ name: defaultRoleName, permissions: ROLE_PERMISSIONS['Parent'] });
     }
 
     // Hash password
@@ -50,13 +130,17 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     if (user) {
+      const perms = role.permissions?.length > 0 ? role.permissions : ROLE_PERMISSIONS['Parent'];
+      const token = generateToken(user.id, role.name, perms);
+      setAuthCookie(res, token);
       res.status(201).json({
         _id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         role: role.name,
-        token: generateToken(user.id, role.name),
+        permissions: perms,
+        token,
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -86,13 +170,20 @@ export const loginUser = async (req: Request, res: Response) => {
         if (user && (await bcrypt.compare(password, user.passwordHash))) {
           // @ts-ignore
           const roleName = user.role?.name || 'SuperAdmin';
+          const permissions = (user.role as any)?.permissions?.length > 0
+            ? (user.role as any).permissions
+            : (ROLE_PERMISSIONS[roleName] || []);
+
+          const token = generateToken(user.id, roleName, permissions);
+          setAuthCookie(res, token);
           return res.json({
             _id: user.id,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
             role: roleName,
-            token: generateToken(user.id, roleName),
+            permissions,
+            token,
           });
         }
       } catch (dbErr) {
@@ -113,13 +204,17 @@ export const loginUser = async (req: Request, res: Response) => {
     const seedUser = seedAccounts[normalizedEmail];
     if (seedUser && (password === 'password123' || password === 'admin123')) {
       const dummyId = '66789abcdef0123456789abc';
+      const permissions = ROLE_PERMISSIONS[seedUser.role] || [];
+      const token = generateToken(dummyId, seedUser.role, permissions);
+      setAuthCookie(res, token);
       return res.json({
         _id: dummyId,
         firstName: seedUser.firstName,
         lastName: seedUser.lastName,
         email: normalizedEmail,
         role: seedUser.role,
-        token: generateToken(dummyId, seedUser.role),
+        permissions,
+        token,
         isDemoMode: true,
       });
     }
@@ -131,6 +226,14 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Logout user / clear auth cookie
+// @route   POST /api/auth/logout
+// @access  Public
+export const logoutUser = async (_req: Request, res: Response) => {
+  clearAuthCookie(res);
+  return res.json({ success: true, message: 'Logged out successfully' });
+};
+
 // @desc    Get user profile
 // @route   GET /api/auth/profile
 // @access  Private
@@ -138,7 +241,14 @@ export const getUserProfile = async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.user?.id).select('-passwordHash').populate('role');
     if (user) {
-      res.json(user);
+      const roleName = (user.role as any)?.name || req.user?.role || 'SuperAdmin';
+      const permissions = (user.role as any)?.permissions?.length > 0
+        ? (user.role as any).permissions
+        : (ROLE_PERMISSIONS[roleName] || []);
+      res.json({
+        ...user.toObject(),
+        permissions,
+      });
     } else {
       res.status(404).json({ message: 'User not found' });
     }

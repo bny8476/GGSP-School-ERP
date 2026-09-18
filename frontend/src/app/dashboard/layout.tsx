@@ -22,9 +22,18 @@ import NotificationDrawer from '@/components/ui/NotificationDrawer';
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const u = localStorage.getItem('user');
+        return u ? JSON.parse(u) : null;
+      } catch (e) {}
+    }
+    return null;
+  });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [teacherProfileDropdownOpen, setTeacherProfileDropdownOpen] = useState(false);
   const { theme, toggleTheme, direction, setDirection } = useTheme();
   const { t } = useLanguage();
 
@@ -34,19 +43,36 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       try {
         const parsed = JSON.parse(userStr);
         setUser(parsed);
+        const role = ((typeof parsed.role === 'string' ? parsed.role : parsed.role?.name) || '').toLowerCase();
+        if (role === 'parent') {
+          // Parents belong in the dedicated Parent Portal (/portal)
+          router.push('/portal');
+        }
       } catch (e) {}
+    } else {
+      router.push('/login');
     }
-  }, []);
+  }, [router]);
 
   // Close mobile menu on path change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      await fetch(`${apiBase}/api/v1/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.warn("Logout request failed:", e);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      router.push('/login');
+    }
   };
 
   const roleStr = typeof user?.role === 'string' ? user.role : (user?.role?.name || '');
@@ -55,6 +81,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const isSuperAdmin = r === 'superadmin' || r === 'admin';
   const isPrincipal = r === 'principal' || isSuperAdmin;
   const isTeacher = r === 'teacher' || isSuperAdmin;
+  const isAccountant = r === 'accountant' || isSuperAdmin;
 
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>('Form Builder & Surveys');
 
@@ -63,8 +90,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       category: 'MAIN',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true },
-        { href: '/dashboard/calendar', label: 'School Calendar', icon: Gift, show: true },
-        { href: '/dashboard/email', label: 'Email Client', icon: FileText, show: true },
+        { href: '/dashboard/calendar', label: 'School Calendar', icon: Calendar, show: true },
         { href: '/dashboard/todo', label: 'To-Do Tasks', icon: CheckCircle2, show: true },
         { href: '/dashboard/notes', label: 'Notes & Ideas', icon: FileText, show: true },
         { href: '/dashboard/file-manager', label: 'File Manager', icon: Package, show: true },
@@ -75,37 +101,315 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       items: [
         { href: '/dashboard/students', label: 'Student 360°', icon: GraduationCap, show: true },
         { href: '/dashboard/attendance', label: 'Attendance Engine', icon: UserCheck, show: true },
-        { href: '/dashboard/daily-activity', label: 'Daily Diary', icon: Activity, show: true },
+        { href: '/dashboard/daily-activity', label: 'Daily Diary', icon: Activity, show: isTeacher || isPrincipal },
         { href: '/dashboard/classroom', label: 'Digital Classroom', icon: BookOpen, show: true },
+        { href: '/dashboard/classes', label: 'Classes & Sections', icon: Building2, show: isSuperAdmin || isPrincipal },
         { href: '/dashboard/curriculum', label: 'Curriculum & Syllabus', icon: BookOpen, show: true },
         { href: '/dashboard/assessments', label: 'Exams & Assessment', icon: FileText, show: true },
         { href: '/dashboard/online-exams', label: 'Online Exam Engine', icon: CheckCircle2, show: true },
       ],
     },
     {
-      category: 'MANAGEMENT & OPERATIONS',
+      category: 'ADMISSIONS & COMMUNITY',
       items: [
-        { href: '/dashboard/sports', label: 'Sports & Teams', icon: Activity, show: true },
+        { href: '/dashboard/admissions', label: 'Admissions Desk', icon: Sparkles, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/parents', label: 'Parent Directory', icon: Users, show: isSuperAdmin || isPrincipal || isTeacher },
+      ],
+    },
+    {
+      category: 'FINANCE & BILLING',
+      items: [
+        { href: '/dashboard/fees', label: 'Fee Collections', icon: DollarSign, show: isAccountant },
+        { href: '/dashboard/financial-audit', label: 'Financial Audit', icon: WalletCards, show: isAccountant },
+      ],
+    },
+    {
+      category: 'STAFF & HUMAN RESOURCES',
+      items: [
+        { href: '/dashboard/teachers', label: 'Staff & Faculty', icon: Users, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/leaves', label: 'Leave Requests', icon: Clock, show: true },
+        { href: '/dashboard/payroll', label: 'Payroll & Slips', icon: DollarSign, show: isSuperAdmin || isAccountant },
+      ],
+    },
+    {
+      category: 'OPERATIONS & LOGISTICS',
+      items: [
+        { href: '/dashboard/transport', label: 'Transport & Fleet', icon: Bus, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/inventory', label: 'Inventory & Supplies', icon: Package, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/asset-qr', label: 'Asset QR Codes', icon: QrCode, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/visitors', label: 'Campus Visitor Logs', icon: ShieldCheck, show: true },
+        { href: '/dashboard/service-center', label: 'Service Requests', icon: LifeBuoy, show: true },
+        { href: '/dashboard/sports', label: 'Sports & Teams', icon: Trophy, show: true },
+      ],
+    },
+    {
+      category: 'COMMUNICATION',
+      items: [
+        { href: '/dashboard/communication', label: 'Broadcasts & Circulars', icon: Megaphone, show: true },
+        { href: '/dashboard/chat', label: 'Staff Chat', icon: MessageSquare, show: true },
+        { href: '/dashboard/email', label: 'Email Client', icon: FileText, show: true },
+      ],
+    },
+    {
+      category: 'MANAGEMENT & SYSTEM',
+      items: [
         { 
           href: '/dashboard/form-builder', 
           label: 'Form Builder & Surveys', 
           icon: FileText, 
-          show: true,
+          show: isSuperAdmin || isPrincipal,
           subItems: [
             { href: '/dashboard/form-builder', label: 'Form Builder' },
             { href: '/dashboard/surveys', label: 'Surveys' },
           ]
         },
-        { href: '/dashboard/service-center', label: 'Internal Service Requests', icon: LifeBuoy, show: true },
         { href: '/dashboard/campuses', label: 'Campuses & Branches', icon: Building2, show: isSuperAdmin },
         { href: '/dashboard/academic-closing', label: 'Academic Year Closing', icon: Lock, show: isSuperAdmin || isPrincipal },
+        { href: '/dashboard/audit-logs', label: 'Security Audit Logs', icon: ShieldCheck, show: isSuperAdmin },
+        { href: '/dashboard/settings', label: 'System Settings', icon: Settings, show: isSuperAdmin || isPrincipal },
       ],
     },
   ];
 
+  // Dedicated Teacher 15-Module Navigation Hierarchy
+  const teacherNavCategories = [
+    {
+      category: 'CLASSROOM CORE',
+      items: [
+        { href: '/dashboard', label: 'Home', icon: LayoutDashboard, show: true },
+        { 
+          href: '/dashboard/students', 
+          label: 'My Class', 
+          icon: Users, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/students', label: 'Children Directory' },
+            { href: '/dashboard/parents', label: 'Parent Details' },
+            { href: '/dashboard/growth-profile', label: 'Child Growth Profile' },
+          ]
+        },
+        { 
+          href: '/dashboard/attendance', 
+          label: 'Attendance', 
+          icon: UserCheck, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/attendance', label: 'Mark Attendance' },
+            { href: '/dashboard/attendance?tab=history', label: 'Attendance History' },
+          ]
+        },
+        { 
+          href: '/dashboard/daily-activity', 
+          label: 'Class Work & Diary', 
+          icon: Activity, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/daily-activity', label: "Today's Work & Diary" },
+            { href: '/dashboard/gallery', label: 'Photos & Media' },
+          ]
+        },
+        { 
+          href: '/dashboard/lesson-planner', 
+          label: 'Lesson Plan', 
+          icon: BookOpen, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/lesson-planner', label: "Today's & Weekly Plan" },
+            { href: '/dashboard/curriculum', label: 'Curriculum & Units' },
+          ]
+        },
+      ],
+    },
+    {
+      category: 'LEARNING & ACTIVITIES',
+      items: [
+        { 
+          href: '/dashboard/classroom', 
+          label: 'Activities', 
+          icon: Sparkles, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/classroom', label: 'Class & Home Activities' },
+            { href: '/dashboard/sports', label: 'Sports & Games' },
+          ]
+        },
+        { 
+          href: '/dashboard/assessments', 
+          label: 'Assessment', 
+          icon: CheckCircle2, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/assessments', label: 'Rubrics & Competencies' },
+            { href: '/dashboard/assessments?tab=reports', label: 'Assessment Reports' },
+          ]
+        },
+        { 
+          href: '/dashboard/growth-profile', 
+          label: 'Child Growth', 
+          icon: HeartPulse, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/growth-profile', label: 'Development Milestones' },
+            { href: '/dashboard/growth-profile?tab=habits', label: 'Daily Habits & Notes' },
+          ]
+        },
+        { 
+          href: '/dashboard/daily-activity', 
+          label: 'Homework', 
+          icon: FileText, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/daily-activity', label: 'Give Homework' },
+            { href: '/dashboard/daily-activity?tab=status', label: 'Homework Status' },
+          ]
+        },
+        { 
+          href: '/dashboard/online-exams', 
+          label: 'Exams & Marks', 
+          icon: Trophy, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/online-exams', label: 'Upcoming Exams & Schedule' },
+            { href: '/dashboard/assessments', label: 'Marks & Report Cards' },
+          ]
+        },
+      ],
+    },
+    {
+      category: 'COMMUNICATION & SUPPORT',
+      items: [
+        { 
+          href: '/dashboard/parents', 
+          label: 'Parents', 
+          icon: Users, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/parents', label: 'Parent Directory' },
+            { href: '/dashboard/chat', label: 'Parent Messages' },
+            { href: '/dashboard/parent-booking', label: 'Parent Meetings' },
+          ]
+        },
+        { 
+          href: '/dashboard/calendar', 
+          label: 'School Work', 
+          icon: Calendar, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/calendar', label: 'Class Timetable' },
+            { href: '/dashboard/communication', label: 'School Notices' },
+            { href: '/dashboard/todo', label: 'Teacher Tasks' },
+          ]
+        },
+        { 
+          href: '/dashboard/leaves', 
+          label: 'Leave Management', 
+          icon: Clock, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/leaves', label: 'Apply Leave' },
+            { href: '/dashboard/leaves?tab=status', label: 'Leave Status' },
+          ]
+        },
+        { href: '/dashboard/communication', label: 'Notifications', icon: Megaphone, show: true },
+        { 
+          href: '/dashboard/settings', 
+          label: 'My Account', 
+          icon: Settings, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/settings', label: 'Profile & Security' },
+            { href: '/dashboard/notes', label: 'Personal Notes' },
+          ]
+        },
+      ],
+    },
+  ];
+
+  const activeNavCategories = navCategories;
+  const isTeacherOnly = r === 'teacher' && !isSuperAdmin;
+
+  if (isTeacherOnly) {
+    return (
+      <div className="min-h-screen bg-[#F3F6FC] dark:bg-[#0B132B] text-[#172033] dark:text-[#F8FAFC] transition-colors duration-200 overflow-hidden font-saas">
+        <CommandPalette />
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-[#F0F4FA] dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200 overflow-hidden font-saas">
       <CommandPalette />
+
+      {/* Mobile Drawer Navigation */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#07152F] text-white z-10 shadow-2xl">
+            <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 bg-[#0B1F3A]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#0050CB] flex items-center justify-center text-white shadow-md">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-black tracking-tight text-white">GLOBAL SCHOOL ERP</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+              {activeNavCategories.map((catGroup) => {
+                const visibleItems = catGroup.items.filter((item) => item.show);
+                if (visibleItems.length === 0) return null;
+                return (
+                  <div key={catGroup.category} className="space-y-1">
+                    <div className="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
+                      {catGroup.category}
+                    </div>
+                    {visibleItems.map((item: any) => {
+                      const Icon = item.icon;
+                      const isItemActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
+                            isItemActive
+                              ? 'bg-[#0050CB] text-white shadow-md'
+                              : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </nav>
+            <div className="p-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-400 hover:bg-rose-950/40 rounded-xl cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Desktop Sidebar (260px expanded / 70px collapsed) */}
       <aside className={`${isCollapsed ? 'w-20' : 'w-68'} bg-[#07152F] text-white flex flex-col hidden md:flex shrink-0 shadow-2xl z-30 transition-all duration-300 ease-in-out border-r border-slate-800/80`}>
@@ -114,7 +418,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         <div className="h-18 flex items-center justify-between px-4 border-b border-slate-800/80 shrink-0 bg-[#0B1F3A]/70">
           {!isCollapsed && (
             <Link href="/dashboard" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0757D5] to-[#2F80ED] flex items-center justify-center text-white shadow-lg ring-1 ring-[#C9A227]/40 group-hover:scale-105 transition-transform duration-200">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0050CB] to-[#2563eb] flex items-center justify-center text-white shadow-lg ring-1 ring-[#FF690C]/40 group-hover:scale-105 transition-transform duration-200">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <div className="leading-tight">
@@ -122,10 +426,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                   GLOBAL INTERNATIONAL
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-black text-[#2F80ED] uppercase tracking-widest block">
-                    SCHOOL ERP
+                  <span className="text-[10px] font-black text-[#E5EEFF] uppercase tracking-widest block">
+                    {r === 'teacher' && !isSuperAdmin ? 'TEACHER PORTAL' : 'SCHOOL ERP'}
                   </span>
-                  <span className="text-[9px] font-bold text-[#C9A227] bg-[#C9A227]/15 px-1.5 py-0.2 rounded border border-[#C9A227]/30">
+                  <span className="text-[9px] font-bold text-[#FF690C] bg-[#FF690C]/15 px-1.5 py-0.2 rounded border border-[#FF690C]/30">
                     PRO
                   </span>
                 </div>
@@ -134,7 +438,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           )}
           {isCollapsed && (
             <div className="mx-auto">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0757D5] to-[#2F80ED] flex items-center justify-center text-white shadow-lg ring-1 ring-[#C9A227]/40">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0050CB] to-[#2563eb] flex items-center justify-center text-white shadow-lg ring-1 ring-[#FF690C]/40">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
             </div>
@@ -151,7 +455,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
         {/* Sidebar Nav Links */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4 custom-scrollbar">
-          {navCategories.map((catGroup) => {
+          {activeNavCategories.map((catGroup) => {
             const visibleItems = catGroup.items.filter((item) => item.show);
             if (visibleItems.length === 0) return null;
 
@@ -176,7 +480,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                           onClick={() => setExpandedSubmenu(isExpanded ? null : item.label)}
                           className={`w-full flex items-center justify-between ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer group hover:translate-x-1 ${
                             isItemActive
-                              ? 'bg-[#0757D5] text-white shadow-lg shadow-[#0757D5]/30'
+                              ? 'bg-[#0050CB] text-white shadow-lg shadow-[#0050CB]/30'
                               : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                           }`}
                           title={isCollapsed ? item.label : undefined}
@@ -195,7 +499,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                           title={item.label}
                           className={`flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'} py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group hover:translate-x-1 ${
                             isItemActive
-                              ? 'bg-[#0757D5] text-white shadow-lg shadow-[#0757D5]/30 ring-1 ring-blue-400/20'
+                              ? 'bg-[#0050CB] text-white shadow-lg shadow-[#0050CB]/30 ring-1 ring-[#0050CB]/30'
                               : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                           }`}
                         >
@@ -204,7 +508,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                           }`} strokeWidth={2} />
                           {!isCollapsed && <span className="truncate">{item.label}</span>}
                           {!isCollapsed && isItemActive && (
-                            <span className="ml-auto w-2 h-2 rounded-full bg-[#2F80ED] shadow-xs shrink-0 animate-pulse" />
+                            <span className="ml-auto w-2 h-2 rounded-full bg-[#FF690C] shadow-xs shrink-0 animate-pulse" />
                           )}
                         </Link>
                       )}
@@ -220,11 +524,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                                 href={sub.href}
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                                   isSubActive
-                                    ? 'text-white font-extrabold bg-white/10'
+                                    ? 'text-white font-extrabold bg-[#0050CB]/40'
                                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                                 }`}
                               >
-                                <span className={`w-1.5 h-1.5 rounded-full ${isSubActive ? 'bg-[#2F80ED]' : 'bg-slate-500'}`} />
+                                <span className={`w-1.5 h-1.5 rounded-full ${isSubActive ? 'bg-[#FF690C]' : 'bg-slate-500'}`} />
                                 <span>{sub.label}</span>
                               </Link>
                             );
@@ -371,18 +675,16 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             {/* User Profile Pill */}
             <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 py-1 px-1.5 rounded-full transition-colors cursor-pointer">
               <div className="relative">
-                <img
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop"
-                  alt="Mrs. Sarah Johnson"
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-[#0757D5]/20"
-                />
+                <div className="h-9 w-9 rounded-full bg-[#0050CB] text-white flex items-center justify-center font-black text-xs ring-2 ring-[#0050CB]/20 shadow-xs">
+                  {user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'}
+                </div>
               </div>
               <div className="hidden sm:block text-left leading-tight pr-1">
-                <p className="text-xs font-extrabold text-[#07152F] dark:text-white truncate">
-                  Mrs. Sarah Johnson
+                <p className="text-xs font-black text-[#000E28] dark:text-white truncate">
+                  {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email : 'Staff Member'}
                 </p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
-                  Teacher
+                <p className="text-[10px] text-[#0050CB] dark:text-[#E5EEFF] font-bold uppercase tracking-wider">
+                  {roleStr || 'Staff'}
                 </p>
               </div>
             </div>

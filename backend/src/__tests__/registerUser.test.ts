@@ -20,6 +20,8 @@ describe('registerUser Security Test (Phase 1.1)', () => {
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
+      cookie: jest.fn().mockReturnThis(),
+      clearCookie: jest.fn().mockReturnThis(),
     };
   });
 
@@ -55,8 +57,9 @@ describe('registerUser Security Test (Phase 1.1)', () => {
     expect(Role.findOne).toHaveBeenCalledWith({ name: 'Parent' });
     expect(Role.findOne).not.toHaveBeenCalledWith({ name: 'SuperAdmin' });
 
-    // Verify response contains role: 'Parent'
+    // Verify response contains role: 'Parent' and cookie was set
     expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.cookie).toHaveBeenCalledWith('token', expect.any(String), expect.any(Object));
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         role: 'Parent',

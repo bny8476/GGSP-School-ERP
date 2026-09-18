@@ -2,11 +2,22 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 
-// Load models
+// Core Identity & Auth
 import Role from './models/Role';
 import User from './models/User';
 import Parent from './models/Parent';
 import Student from './models/Student';
+
+// Relational & Domain Models (Phases 2-4)
+import Enrollment from './models/Enrollment';
+import StudentParent from './models/StudentParent';
+import Employee from './models/Employee';
+import TeacherProfile from './models/TeacherProfile';
+import StudentAttendance from './models/StudentAttendance';
+import AcademicYear from './models/AcademicYear';
+import Class from './models/Class';
+import Section from './models/Section';
+import Fee from './models/Fee';
 import Assessment from './models/Assessment';
 import Payroll from './models/Payroll';
 
@@ -19,25 +30,126 @@ const seedDB = async () => {
       throw new Error('MONGO_URI is missing from environment');
     }
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected.');
+    console.log('Connected to MongoDB successfully.');
 
     const options = { upsert: true, new: true, runValidators: true };
 
-    // Find or create roles
-    const adminRole = await Role.findOneAndUpdate({ name: 'SuperAdmin' }, { name: 'SuperAdmin', permissions: ['all'] }, options);
-    const teacherRole = await Role.findOneAndUpdate({ name: 'Teacher' }, { name: 'Teacher', permissions: ['read', 'write'] }, options);
-    const parentRole = await Role.findOneAndUpdate({ name: 'Parent' }, { name: 'Parent', permissions: ['read'] }, options);
+    // 1. Initialize Roles with Capability-based RBAC permissions
+    console.log('Seeding Roles...');
+    const adminRole = await Role.findOneAndUpdate(
+      { name: 'SuperAdmin' },
+      { name: 'SuperAdmin', permissions: ['*'] },
+      options
+    );
 
-    if (!adminRole || !teacherRole || !parentRole) {
+    const principalRole = await Role.findOneAndUpdate(
+      { name: 'Principal' },
+      {
+        name: 'Principal',
+        permissions: [
+          'students:*',
+          'attendance:*',
+          'academics:*',
+          'teachers:*',
+          'assessments:*',
+          'reports:*',
+          'announcements:*',
+        ],
+      },
+      options
+    );
+
+    const teacherRole = await Role.findOneAndUpdate(
+      { name: 'Teacher' },
+      {
+        name: 'Teacher',
+        permissions: [
+          'students:read',
+          'attendance:mark',
+          'attendance:view',
+          'diary:create',
+          'diary:read',
+          'assessments:manage',
+          'curriculum:read',
+        ],
+      },
+      options
+    );
+
+    const accountantRole = await Role.findOneAndUpdate(
+      { name: 'Accountant' },
+      {
+        name: 'Accountant',
+        permissions: ['finance:*', 'fees:collect', 'fees:view', 'reports:finance'],
+      },
+      options
+    );
+
+    const parentRole = await Role.findOneAndUpdate(
+      { name: 'Parent' },
+      {
+        name: 'Parent',
+        permissions: [
+          'portal:access',
+          'children:view',
+          'attendance:view-child',
+          'fees:view-child',
+          'fees:pay',
+          'diary:view-child',
+        ],
+      },
+      options
+    );
+
+    if (!adminRole || !teacherRole || !parentRole || !accountantRole || !principalRole) {
       throw new Error('Failed to initialize roles');
     }
+    console.log('✓ Roles seeded (SuperAdmin, Principal, Teacher, Accountant, Parent)');
 
-    // Hash a default password
+    // 2. Hash default credentials
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('password123', salt);
 
-    // 1. Create a Staff/SuperAdmin
-    const staff = await User.findOneAndUpdate(
+    // 3. Create Academic Year
+    console.log('Seeding Academic Year...');
+    const academicYear = await AcademicYear.findOneAndUpdate(
+      { name: '2025-2026' },
+      {
+        name: '2025-2026',
+        startDate: new Date('2025-06-01'),
+        endDate: new Date('2026-05-31'),
+        status: 'active',
+        isCurrent: true,
+      },
+      options
+    );
+    if (!academicYear) throw new Error('Failed to create academic year');
+    console.log('✓ Academic Year created: 2025-2026 (Active)');
+
+    // 4. Create Class and Section
+    console.log('Seeding Class & Section...');
+    const schoolClass = await Class.findOneAndUpdate(
+      { name: 'Grade 1' },
+      { name: 'Grade 1', description: 'Primary Grade 1' },
+      options
+    );
+    if (!schoolClass) throw new Error('Failed to create class');
+
+    const section = await Section.findOneAndUpdate(
+      { name: 'A', classId: schoolClass._id },
+      {
+        name: 'A',
+        classId: schoolClass._id,
+        capacity: 30,
+      },
+      options
+    );
+    if (!section) throw new Error('Failed to create section');
+    console.log('✓ Class & Section created: Grade 1 - Section A');
+
+    // 5. Create Staff / SuperAdmin
+    console.log('Seeding Users & Staff Profiles...');
+    const staffUser = await User.findOneAndUpdate(
       { email: 'admin@schoolerp.com' },
       {
         email: 'admin@schoolerp.com',
@@ -46,14 +158,15 @@ const seedDB = async () => {
         passwordHash: hashedPassword,
         role: adminRole._id,
         isActive: true,
-        phoneNumber: '1234567890'
+        phoneNumber: '1234567890',
       },
       options
     );
-    console.log('Admin created: admin@schoolerp.com / password123');
+    if (!staffUser) throw new Error('Failed to create admin user');
+    console.log('  Admin User: admin@schoolerp.com / password123');
 
-    // 2. Create a Teacher
-    const teacher = await User.findOneAndUpdate(
+    // 6. Create Teacher User + Employee record + TeacherProfile
+    const teacherUser = await User.findOneAndUpdate(
       { email: 'teacher@school.com' },
       {
         firstName: 'Tom',
@@ -64,13 +177,73 @@ const seedDB = async () => {
         isActive: true,
         phoneNumber: '0987654321',
         designation: 'Lead Instructor',
-        salary: 4000
+        salary: 4000,
       },
       options
     );
-    console.log('Teacher created: teacher@school.com / password123');
+    if (!teacherUser) throw new Error('Failed to create teacher user');
 
-    // 3. Create a Parent User
+    const teacherEmployee = await Employee.findOneAndUpdate(
+      { userId: teacherUser._id },
+      {
+        userId: teacherUser._id,
+        employeeCode: 'EMP-T-001',
+        designation: 'Lead Instructor',
+        department: 'Teaching',
+        joiningDate: new Date('2023-01-10'),
+        status: 'Active',
+      },
+      options
+    );
+    if (!teacherEmployee) throw new Error('Failed to create teacher employee');
+
+    await TeacherProfile.findOneAndUpdate(
+      { userId: teacherUser._id },
+      {
+        userId: teacherUser._id,
+        employeeId: teacherEmployee._id,
+        qualification: 'Master in Education',
+        specialization: ['Mathematics', 'Science'],
+        subjects: ['Math', 'Science'],
+        classes: ['Grade 1'],
+      },
+      options
+    );
+    console.log('  Teacher User & Profile: teacher@school.com / password123 (EMP-T-001)');
+
+    // 7. Create Accountant User + Employee record
+    const accountantUser = await User.findOneAndUpdate(
+      { email: 'accountant@school.com' },
+      {
+        firstName: 'Alice',
+        lastName: 'Accountant',
+        email: 'accountant@school.com',
+        passwordHash: hashedPassword,
+        role: accountantRole._id,
+        isActive: true,
+        phoneNumber: '5559876543',
+        designation: 'Senior Accountant',
+        salary: 3500,
+      },
+      options
+    );
+    if (!accountantUser) throw new Error('Failed to create accountant user');
+
+    await Employee.findOneAndUpdate(
+      { userId: accountantUser._id },
+      {
+        userId: accountantUser._id,
+        employeeCode: 'EMP-A-002',
+        designation: 'Senior Accountant',
+        department: 'Finance',
+        joiningDate: new Date('2023-03-15'),
+        status: 'Active',
+      },
+      options
+    );
+    console.log('  Accountant User: accountant@school.com / password123 (EMP-A-002)');
+
+    // 8. Create Parent User + Detailed Parent Profile
     const parentUser = await User.findOneAndUpdate(
       { email: 'parent@school.com' },
       {
@@ -80,16 +253,12 @@ const seedDB = async () => {
         passwordHash: hashedPassword,
         role: parentRole._id,
         isActive: true,
-        phoneNumber: '5551234567'
+        phoneNumber: '5551234567',
       },
       options
     );
+    if (!parentUser) throw new Error('Failed to create parent user');
 
-    if (!parentUser || !teacher || !staff) {
-      throw new Error('Failed to create staff or parent users');
-    }
-
-    // Create the detailed Parent profile
     const parentProfile = await Parent.findOneAndUpdate(
       { userId: parentUser._id },
       {
@@ -99,56 +268,115 @@ const seedDB = async () => {
         primaryEmail: 'parent@school.com',
         fatherContact: '5551234567',
         whatsappNumber: '+15551234567',
-        address: '123 Family Lane'
+        address: '123 Family Lane',
       },
       options
     );
+    if (!parentProfile) throw new Error('Failed to create parent profile');
+    console.log('  Parent User & Profile: parent@school.com / password123');
 
-    if (!parentProfile) {
-      throw new Error('Failed to create parent profile');
-    }
-    console.log('Parent created: parent@school.com / password123');
-
-    // 4. Create a Student
+    // 9. Create Student (Record Only, not an auth account)
+    console.log('Seeding Student & Academic Relationships...');
     const student = await Student.findOneAndUpdate(
       { admissionNumber: 'SEED-001' },
       {
         firstName: 'Sammy',
         lastName: 'Student',
         admissionNumber: 'SEED-001',
-        grade: 'LKG',
+        grade: 'Grade 1',
         parentId: parentProfile._id,
         status: 'Active',
         bloodGroup: 'O+',
-        medicalNotes: 'No allergies.'
+        medicalNotes: 'No known allergies.',
       },
       options
     );
+    if (!student) throw new Error('Failed to create student');
+    console.log('✓ Student created: Sammy Student (SEED-001)');
 
-    if (!student) {
-      throw new Error('Failed to create student');
-    }
-    console.log('Student created: Sammy Student');
+    // 10. StudentParent Junction (M:N Multi-Child / Multi-Guardian)
+    await StudentParent.findOneAndUpdate(
+      { studentId: student._id, parentId: parentProfile._id },
+      {
+        studentId: student._id,
+        parentId: parentProfile._id,
+        relationship: 'Mother',
+        isPrimary: true,
+        canPickup: true,
+      },
+      options
+    );
+    console.log('✓ StudentParent link created (Mother / Primary Pickup)');
 
-    // 5. Create an Assessment for the Student
-    await Assessment.deleteMany({ childId: student._id }); // Clear old ones to avoid duplicates on re-run
+    // 11. Enrollment (Academic Progression)
+    await Enrollment.findOneAndUpdate(
+      { studentId: student._id, academicYearId: academicYear._id },
+      {
+        studentId: student._id,
+        academicYearId: academicYear._id,
+        classId: schoolClass._id,
+        sectionId: section._id,
+        rollNumber: '01',
+        status: 'Active',
+        enrolledAt: new Date('2025-06-01'),
+      },
+      options
+    );
+    console.log('✓ Enrollment link created (Grade 1-A / Roll #01)');
+
+    // 12. Student Attendance Record
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    await StudentAttendance.findOneAndUpdate(
+      { studentId: student._id, date: today },
+      {
+        studentId: student._id,
+        academicYearId: academicYear._id,
+        classId: schoolClass._id,
+        sectionId: section._id,
+        date: today,
+        status: 'Present',
+        recordedBy: teacherUser._id,
+      },
+      options
+    );
+    console.log('✓ StudentAttendance record logged (Present)');
+
+    // 13. Fee Record
+    await Fee.findOneAndUpdate(
+      { studentId: student._id, feeType: 'Tuition' },
+      {
+        studentId: student._id,
+        grade: 'LKG',
+        feeType: 'Tuition',
+        totalAmount: 1200,
+        amountPaid: 1200,
+        dueDate: new Date('2025-12-31'),
+        status: 'Paid',
+      },
+      options
+    );
+    console.log('✓ Fee invoice seeded (Tuition $1,200 - Paid)');
+
+    // 14. Assessment for Sammy
+    await Assessment.deleteMany({ childId: student._id });
     await Assessment.create({
       childId: student._id,
       term: 'Term 1',
       rubrics: [
-        { category: 'Motor Skills', skill: 'Holds pencil correctly', score: 'Mastered' },
-        { category: 'Social Skills', skill: 'Shares toys with others', score: 'Developing' },
-        { category: 'Cognitive', skill: 'Recognizes colors', score: 'Mastered' }
+        { category: 'Mathematics', skill: 'Number recognition 1-100', score: 'Mastered' },
+        { category: 'Science', skill: 'Identifies plant parts', score: 'Developing' },
+        { category: 'Social Skills', skill: 'Collaborates with peers', score: 'Mastered' },
       ],
-      teacherComments: 'Sammy is doing excellent work and is very friendly in class.',
-      createdBy: teacher._id
+      teacherComments: 'Sammy demonstrates remarkable curiosity and enthusiasm in class.',
+      createdBy: teacherUser._id,
     });
-    console.log('Assessment created for Sammy.');
+    console.log('✓ Assessment created for Sammy Student.');
 
-    // 6. Create a Payroll record for the Teacher
-    await Payroll.deleteMany({ staffId: teacher._id, month: 'June 2026' });
+    // 15. Payroll Record for Teacher Tom
+    await Payroll.deleteMany({ staffId: teacherUser._id, month: 'June 2026' });
     await Payroll.create({
-      staffId: teacher._id,
+      staffId: teacherUser._id,
       month: 'June 2026',
       baseSalary: 4000,
       attendanceDays: 30,
@@ -156,11 +384,14 @@ const seedDB = async () => {
       bonuses: 200,
       netSalary: 4200,
       status: 'Paid',
-      paymentDate: new Date()
+      paymentDate: new Date(),
     });
-    console.log('Payroll created for Tom Teacher.');
+    console.log('✓ Payroll record created for Tom Teacher ($4,200).');
 
-    console.log('Seed completed successfully!');
+    console.log('\n==========================================');
+    console.log('🎉 Seed completed successfully!');
+    console.log('All normalized relational models populated.');
+    console.log('==========================================\n');
     process.exit(0);
   } catch (error) {
     console.error('Seed error:', error);

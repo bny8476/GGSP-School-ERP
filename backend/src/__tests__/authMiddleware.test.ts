@@ -36,6 +36,18 @@ describe('Auth Middleware', () => {
       expect(next).toHaveBeenCalled();
     });
 
+    it('should verify valid HttpOnly cookie and call next()', () => {
+      const payload = { user: { id: 'user456', role: 'Parent' } };
+      const token = jwt.sign(payload, 'test_secret_key');
+      // @ts-ignore
+      req.cookies = { token };
+
+      protect(req as Request, res as Response, next);
+
+      expect(req.user).toEqual({ id: 'user456', role: 'Parent' });
+      expect(next).toHaveBeenCalled();
+    });
+
     it('should return 401 for an invalid token', () => {
       req.headers = { authorization: 'Bearer invalid_token_xyz' };
 

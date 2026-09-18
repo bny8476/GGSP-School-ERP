@@ -1,5 +1,13 @@
 import express from 'express';
-import { getStudents, createStudent, updateStudent, deleteStudent, downloadReportCard } from '../controllers/studentController';
+import { 
+  getStudents, 
+  createStudent, 
+  updateStudent, 
+  deleteStudent, 
+  downloadReportCard,
+  getStudentEnrollments,
+  getStudentParents
+} from '../controllers/studentController';
 import { protect, authorize } from '../middleware/auth';
 
 import { validate } from '../middleware/validate';
@@ -16,5 +24,7 @@ router.route('/:id')
   .delete(protect, authorize('Admin', 'SuperAdmin'), deleteStudent);
 
 router.get('/:id/report-card', protect, downloadReportCard);
+router.get('/:id/enrollments', protect, getStudentEnrollments);
+router.get('/:id/parents', protect, getStudentParents);
 
 export default router;

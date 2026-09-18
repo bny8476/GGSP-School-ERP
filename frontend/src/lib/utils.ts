@@ -25,7 +25,24 @@ export function cn(...inputs: ClassValue[]): string {
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export async function safeFetchJson<T = any>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, options);
+  const headers = new Headers(options?.headers);
+  if (!headers.has("Content-Type") && options?.body && typeof options.body === "string") {
+    headers.set("Content-Type", "application/json");
+  }
+
+  // If running in browser and token exists in localStorage, pass as Bearer fallback
+  if (typeof window !== "undefined" && !headers.has("Authorization")) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+    credentials: options?.credentials || "include",
+  });
   const contentType = res.headers.get("content-type") || "";
 
   if (!contentType.includes("application/json")) {

@@ -22,25 +22,47 @@ export default function NotificationDrawer() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // 1. Instant display from cache
+    try {
+      const cached = localStorage.getItem('ggps_cached_notifications');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setNotifications(parsed);
+        setUnreadCount(parsed.filter((n: NotificationItem) => !n.read).length);
+      }
+    } catch (e) {}
+
+    // 2. Background sync
     fetchNotifications();
   }, []);
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       if (!token) return;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const res = await fetch(`${apiBase}/api/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
+
       if (res.ok) {
         const data = await res.json();
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unreadCount || 0);
+        const list = data.notifications || [];
+        setNotifications(list);
+        setUnreadCount(data.unreadCount ?? list.filter((n: any) => !n.read).length);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ggps_cached_notifications', JSON.stringify(list));
+        }
       }
     } catch (e) {
-      console.error('Failed to load notifications', e);
+      console.warn('Notifications background sync notice:', e);
     } finally {
       setLoading(false);
     }

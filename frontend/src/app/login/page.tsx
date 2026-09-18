@@ -116,16 +116,18 @@ export default function LoginPage() {
       let res: Response;
 
       try {
-        res = await fetch(`${apiBase}/api/auth/login`, {
+        res = await fetch(`${apiBase}/api/v1/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ email, password }),
         });
       } catch (directErr) {
         // Fallback to relative URL proxied by Next.js rewrites
-        res = await fetch("/api/auth/login", {
+        res = await fetch("/api/v1/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ email, password }),
         });
       }
@@ -142,7 +144,8 @@ export default function LoginPage() {
         localStorage.setItem("user", JSON.stringify(data));
 
         const roleStr = (data.role || "").toLowerCase();
-        if (roleStr === "parent" || roleStr === "student") {
+        // Students are data records only; only parents navigate to the Parent Portal
+        if (roleStr === "parent") {
           router.push("/portal");
         } else {
           router.push("/dashboard");

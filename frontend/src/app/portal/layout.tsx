@@ -28,6 +28,11 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
       try {
         const parsed = JSON.parse(userStr);
         setUser(parsed);
+        const role = (parsed.role || '').toLowerCase();
+        if (role !== 'parent') {
+          // Staff and Admin users belong in /dashboard, not Parent Portal
+          router.push('/dashboard');
+        }
       } catch (e) {}
     } else {
       router.push('/login');
@@ -39,10 +44,20 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      await fetch(`${apiBase}/api/v1/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.warn("Logout request failed:", e);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      router.push('/login');
+    }
   };
 
   const initial = user?.firstName ? user.firstName[0].toUpperCase() : 'P';
