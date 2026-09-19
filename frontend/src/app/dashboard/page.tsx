@@ -21,27 +21,8 @@ export default function DashboardOverview() {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState("Faculty Member");
-  const [userRole, setUserRole] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const u = localStorage.getItem('user');
-        if (u) {
-          const parsed = JSON.parse(u);
-          return ((typeof parsed.role === 'string' ? parsed.role : parsed.role?.name) || '').toLowerCase();
-        }
-      } catch (e) {}
-    }
-    return '';
-  });
-  const [currentUser, setCurrentUser] = useState<any>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const u = localStorage.getItem('user');
-        return u ? JSON.parse(u) : null;
-      } catch (e) {}
-    }
-    return null;
-  });
+  const [userRole, setUserRole] = useState<string>('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const fetchStats = async () => {
     try {

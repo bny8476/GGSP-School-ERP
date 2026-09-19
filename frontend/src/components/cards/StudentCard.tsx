@@ -3,11 +3,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import {
-  GraduationCap,
-  User,
   Phone,
-  ArrowRight,
+  MessageCircle,
+  Pencil,
+  MapPin,
+  AlertTriangle,
   Check,
+  Eye
 } from "lucide-react";
 
 export interface StudentCardProps {
@@ -18,6 +20,9 @@ export interface StudentCardProps {
   status: "Present" | "Absent" | "Late" | string;
   age?: string;
   gender?: "Male" | "Female" | string;
+  bloodGroup?: string;
+  allergies?: string;
+  address?: string;
   parentLabel?: string;
   parentName: string;
   phone: string;
@@ -25,6 +30,9 @@ export interface StudentCardProps {
   classNameLabel?: string;
   theme?: "rose" | "blue";
   onViewProfile: () => void;
+  onEdit?: () => void;
+  onCall?: () => void;
+  onChat?: () => void;
   onMenuClick?: () => void;
   className?: string;
 }
@@ -34,47 +42,105 @@ export default function StudentCard({
   name,
   photo,
   status = "Present",
-  gender = "Female",
+  age,
+  gender = "Male",
+  bloodGroup = "O+",
+  allergies,
+  address,
   parentLabel = "Father",
   parentName,
   phone,
-  attendanceRate = 92,
+  attendanceRate = 94,
   classNameLabel = "LKG - Section A",
   theme,
   onViewProfile,
+  onEdit,
+  onCall,
+  onChat,
   className = "",
 }: StudentCardProps) {
-  // Auto-select theme (rose for female / blue for male) or use explicit theme
   const cardTheme = theme || (gender === "Female" ? "rose" : "blue");
   const isRose = cardTheme === "rose";
 
   // Formatted 2-digit roll number (e.g., "1" -> "01")
   const formattedRoll = String(rollNo).padStart(2, "0");
 
-  // Gauge calculations (Radius = 22, Circumference = ~138.23)
-  const radius = 22;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset =
-    circumference - (Math.min(attendanceRate, 100) / 100) * circumference;
+  const isPresent = status === "Present";
+  const isAbsent = status === "Absent";
+
+  const handleCallClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onCall) {
+      onCall();
+    } else if (phone) {
+      window.open(`tel:${phone}`);
+    }
+  };
+
+  const handleChatClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onChat) onChat();
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit) onEdit();
+  };
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onViewProfile();
+  };
 
   return (
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative overflow-hidden rounded-[32px] bg-white dark:bg-[#111827] ${
+      className={`relative overflow-hidden rounded-[28px] bg-white dark:bg-[#111827] border ${
         isRose
-          ? "border border-[#FFE4EC] dark:border-rose-950/50 shadow-[0_10px_35px_rgba(244,114,182,0.08)]"
-          : "border border-[#D0E2FF] dark:border-blue-950/50 shadow-[0_10px_35px_rgba(37,99,235,0.08)]"
-      } p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 ${className}`}
+          ? "border-[#FFE4EC] dark:border-rose-950/50 shadow-[0_8px_30px_rgba(244,114,182,0.08)]"
+          : "border-[#D0E2FF] dark:border-blue-950/50 shadow-[0_8px_30px_rgba(37,99,235,0.08)]"
+      } p-5 flex flex-col justify-between transition-all duration-300 ${className}`}
     >
       {/* ========================================================================= */}
-      {/* TOP SECTION: STUDENT SQUIRCLE PHOTO + RIGHT INFO (CAP, STATUS, GAUGE, ROLL) */}
+      {/* 1. TOP HEADER ROW: ROLL NUMBER PILL + STATUS BADGE                         */}
       {/* ========================================================================= */}
-      <div className="flex items-start gap-4 relative z-10">
-        {/* 1. Student Photo Squircle with colored border ring & verified green check */}
+      <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+        {/* Prominent Roll Number Pill */}
+        <span className="inline-flex items-center px-3 py-1 rounded-xl bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 border border-[#0050CB]/20 font-black text-xs tracking-wider shadow-2xs">
+          Roll #{formattedRoll}
+        </span>
+
+        {/* Status Badge */}
+        <span
+          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 shadow-2xs ${
+            isPresent
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50"
+              : isAbsent
+              ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50"
+              : "bg-amber-50 text-[#FF690C] dark:bg-amber-950/40 dark:text-amber-300 border border-[#FF690C]/30"
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              isPresent
+                ? "bg-emerald-500 animate-pulse"
+                : isAbsent
+                ? "bg-rose-500"
+                : "bg-[#FF690C]"
+            }`}
+          />
+          <span>{status}</span>
+        </span>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. LEARNER IDENTITY: CHILD PHOTO + CHILD FULL NAME + MEDICAL/BLOOD PILLS   */}
+      {/* ========================================================================= */}
+      <div className="flex items-center gap-3.5 pt-3.5 pb-2">
         <div className="relative shrink-0">
           <div
-            className={`w-24 h-24 sm:w-28 sm:h-28 p-1 rounded-[26px] ${
+            className={`w-16 h-16 sm:w-18 sm:h-18 p-0.5 rounded-2xl ${
               isRose
                 ? "bg-gradient-to-tr from-[#FFD5DC] to-[#FCA5A5]"
                 : "bg-gradient-to-tr from-[#BFDBFE] to-[#93C5FD]"
@@ -83,215 +149,128 @@ export default function StudentCard({
             <img
               src={photo}
               alt={name}
-              className="w-full h-full object-cover rounded-[22px]"
+              className="w-full h-full object-cover rounded-[14px]"
             />
-          </div>
-
-          {/* Verified Green Tick Badge */}
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#10B981] text-white flex items-center justify-center ring-2 ring-white dark:ring-[#111827] shadow-sm">
-            <Check className="w-3.5 h-3.5 stroke-[3]" />
           </div>
         </div>
 
-        {/* 2. Right Info Block */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between h-24 sm:h-28">
-          {/* Top Row: Graduation Cap Icon + Status Badge */}
-          <div className="flex items-center justify-between gap-2">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                isRose
-                  ? "bg-[#FFF0F3] dark:bg-rose-950/40 text-[#E11D48] dark:text-rose-300"
-                  : "bg-[#EFF6FF] dark:bg-blue-950/40 text-[#2563EB] dark:text-blue-300"
-              }`}
-            >
-              <GraduationCap className="w-4 h-4 stroke-[2.2]" />
-            </div>
+        <div className="min-w-0 flex-1">
+          {/* Child Full Name in Bold */}
+          <h3
+            onClick={handleProfileClick}
+            className="font-black text-base text-slate-900 dark:text-white leading-snug truncate hover:text-[#0050CB] dark:hover:text-blue-400 cursor-pointer transition-colors"
+            title={name}
+          >
+            {name}
+          </h3>
 
-            <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 shadow-2xs ${
-                isRose
-                  ? "bg-[#FFF1F2] text-[#BE123C] dark:bg-rose-950/40 dark:text-rose-300 border border-[#FFE4E6] dark:border-rose-800/50"
-                  : "bg-[#EFF6FF] text-[#1D4ED8] dark:bg-blue-950/40 dark:text-blue-300 border border-[#DBEAFE] dark:border-blue-800/50"
-              }`}
-            >
+          <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate mt-0.5">
+            {classNameLabel} {age ? `• ${age}` : ""}
+          </p>
+
+          {/* Health & Medical Badges Row */}
+          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#E5EEFF] dark:bg-blue-950/50 text-[#0050CB] dark:text-blue-300 font-bold text-[10px]">
+              <span>🩸</span>
+              <span>{bloodGroup || "O+"}</span>
+            </span>
+
+            {allergies && !allergies.includes("None") && !allergies.includes("All clear") ? (
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  status === "Present"
-                    ? isRose
-                      ? "bg-[#10B981]"
-                      : "bg-[#2563EB]"
-                    : "bg-rose-500"
-                }`}
-              />
-              <span>{status}</span>
-            </span>
-          </div>
-
-          {/* Middle Row: Circular Attendance / Rating Progress Ring */}
-          <div className="flex justify-end pr-2">
-            <div className="relative w-14 h-14 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 54 54">
-                {/* Background Ring */}
-                <circle
-                  cx="27"
-                  cy="27"
-                  r={radius}
-                  className={isRose ? "text-[#FFE4E6] dark:text-slate-800" : "text-[#DBEAFE] dark:text-slate-800"}
-                  strokeWidth="4"
-                  stroke="currentColor"
-                  fill="none"
-                />
-                {/* Progress Arc */}
-                <circle
-                  cx="27"
-                  cy="27"
-                  r={radius}
-                  className={isRose ? "text-[#FB7185]" : "text-[#2563EB]"}
-                  strokeWidth="4"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  stroke="currentColor"
-                  fill="none"
-                />
-              </svg>
-              <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-xs font-black text-[#0A1B39] dark:text-white leading-none">
-                  {attendanceRate}%
-                </span>
-                <span className="text-[8px] font-bold text-slate-400 dark:text-slate-400 mt-0.5">
-                  Rated
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Row: Roll Number & Section Tag */}
-          <div className="flex items-center justify-between pt-0.5">
-            <div className="text-xs">
-              <span className="font-serif italic text-slate-500 dark:text-slate-400">Roll: </span>
-              <span className="font-black text-sm text-[#0A1B39] dark:text-white">
-                {formattedRoll}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#FFF7ED] dark:bg-amber-950/40 text-[#FF690C] border border-[#FFEDD5] dark:border-amber-900/50 font-bold text-[10px] truncate max-w-[150px]"
+                title={allergies}
+              >
+                <AlertTriangle className="w-3 h-3 shrink-0" />
+                <span className="truncate">{allergies}</span>
               </span>
-            </div>
-
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                isRose
-                  ? "bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-300"
-                  : "bg-[#EFF6FF] text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-300"
-              }`}
-            >
-              {classNameLabel}
-            </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 font-semibold text-[10px]">
+                <Check className="w-3 h-3" />
+                <span>Medical Clear</span>
+              </span>
+            )}
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* MIDDLE SECTION: PARENT & CONTACT INFORMATION CONTAINER                    */}
+      {/* 3. RESIDENTIAL ADDRESS & GUARDIAN LOGISTICS SNIPPET                       */}
       {/* ========================================================================= */}
-      <div
-        className={`mt-4 rounded-2xl p-3 sm:p-3.5 grid grid-cols-2 divide-x ${
-          isRose
-            ? "bg-[#FFF8F9] dark:bg-rose-950/20 border border-[#FFE4EC] dark:border-rose-900/30 divide-[#FFE4EC] dark:divide-rose-900/30"
-            : "bg-[#F8FAFC] dark:bg-blue-950/20 border border-[#DCE7F5] dark:border-blue-900/30 divide-[#DCE7F5] dark:divide-blue-900/30"
-        } relative z-10`}
-      >
-        {/* Parent Details */}
-        <div className="pr-2">
-          <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-400 font-medium">
-            <User className="w-3.5 h-3.5 text-slate-400" />
-            <span>{parentLabel}:</span>
+      <div className="rounded-2xl p-3 bg-slate-50/80 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 space-y-2 mt-2 text-xs">
+        {/* Residential Address with MapPin */}
+        <div className="flex items-start gap-2">
+          <MapPin className="w-3.5 h-3.5 text-[#0050CB] shrink-0 mt-0.5" />
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block leading-none mb-0.5">
+              Residential Address
+            </span>
+            <span
+              className="text-slate-700 dark:text-slate-300 font-medium text-[11px] line-clamp-1 block"
+              title={address || "Classroom Local Resident"}
+            >
+              {address || "Classroom Local Resident"}
+            </span>
           </div>
-          <span className="font-bold text-xs sm:text-[13px] text-[#0A1B39] dark:text-white block mt-1 truncate">
-            {parentName}
-          </span>
         </div>
 
-        {/* Contact Details */}
-        <div className="pl-3">
-          <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-400 font-medium">
-            <Phone className="w-3.5 h-3.5 text-slate-400" />
-            <span>Contact:</span>
+        {/* Primary Guardian & Contact */}
+        <div className="flex items-center justify-between border-t border-slate-200/60 dark:border-slate-800/80 pt-2 text-[11px]">
+          <div className="truncate pr-2">
+            <span className="text-slate-400 font-medium">{parentLabel}: </span>
+            <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+              {parentName}
+            </span>
           </div>
-          <span className="font-bold text-xs sm:text-[13px] text-[#0A1B39] dark:text-white block mt-1 truncate">
+          <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">
             {phone}
           </span>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* BOTTOM ACTION: FULL-WIDTH PILL GRADIENT BUTTON                            */}
+      {/* 4. CONSOLIDATED ACTION BAR: CALL • CHAT • EDIT • 360° PROFILE             */}
       {/* ========================================================================= */}
-      <div className="mt-4 relative z-10">
-        <motion.button
+      <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <button
           type="button"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewProfile();
-          }}
-          className={`w-full py-2.5 px-4 rounded-full text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all ${
-            isRose
-              ? "bg-gradient-to-r from-[#DF747E] via-[#E88E96] to-[#EFA6A9] shadow-rose-300/30 hover:brightness-105"
-              : "bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] shadow-blue-500/25 hover:brightness-105"
-          }`}
+          onClick={handleCallClick}
+          title={`Call ${parentName} (${phone})`}
+          className="flex items-center justify-center gap-1 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 text-xs font-bold transition-all cursor-pointer"
         >
-          <User className="w-3.5 h-3.5" />
-          <span>View Profile</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </motion.button>
+          <Phone className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Call</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleChatClick}
+          title={`Message Guardian of ${name}`}
+          className="flex items-center justify-center gap-1 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#0050CB] dark:text-blue-300 hover:bg-[#E5EEFF] hover:border-[#0050CB]/30 text-xs font-bold transition-all cursor-pointer"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>Chat</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleEditClick}
+          title="Edit Student Profile & Address"
+          className="flex items-center justify-center gap-1 py-2 rounded-xl bg-[#E5EEFF] dark:bg-blue-950/50 text-[#0050CB] dark:text-blue-300 hover:bg-blue-100 text-xs font-bold transition-all cursor-pointer"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          <span>Edit</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleProfileClick}
+          title="Open Full 360° Profile Drawer"
+          className="flex items-center justify-center gap-1 py-2 rounded-xl bg-[#0050CB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>360°</span>
+        </button>
       </div>
-
-      {/* ========================================================================= */}
-      {/* BOTTOM BACKGROUND: ORGANIC CURVED WAVES + BOTANICAL LEAF TWIG             */}
-      {/* ========================================================================= */}
-      <svg
-        className="absolute -bottom-1 -right-1 w-32 h-24 sm:w-40 sm:h-28 pointer-events-none z-0 select-none overflow-visible"
-        viewBox="0 0 160 110"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Soft billowy background wave */}
-        <path
-          d="M20 110 C50 75 90 70 120 60 C140 54 152 40 160 20 V110 H20 Z"
-          fill={isRose ? "rgba(255, 241, 242, 0.85)" : "rgba(239, 246, 255, 0.85)"}
-        />
-        {/* Foreground curved wave */}
-        <path
-          d="M60 110 C85 85 115 80 135 72 C148 68 155 58 160 45 V110 H60 Z"
-          fill={isRose ? "rgba(255, 228, 230, 0.75)" : "rgba(219, 234, 254, 0.75)"}
-        />
-
-        {/* Botanical Leaves Branch in Bottom Right */}
-        <g transform="translate(100, 35) rotate(-10)">
-          {/* Stem */}
-          <path
-            d="M 5 65 Q 22 35 42 10"
-            stroke={isRose ? "#D4A373" : "#3B82F6"}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* Leaf 1 (Top) */}
-          <path
-            d="M 42 10 C 47 2 56 6 54 13 C 51 18 43 14 42 10 Z"
-            fill={isRose ? "#D4A373" : "#3B82F6"}
-          />
-          {/* Leaf 2 (Right) */}
-          <path
-            d="M 33 28 C 42 24 49 32 44 37 C 39 40 34 33 33 28 Z"
-            fill={isRose ? "#D4A373" : "#3B82F6"}
-          />
-          {/* Leaf 3 (Left) */}
-          <path
-            d="M 22 46 C 13 40 11 50 17 54 C 22 57 24 50 22 46 Z"
-            fill={isRose ? "#D4A373" : "#3B82F6"}
-          />
-        </g>
-      </svg>
     </motion.div>
   );
 }

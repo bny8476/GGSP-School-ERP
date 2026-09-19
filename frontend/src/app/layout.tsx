@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import ThemeInitializer from "@/components/ThemeInitializer";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -36,29 +36,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-        <Script
-          id="theme-initializer"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                var stored = localStorage.getItem('theme');
-                if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
-                var storedLang = localStorage.getItem('language');
-                if (storedLang) {
-                  document.documentElement.lang = storedLang;
-                  if (storedLang === 'ar') {
-                    document.documentElement.dir = 'rtl';
-                  }
-                }
-              } catch (_) {}
-            `,
-          }}
-        />
+        <ThemeInitializer />
       </head>
       <body className={`${outfit.variable} font-sans antialiased flex flex-col min-h-screen bg-white dark:bg-[#000a1f] text-[#000E28] dark:text-white transition-colors duration-200`}>
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} />

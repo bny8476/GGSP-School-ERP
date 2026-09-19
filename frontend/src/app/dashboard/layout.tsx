@@ -22,15 +22,8 @@ import NotificationDrawer from '@/components/ui/NotificationDrawer';
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const u = localStorage.getItem('user');
-        return u ? JSON.parse(u) : null;
-      } catch (e) {}
-    }
-    return null;
-  });
+  const [user, setUser] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [teacherProfileDropdownOpen, setTeacherProfileDropdownOpen] = useState(false);
@@ -38,6 +31,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const { t } = useLanguage();
 
   useEffect(() => {
+    setMounted(true);
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
@@ -326,6 +320,23 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   ];
 
   const activeNavCategories = navCategories;
+  if (!mounted) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#F6F8FC] dark:bg-[#0B132B]">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#0050CB] text-white flex items-center justify-center shadow-lg shadow-[#0050CB]/25 animate-pulse">
+            <GraduationCap className="w-6 h-6" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-[#0050CB] animate-bounce [animation-delay:-0.3s]" />
+            <div className="w-2 h-2 rounded-full bg-[#FF690C] animate-bounce [animation-delay:-0.15s]" />
+            <div className="w-2 h-2 rounded-full bg-[#0050CB] animate-bounce" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const isTeacherOnly = r === 'teacher' && !isSuperAdmin;
 
   if (isTeacherOnly) {
