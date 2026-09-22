@@ -9,7 +9,16 @@ import { parentRoutes } from './parents';
 import { userRoutes, payrollRoutes, leaveRoutes, recruitmentRoutes } from './hr';
 import { admissionRoutes } from './admissions';
 import { financeRoutes } from './finance';
-import { dailyDiaryRoutes, assessmentRoutes, examRoutes, learningRoutes } from './learning';
+import {
+  dailyDiaryRoutes,
+  assessmentRoutes,
+  examRoutes,
+  learningRoutes,
+  classWorkRoutes,
+  activityRoutes,
+  homeworkRoutes,
+  teacherRemarkRoutes,
+} from './learning';
 import {
   operationsRoutes,
   transportRoutes,
@@ -92,6 +101,10 @@ export function registerDomainModules(apiRouter: Router): void {
   apiRouter.use('/assessments', assessmentRoutes);
   apiRouter.use('/exams', examRoutes);
   apiRouter.use('/learning', learningRoutes);
+  apiRouter.use('/classwork', classWorkRoutes);
+  apiRouter.use('/activities', activityRoutes);
+  apiRouter.use('/homework', homeworkRoutes);
+  apiRouter.use('/teacher-remarks', teacherRemarkRoutes);
 
   // Operations
   apiRouter.use('/operations', operationsRoutes);

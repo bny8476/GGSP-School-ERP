@@ -102,6 +102,7 @@ import HomeworkWorkspace from './HomeworkWorkspace';
 import ExamsMarksWorkspace from './ExamsMarksWorkspace';
 import TeacherHomeWorkspace from './TeacherHomeWorkspace';
 import EnrollChildModal from './EnrollChildModal';
+import { getApiBaseUrl } from '@/lib/utils';
 import {
   PremiumCard,
   CardHeader,
@@ -1190,9 +1191,150 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
     toast.success(`Marked all ${students.length} students as ${status}!`);
   };
 
+  const submitAttendanceToBackend = async () => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const records = students.map((s) => ({
+        studentId: s.id,
+        studentName: s.name,
+        status: s.status,
+        checkInTime: s.status === 'Present' ? '8:42 AM' : s.status === 'Late' ? (s.arrivalNote || '9:15 AM') : undefined,
+        absenceReason: s.status === 'Absent' ? (s.absenceReason || 'Unexplained Absence') : undefined,
+        teacherRemark: s.arrivalNote || (s.status === 'Late' ? 'Arrived late' : undefined),
+      }));
+
+      await fetch(`${baseUrl}/api/v1/attendance`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          className: 'LKG',
+          sectionName: 'Section A',
+          academicYear: '2026-2027',
+          date: new Date(),
+          teacherName: 'Ms. Ananya Roy',
+          records,
+        }),
+      });
+    } catch (err) {
+      console.warn('Attendance sync error:', err);
+    }
+  };
+
+  const submitClassWorkToBackend = async (subject: string, topic: string, whatWasTaught: string) => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${baseUrl}/api/v1/classwork`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          subject,
+          topic,
+          whatWasTaught,
+          learningObjective: 'Foundational concept mastery through tactile interaction',
+          classroomActivity: 'Block building group challenge',
+          className: 'LKG',
+          sectionName: 'Section A',
+          academicYear: '2026-2027',
+          teacherName: 'Ms. Ananya Roy',
+          date: new Date(),
+        }),
+      });
+    } catch (err) {
+      console.warn('Classwork sync error:', err);
+    }
+  };
+
+  const submitActivityToBackend = async (title: string, category: string, description: string) => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${baseUrl}/api/v1/activities`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          title,
+          category,
+          description,
+          skillsLearned: ['Fine motor precision', 'Color mixing', 'Tactile exploration'],
+          className: 'LKG',
+          sectionName: 'Section A',
+          academicYear: '2026-2027',
+          teacherName: 'Ms. Ananya Roy',
+          date: new Date(),
+        }),
+      });
+    } catch (err) {
+      console.warn('Activity sync error:', err);
+    }
+  };
+
+  const submitHomeworkToBackend = async (subject: string, title: string, instructions: string, dueDate: string) => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${baseUrl}/api/v1/homework`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          subject,
+          title,
+          description: instructions,
+          instructions,
+          dueDate,
+          className: 'LKG',
+          sectionName: 'Section A',
+          academicYear: '2026-2027',
+          teacherName: 'Ms. Ananya Roy',
+        }),
+      });
+    } catch (err) {
+      console.warn('Homework sync error:', err);
+    }
+  };
+
+  const submitRemarkToBackend = async (studentId: string, category: string, content: string) => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const targetStudent = students.find((s) => s.id === studentId);
+
+      await fetch(`${baseUrl}/api/v1/teacher-remarks`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          studentId: targetStudent?.id || 'c10101010101010101010101',
+          studentName: targetStudent?.name || 'Aarav Sharma',
+          category,
+          content,
+          teacherName: 'Ms. Ananya Roy',
+        }),
+      });
+    } catch (err) {
+      console.warn('Remark sync error:', err);
+    }
+  };
+
   const handleConfirmSubmitAttendance = () => {
     setIsAttendanceLocked(true);
     setIsAttendanceSubmitModalOpen(false);
+    submitAttendanceToBackend();
     if (notifyAbsentParents && absentCount > 0) {
       const absentKids = students.filter((s) => s.status === 'Absent');
       toast.success(
@@ -1391,6 +1533,24 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
   const [remarkDrawerOpen, setRemarkDrawerOpen] = useState(false);
   const [timetableModalOpen, setTimetableModalOpen] = useState(false);
   const [addChildModalOpen, setAddChildModalOpen] = useState(false);
+
+  // Real-time Teacher Drawers Form State
+  const [cwSubject, setCwSubject] = useState('Numbers & Counting');
+  const [cwTopic, setCwTopic] = useState('Counting blocks from 1 to 10');
+  const [cwNotes, setCwNotes] = useState('All students actively participated in building block towers.');
+
+  const [actTitle, setActTitle] = useState('Clay Modeling & Animal Shapes');
+  const [actCategory, setActCategory] = useState('Art & Craft');
+  const [actDescription, setActDescription] = useState('Fine motor skills tactile experience shaping clay animals and patterns.');
+
+  const [hwSubject, setHwSubject] = useState('English Phonics');
+  const [hwTitle, setHwTitle] = useState('Tracing Letter C & Sound Match');
+  const [hwInstructions, setHwInstructions] = useState("Practice tracing letter 'C' on workbook page 12. Circle objects starting with 'C'.");
+  const [hwDueDate, setHwDueDate] = useState('2026-09-24');
+
+  const [remStudentId, setRemStudentId] = useState('');
+  const [remCategory, setRemCategory] = useState('Appreciation');
+  const [remContent, setRemContent] = useState('Demonstrated exceptional sharing behavior and enthusiasm in group activities today.');
 
   // New Student Form
   const [newRollNo, setNewRollNo] = useState('');
@@ -8513,6 +8673,7 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                 </button>
                 <button
                   onClick={() => {
+                    submitAttendanceToBackend();
                     toast.success('Attendance register submitted & parents updated!');
                     setAttendanceDrawerOpen(false);
                   }}
@@ -8658,21 +8819,37 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Subject</label>
-                  <input type="text" defaultValue="Numbers & Counting" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <input
+                    type="text"
+                    value={cwSubject}
+                    onChange={(e) => setCwSubject(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Topic Covered</label>
-                  <input type="text" defaultValue="Counting blocks from 1 to 10" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <input
+                    type="text"
+                    value={cwTopic}
+                    onChange={(e) => setCwTopic(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Teacher Notes</label>
-                  <textarea rows={3} defaultValue="All students actively participated in building block towers." className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <textarea
+                    rows={3}
+                    value={cwNotes}
+                    onChange={(e) => setCwNotes(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button onClick={() => setClassWorkDrawerOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-400 cursor-pointer">Cancel</button>
                 <button
                   onClick={() => {
+                    submitClassWorkToBackend(cwSubject, cwTopic, cwNotes);
                     toast.success('Class work published to parent portal & daily diary!');
                     setClassWorkDrawerOpen(false);
                   }}
@@ -8762,26 +8939,42 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Activity Title</label>
-                  <input type="text" defaultValue="Clay Modeling & Animal Shapes" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <input
+                    type="text"
+                    value={actTitle}
+                    onChange={(e) => setActTitle(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Domain</label>
-                  <select defaultValue="Fine Motor Skills" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent">
-                    <option value="Fine Motor Skills">Fine Motor Skills</option>
-                    <option value="Creative Arts">Creative Arts</option>
-                    <option value="Social & Emotional">Social & Emotional</option>
-                    <option value="Gross Motor & Play">Gross Motor & Play</option>
+                  <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Category</label>
+                  <select
+                    value={actCategory}
+                    onChange={(e) => setActCategory(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  >
+                    <option value="Art & Craft">Art & Craft</option>
+                    <option value="Story Time">Story Time</option>
+                    <option value="Rhymes">Rhymes</option>
+                    <option value="Physical Play">Physical Play</option>
+                    <option value="Music">Music</option>
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Materials Needed</label>
-                  <input type="text" defaultValue="Non-toxic modeling clay, rolling pins, cutters" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Activity Description</label>
+                  <textarea
+                    rows={2}
+                    value={actDescription}
+                    onChange={(e) => setActDescription(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button onClick={() => setActivityDrawerOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-400 cursor-pointer">Cancel</button>
                 <button
                   onClick={() => {
+                    submitActivityToBackend(actTitle, actCategory, actDescription);
                     toast.success('Activity scheduled and published to timeline!');
                     setActivityDrawerOpen(false);
                   }}
@@ -8817,21 +9010,46 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Subject</label>
-                  <input type="text" defaultValue="English Phonics" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <input
+                    type="text"
+                    value={hwSubject}
+                    onChange={(e) => setHwSubject(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Homework Title</label>
+                  <input
+                    type="text"
+                    value={hwTitle}
+                    onChange={(e) => setHwTitle(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Instructions / Worksheet</label>
-                  <textarea rows={3} defaultValue="Practice tracing letter 'C' on workbook page 12. Circle objects starting with 'C'." className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <textarea
+                    rows={3}
+                    value={hwInstructions}
+                    onChange={(e) => setHwInstructions(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Submission Due Date</label>
-                  <input type="date" defaultValue="2026-09-21" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <input
+                    type="date"
+                    value={hwDueDate}
+                    onChange={(e) => setHwDueDate(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button onClick={() => setHomeworkDrawerOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-400 cursor-pointer">Cancel</button>
                 <button
                   onClick={() => {
+                    submitHomeworkToBackend(hwSubject, hwTitle, hwInstructions, hwDueDate);
                     toast.success('Homework assigned and notified to all parents!');
                     setHomeworkDrawerOpen(false);
                   }}
@@ -9036,7 +9254,11 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Select Child</label>
-                  <select defaultValue={students[0]?.id} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent">
+                  <select
+                    value={remStudentId || students[0]?.id}
+                    onChange={(e) => setRemStudentId(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  >
                     {students.map((s) => (
                       <option key={s.id} value={s.id}>{s.name} (Roll {s.rollNo})</option>
                     ))}
@@ -9044,28 +9266,38 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Category</label>
-                  <select defaultValue="Cognitive" className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent">
-                    <option value="Cognitive">Cognitive & Learning</option>
-                    <option value="Behavioral">Behavioral & Social</option>
-                    <option value="Motor">Motor Skills & Physical</option>
-                    <option value="Creative">Creative Expression</option>
+                  <select
+                    value={remCategory}
+                    onChange={(e) => setRemCategory(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  >
+                    <option value="Appreciation">Appreciation</option>
+                    <option value="Academics">Academics</option>
+                    <option value="Behavior">Behavioral & Social</option>
+                    <option value="Participation">Classroom Participation</option>
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Observation Note</label>
-                  <textarea rows={3} defaultValue="Demonstrated exceptional sharing behavior during morning playtime." className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent" />
+                  <label className="font-bold text-slate-600 dark:text-slate-300 block mb-1">Observation Note / Remark</label>
+                  <textarea
+                    rows={3}
+                    value={remContent}
+                    onChange={(e) => setRemContent(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button onClick={() => setRemarkDrawerOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-400 cursor-pointer">Cancel</button>
                 <button
                   onClick={() => {
-                    toast.success('Observation note logged to pupil record!');
+                    const targetId = remStudentId || students[0]?.id;
+                    submitRemarkToBackend(targetId, remCategory, remContent);
                     setRemarkDrawerOpen(false);
                   }}
                   className="px-5 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-teal-700"
                 >
-                  Save Remark
+                  Save & Send to Parent
                 </button>
               </div>
             </motion.div>

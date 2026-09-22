@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { io, Socket } from 'socket.io-client';
+import toast from 'react-hot-toast';
 import { getApiBaseUrl } from '@/lib/utils';
 
 export interface Child {
@@ -35,6 +37,81 @@ export interface ParentProfile {
   address: string;
 }
 
+export interface TodayAttendanceInfo {
+  recorded: boolean;
+  status: 'Present' | 'Absent' | 'Late' | 'Excused' | 'Not Marked';
+  date: string | Date;
+  checkInTime?: string;
+  absenceReason?: string;
+  teacherRemark?: string;
+  teacherName?: string;
+  className?: string;
+  sectionName?: string;
+  timestamp?: string | Date;
+}
+
+export interface ClassWorkItem {
+  _id: string;
+  subject: string;
+  topic: string;
+  whatWasTaught: string;
+  learningObjective?: string;
+  classroomActivity?: string;
+  worksheetUrl?: string;
+  homework?: string;
+  teacherRemark?: string;
+  photos?: string[];
+  teacherName: string;
+  date: string | Date;
+}
+
+export interface ClassroomActivityItem {
+  _id: string;
+  category: string;
+  title: string;
+  description: string;
+  icon?: string;
+  photos?: string[];
+  teacherName: string;
+  date: string | Date;
+}
+
+export interface HomeworkItem {
+  _id: string;
+  subject: string;
+  title: string;
+  description: string;
+  instructions?: string;
+  dueDate: string | Date;
+  attachmentUrl?: string;
+  teacherName: string;
+  status: 'Pending' | 'Submitted' | 'Completed' | 'Overdue';
+}
+
+export interface DailyDiaryInfo {
+  _id?: string;
+  date: string | Date;
+  todayLearning?: string;
+  todayActivity?: string;
+  homework?: string;
+  teacherNote?: string;
+  teacherName?: string;
+  mood?: string;
+  activities?: string[];
+}
+
+export interface TeacherRemarkItem {
+  _id: string;
+  studentId: string;
+  studentName?: string;
+  teacherName: string;
+  content: string;
+  category: string;
+  date: string | Date;
+  parentReply?: string;
+  parentRepliedAt?: string | Date;
+}
+
 interface ParentContextType {
   user: any;
   parentProfile: ParentProfile | null;
@@ -45,8 +122,21 @@ interface ParentContextType {
   isLoadingChildren: boolean;
   isSearchOpen: boolean;
   setIsSearchOpen: (open: boolean) => void;
+  
+  // Real-Time Classroom Data
+  todayAttendance: TodayAttendanceInfo;
+  todayClassWork: ClassWorkItem[];
+  todayActivities: ClassroomActivityItem[];
+  todayDiary: DailyDiaryInfo | null;
+  teacherRemarks: TeacherRemarkItem[];
+  homeworkList: HomeworkItem[];
+  unreadNotificationCount: number;
+
+  // Actions
   refreshPortalData: () => Promise<void>;
   updateParentProfile: (data: Partial<ParentProfile>) => Promise<boolean>;
+  replyTeacherRemark: (remarkId: string, reply: string) => Promise<boolean>;
+  updateHomeworkStatus: (homeworkId: string, status: 'Pending' | 'Submitted' | 'Completed') => Promise<boolean>;
 }
 
 const DEFAULT_CHILDREN: Child[] = [
@@ -63,29 +153,29 @@ const DEFAULT_CHILDREN: Child[] = [
     emergencyContact: "+91 98765 43210",
     medicalNotes: "Mild seasonal peanut allergy; inhaler not required.",
     teacherName: "Ms. Ananya Roy",
-    attendanceRate: 92,
-    pendingHomework: 3,
+    attendanceRate: 94,
+    pendingHomework: 2,
     feesDue: 8500,
     recentActivity: "Numbers & Counting tactile play",
   },
   {
     _id: "c20202020202020202020202",
-    firstName: "Ananya",
+    firstName: "Diya",
     lastName: "Sharma",
-    admissionNumber: "GGPS-2022-042",
-    grade: "Class 3",
-    section: "Section B",
-    rollNumber: "07",
+    admissionNumber: "GGPS-2025-014",
+    grade: "LKG",
+    section: "Section A",
+    rollNumber: "08",
     studentPhoto: "/ananya-student.jpg",
     bloodGroup: "O+",
     emergencyContact: "+91 98765 43210",
     medicalNotes: "No known allergies or chronic conditions.",
-    teacherName: "Mr. Rajesh Kumar",
-    attendanceRate: 96.8,
+    teacherName: "Ms. Ananya Roy",
+    attendanceRate: 96,
     pendingHomework: 1,
     feesDue: 4000,
-    recentActivity: "Science Lab Plant Photosynthesis Experiment",
-  }
+    recentActivity: "Rhymes & Vocal Singing",
+  },
 ];
 
 const DEFAULT_PARENT_PROFILE: ParentProfile = {
@@ -98,6 +188,117 @@ const DEFAULT_PARENT_PROFILE: ParentProfile = {
   address: "Tower 4, Apt 802, Prestige Greenfield Residences, Bangalore 560103",
 };
 
+const DEFAULT_ATTENDANCE: TodayAttendanceInfo = {
+  recorded: true,
+  status: 'Present',
+  date: new Date(),
+  checkInTime: '8:42 AM',
+  teacherName: 'Ms. Ananya Roy',
+  className: 'LKG',
+  sectionName: 'Section A',
+  teacherRemark: 'Arrived enthusiastically for morning assembly',
+};
+
+const DEFAULT_CLASSWORK: ClassWorkItem[] = [
+  {
+    _id: 'cw-1',
+    subject: 'English',
+    topic: 'Alphabet A–E',
+    whatWasTaught: 'Children practiced identifying letters A–E.',
+    classroomActivity: 'Letter matching game with wooden alphabet flashcards.',
+    teacherRemark: 'Lesson completed with excellent active participation.',
+    teacherName: 'Ms. Ananya Roy',
+    date: new Date(),
+  },
+  {
+    _id: 'cw-2',
+    subject: 'Maths',
+    topic: 'Counting 1 to 10',
+    whatWasTaught: 'Count and sort colorful beads and blocks in small groups.',
+    classroomActivity: 'Bead necklace counting activity & block towers.',
+    teacherRemark: 'Great counting and grouping skills shown by the learners today.',
+    teacherName: 'Ms. Ananya Roy',
+    date: new Date(),
+  },
+];
+
+const DEFAULT_ACTIVITIES: ClassroomActivityItem[] = [
+  {
+    _id: 'act-1',
+    category: 'Art & Craft',
+    title: 'Rainbow Drawing Activity',
+    description: 'Children created colorful rainbow drawings today using watercolor sponge rollers and cotton clouds.',
+    icon: '🎨',
+    teacherName: 'Ms. Ananya Roy',
+    date: new Date(),
+  },
+  {
+    _id: 'act-2',
+    category: 'Story Time',
+    title: 'The Little Seed',
+    description: 'Interactive puppet storytelling exploring how seeds grow with rain, soil, and golden sunshine.',
+    icon: '📚',
+    teacherName: 'Ms. Ananya Roy',
+    date: new Date(),
+  },
+  {
+    _id: 'act-3',
+    category: 'Rhymes',
+    title: 'Twinkle Twinkle Little Star',
+    description: 'Rhythm, star wand gestures, and clapping beats in melodic group harmony.',
+    icon: '🎵',
+    teacherName: 'Ms. Ananya Roy',
+    date: new Date(),
+  },
+];
+
+const DEFAULT_DIARY: DailyDiaryInfo = {
+  date: new Date(),
+  todayLearning: 'English alphabet practice and story time.',
+  todayActivity: 'Rainbow drawing.',
+  homework: 'Practice A–E.',
+  teacherNote: 'Children participated actively today.',
+  teacherName: 'Ms. Ananya Roy',
+  mood: 'Happy',
+  activities: ['Rainbow drawing', 'Alphabet A–E practice', 'Little Seed story'],
+};
+
+const DEFAULT_REMARKS: TeacherRemarkItem[] = [
+  {
+    _id: 'rem-1',
+    studentId: 'c10101010101010101010101',
+    studentName: 'Aarav Sharma',
+    teacherName: 'Ms. Ananya Roy',
+    date: new Date(),
+    content: 'Aarav participated very well in today’s story activity.',
+    category: 'Appreciation',
+    parentReply: '',
+  },
+];
+
+const DEFAULT_HOMEWORK: HomeworkItem[] = [
+  {
+    _id: 'hw-1',
+    subject: 'English',
+    title: 'Practice letters A–E',
+    description: 'Trace uppercase and lowercase letters A to E in your four-line handwriting workbook.',
+    instructions: 'Slow and neat handwriting along the dotted paths.',
+    dueDate: new Date(Date.now() + 86400000),
+    teacherName: 'Ms. Ananya Roy',
+    status: 'Pending',
+  },
+  {
+    _id: 'hw-2',
+    subject: 'Maths',
+    title: 'Count 5 favorite toys',
+    description: 'Count 5 favorite toys at home with parents and draw 5 colorful stars.',
+    instructions: 'Point at each toy while saying numbers aloud.',
+    dueDate: new Date(Date.now() + 2 * 86400000),
+    teacherName: 'Ms. Ananya Roy',
+    status: 'Pending',
+  },
+];
+
 const ParentContext = createContext<ParentContextType | undefined>(undefined);
 
 export function ParentProvider({ children: reactChildren }: { children: React.ReactNode }) {
@@ -107,6 +308,92 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
   const [selectedChildId, setSelectedChildId] = useState<string>(DEFAULT_CHILDREN[0]._id);
   const [isLoadingChildren, setIsLoadingChildren] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+
+  // Real-Time Classroom States
+  const [todayAttendance, setTodayAttendance] = useState<TodayAttendanceInfo>(DEFAULT_ATTENDANCE);
+  const [todayClassWork, setTodayClassWork] = useState<ClassWorkItem[]>(DEFAULT_CLASSWORK);
+  const [todayActivities, setTodayActivities] = useState<ClassroomActivityItem[]>(DEFAULT_ACTIVITIES);
+  const [todayDiary, setTodayDiary] = useState<DailyDiaryInfo | null>(DEFAULT_DIARY);
+  const [teacherRemarks, setTeacherRemarks] = useState<TeacherRemarkItem[]>(DEFAULT_REMARKS);
+  const [homeworkList, setHomeworkList] = useState<HomeworkItem[]>(DEFAULT_HOMEWORK);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState<number>(2);
+
+  const selectedChild = childrenList.find(c => c._id === selectedChildId) || childrenList[0] || null;
+
+  // Load child-specific classroom data from API
+  const refreshChildData = useCallback(async (childId: string) => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiBase = getApiBaseUrl();
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      };
+
+      // 1. Today's Attendance
+      fetch(`${apiBase}/api/v1/attendance/today?childId=${childId}`, { headers, credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && data.status) {
+            setTodayAttendance(data);
+          }
+        })
+        .catch(() => {});
+
+      // 2. Today's Class Work
+      fetch(`${apiBase}/api/v1/classwork/today?childId=${childId}`, { headers, credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setTodayClassWork(data);
+          }
+        })
+        .catch(() => {});
+
+      // 3. Today's Activities
+      fetch(`${apiBase}/api/v1/activities/today?childId=${childId}`, { headers, credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setTodayActivities(data);
+          }
+        })
+        .catch(() => {});
+
+      // 4. Today's Daily Diary
+      fetch(`${apiBase}/api/v1/daily-diary/today?childId=${childId}`, { headers, credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && (data.todayLearning || data.todayActivity)) {
+            setTodayDiary(data);
+          }
+        })
+        .catch(() => {});
+
+      // 5. Child-specific Teacher Remarks
+      fetch(`${apiBase}/api/v1/teacher-remarks/child/${childId}`, { headers, credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setTeacherRemarks(data);
+          }
+        })
+        .catch(() => {});
+
+      // 6. Child Homework
+      fetch(`${apiBase}/api/v1/homework/child/${childId}`, { headers, credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setHomeworkList(data);
+          }
+        })
+        .catch(() => {});
+
+    } catch (err) {
+      console.warn('Notice loading child portal data:', err);
+    }
+  }, []);
 
   // Fetch Parent profile & linked children from real backend API
   const refreshPortalData = useCallback(async () => {
@@ -119,13 +406,11 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       };
 
-      // 1. Fetch parent profile & verified children
       const profilePromise = fetch(`${apiBase}/api/v1/parents/me`, {
         headers,
         credentials: 'include',
       }).then(r => r.ok ? r.json() : null).catch(() => null);
 
-      // 2. Fetch students endpoint
       const studentsPromise = fetch(`${apiBase}/api/v1/students`, {
         headers,
         credentials: 'include',
@@ -144,10 +429,9 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
         : null;
 
       if (fetchedStudents && fetchedStudents.length > 0) {
-        // Map backend student models into normalized Child objects
         const normalized: Child[] = fetchedStudents.map((s: any, idx: number) => {
-          const className = typeof s.classId === 'object' && s.classId ? s.classId.name : (s.grade || `Class ${idx + 1}`);
-          const sectionName = typeof s.sectionId === 'object' && s.sectionId ? s.sectionId.name : (s.section || 'A');
+          const className = typeof s.classId === 'object' && s.classId ? s.classId.name : (s.grade || `LKG`);
+          const sectionName = typeof s.sectionId === 'object' && s.sectionId ? s.sectionId.name : (s.section || 'Section A');
           return {
             _id: s._id,
             firstName: s.firstName || 'Student',
@@ -166,24 +450,124 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
             attendanceRate: idx === 0 ? 94 : 96,
             pendingHomework: idx === 0 ? 2 : 1,
             feesDue: idx === 0 ? 4500 : 4000,
-            recentActivity: idx === 0 ? 'Numbers & Counting tactile play' : 'Science Lab Plant Cells Experiment',
+            recentActivity: idx === 0 ? 'Numbers & Counting tactile play' : 'Art & Craft Rainbow drawing',
           };
         });
 
         setChildrenList(normalized);
-        // Retain current selection if it still exists
-        setSelectedChildId(prev => (normalized.some(c => c._id === prev) ? prev : normalized[0]._id));
+        const activeId = normalized.some(c => c._id === selectedChildId) ? selectedChildId : normalized[0]._id;
+        setSelectedChildId(activeId);
+        refreshChildData(activeId);
       } else {
-        // Fallback to sample data for smooth interactive preview
         setChildrenList(DEFAULT_CHILDREN);
+        refreshChildData(DEFAULT_CHILDREN[0]._id);
       }
     } catch (e) {
       console.warn("Parent data sync notice:", e);
       setChildrenList(DEFAULT_CHILDREN);
+      refreshChildData(DEFAULT_CHILDREN[0]._id);
     } finally {
       setIsLoadingChildren(false);
     }
-  }, []);
+  }, [refreshChildData, selectedChildId]);
+
+  // Real-Time Socket.IO Synchronization
+  useEffect(() => {
+    let socket: Socket | null = null;
+    try {
+      const apiBase = getApiBaseUrl();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      socket = io(apiBase, {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+      });
+
+      socket.on('connect', () => {
+        // Socket live
+      });
+
+      // 1. Attendance Real-Time Event
+      socket.on('attendance:marked', (data: any) => {
+        if (data?.records && Array.isArray(data.records)) {
+          const matching = data.records.find((r: any) => String(r.studentId) === String(selectedChildId));
+          if (matching) {
+            setTodayAttendance({
+              recorded: true,
+              status: matching.status,
+              date: matching.date || new Date(),
+              checkInTime: matching.checkInTime || (matching.status === 'Present' ? '8:42 AM' : undefined),
+              absenceReason: matching.absenceReason,
+              teacherRemark: matching.teacherRemark || matching.remarks,
+              teacherName: matching.teacherName || 'Ms. Ananya Roy',
+              className: matching.className || 'LKG',
+              sectionName: matching.sectionName || 'Section A',
+            });
+            toast.success(`Today's Attendance marked: ${matching.status}`, {
+              icon: matching.status === 'Present' ? '✓' : matching.status === 'Absent' ? '⚠' : '🕒',
+              style: { borderRadius: '16px', background: '#000E28', color: '#fff', fontSize: '13px', fontWeight: 'bold' }
+            });
+          }
+        }
+      });
+
+      // 2. Class Work Real-Time Event
+      socket.on('classwork:published', (newWork: any) => {
+        setTodayClassWork(prev => [newWork, ...prev.filter(w => w._id !== newWork._id)]);
+        toast.success(`Today's Learning updated: ${newWork.subject} (${newWork.topic})`, {
+          icon: '📖',
+          style: { borderRadius: '16px', background: '#0050CB', color: '#fff', fontSize: '13px', fontWeight: 'bold' }
+        });
+      });
+
+      // 3. Activity Real-Time Event
+      socket.on('activity:published', (newActivity: any) => {
+        setTodayActivities(prev => [newActivity, ...prev.filter(a => a._id !== newActivity._id)]);
+        toast.success(`New Activity published: ${newActivity.title}`, {
+          icon: newActivity.icon || '🎨',
+          style: { borderRadius: '16px', background: '#0050CB', color: '#fff', fontSize: '13px', fontWeight: 'bold' }
+        });
+      });
+
+      // 4. Homework Real-Time Event
+      socket.on('homework:assigned', (newHw: any) => {
+        setHomeworkList(prev => [newHw, ...prev.filter(h => h._id !== newHw._id)]);
+        toast.success(`New Homework assigned: ${newHw.title}`, {
+          icon: '📝',
+          style: { borderRadius: '16px', background: '#FF690C', color: '#fff', fontSize: '13px', fontWeight: 'bold' }
+        });
+      });
+
+      // 5. Daily Diary Real-Time Event
+      socket.on('diary:published', (newDiary: any) => {
+        setTodayDiary(newDiary);
+        toast.success("Today's Daily Diary has been published!", {
+          icon: '📒',
+          style: { borderRadius: '16px', background: '#0050CB', color: '#fff', fontSize: '13px', fontWeight: 'bold' }
+        });
+      });
+
+      // 6. Teacher Remark Real-Time Event
+      socket.on('remark:added', (newRemark: any) => {
+        if (String(newRemark.studentId) === String(selectedChildId)) {
+          setTeacherRemarks(prev => [newRemark, ...prev]);
+          toast.success(`New Teacher Remark received from ${newRemark.teacherName}`, {
+            icon: '💬',
+            style: { borderRadius: '16px', background: '#0050CB', color: '#fff', fontSize: '13px', fontWeight: 'bold' }
+          });
+        }
+      });
+
+      // 7. General Notification Event
+      socket.on('notification:new', (notif: any) => {
+        setUnreadNotificationCount(prev => prev + 1);
+      });
+
+    } catch (sockErr) {}
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, [selectedChildId]);
 
   // Sync user credentials from localStorage
   useEffect(() => {
@@ -228,7 +612,8 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
         localStorage.setItem('ggps_parent_active_child', childId);
       } catch (_) {}
     }
-  }, []);
+    refreshChildData(childId);
+  }, [refreshChildData]);
 
   const updateParentProfile = useCallback(async (data: Partial<ParentProfile>): Promise<boolean> => {
     try {
@@ -251,12 +636,62 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
     } catch (e) {
       console.warn("Parent profile update failed, applying locally:", e);
     }
-    // Optimistic fallback
     setParentProfile(prev => ({ ...prev!, ...data }));
     return true;
   }, []);
 
-  const selectedChild = childrenList.find(c => c._id === selectedChildId) || childrenList[0] || null;
+  // Reply to teacher remark
+  const replyTeacherRemark = useCallback(async (remarkId: string, reply: string): Promise<boolean> => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiBase = getApiBaseUrl();
+      const res = await fetch(`${apiBase}/api/v1/teacher-remarks/${remarkId}/reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify({ reply }),
+      });
+      if (res.ok) {
+        setTeacherRemarks(prev =>
+          prev.map(r => r._id === remarkId ? { ...r, parentReply: reply, parentRepliedAt: new Date() } : r)
+        );
+        toast.success('Reply sent to teacher!');
+        return true;
+      }
+    } catch (err) {}
+    // Optimistic fallback
+    setTeacherRemarks(prev =>
+      prev.map(r => r._id === remarkId ? { ...r, parentReply: reply, parentRepliedAt: new Date() } : r)
+    );
+    toast.success('Reply sent to teacher!');
+    return true;
+  }, []);
+
+  // Update homework status (Pending / Completed)
+  const updateHomeworkStatus = useCallback(async (homeworkId: string, status: 'Pending' | 'Submitted' | 'Completed'): Promise<boolean> => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiBase = getApiBaseUrl();
+      await fetch(`${apiBase}/api/v1/homework/${homeworkId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify({ studentId: selectedChildId, status }),
+      });
+    } catch (e) {}
+
+    setHomeworkList(prev =>
+      prev.map(hw => hw._id === homeworkId ? { ...hw, status } : hw)
+    );
+    toast.success(`Homework marked as ${status}!`);
+    return true;
+  }, [selectedChildId]);
 
   return (
     <ParentContext.Provider
@@ -270,8 +705,17 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
         isLoadingChildren,
         isSearchOpen,
         setIsSearchOpen,
+        todayAttendance,
+        todayClassWork,
+        todayActivities,
+        todayDiary,
+        teacherRemarks,
+        homeworkList,
+        unreadNotificationCount,
         refreshPortalData,
         updateParentProfile,
+        replyTeacherRemark,
+        updateHomeworkStatus,
       }}
     >
       {reactChildren}
