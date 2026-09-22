@@ -146,7 +146,7 @@ export default function LoginPage() {
         const roleStr = (data.role || "").toLowerCase();
         // Students are data records only; only parents navigate to the Parent Portal
         if (roleStr === "parent") {
-          router.push("/portal");
+          router.push("/parent");
         } else {
           router.push("/dashboard");
         }
@@ -199,7 +199,7 @@ export default function LoginPage() {
             <AcademyCrest size="md" />
             <div className="leading-tight">
               <span className="block text-xl sm:text-2xl font-black tracking-tight text-[#000E28] dark:text-white">
-                E.A.S.<span className="text-[#0050CB] dark:text-[#38BDF8]">Academy</span>
+                GGPS <span className="text-[#0050CB] dark:text-[#38BDF8]">School</span>
               </span>
               <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-wide">
                 {t("header.sub", "School Management System")}
@@ -303,7 +303,7 @@ export default function LoginPage() {
             <div className="absolute inset-0 z-0">
               <Image
                 src="/school-campus.jpg"
-                alt="E.A.S. Academy Campus Exterior"
+                alt="GGPS School Campus Exterior"
                 fill
                 priority
                 className="object-cover object-center"
@@ -393,7 +393,7 @@ export default function LoginPage() {
                 <AcademyCrest size="sm" />
                 <div>
                   <span className="block text-base font-black text-[#000E28] dark:text-white">
-                    E.A.S.<span className="text-[#0050CB] dark:text-[#38BDF8]">Academy</span>
+                    GGPS <span className="text-[#0050CB] dark:text-[#38BDF8]">School</span>
                   </span>
                   <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                     {t("header.sub", "School Management System")}
@@ -410,7 +410,7 @@ export default function LoginPage() {
                   {t("login.signInTitle", "Sign In to Your Account")}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal leading-relaxed">
-                  {t("login.signInSubtitle", "Access your E.A.S. Academy School portal and manage your academic journey.")}
+                  {t("login.signInSubtitle", "Access your GGPS School portal and manage your academic journey.")}
                 </p>
               </div>
 

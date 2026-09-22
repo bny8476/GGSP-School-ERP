@@ -121,7 +121,7 @@ export default function CtaBanner() {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               className="text-blue-100/90 text-sm sm:text-base md:text-[17px] leading-relaxed font-normal"
             >
-              {t("cta.subtitle", "Join hundreds of forward-thinking institutions using E.A.S. Academy to elevate their educational standard.")}
+              {t("cta.subtitle", "Join hundreds of forward-thinking institutions using GGPS School to elevate their educational standard.")}
             </motion.p>
           </div>
 

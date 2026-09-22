@@ -148,7 +148,7 @@ export default function Home() {
 
   const testimonials = [
     {
-      quote: "E.A.S. Academy has made our school operations so much easier. The platform is intuitive, reliable and excellent support team!",
+      quote: "GGPS School has made our school operations so much easier. The platform is intuitive, reliable and excellent support team!",
       name: "Priya Sharma",
       role: "Principal, Sunrise Public School",
       image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
@@ -169,11 +169,11 @@ export default function Home() {
 
   const faqs = [
     {
-      q: "How fast can our school onboard with E.A.S. Academy?",
+      q: "How fast can our school onboard with GGPS School?",
       a: "Our automated data importer lets you import student rosters, staff lists, and fee schedules in under 30 minutes with dedicated 24/7 migration support."
     },
     {
-      q: "Does E.A.S. Academy support WhatsApp & SMS notifications?",
+      q: "Does GGPS School support WhatsApp & SMS notifications?",
       a: "Yes! Instant automated WhatsApp alerts and SMS notifications are sent to parents for attendance logs, fee receipts, exam report cards, and urgent notices."
     },
     {
@@ -302,7 +302,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.58, ease: [0.16, 1, 0.3, 1] }}
               className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed max-w-lg mb-7 font-normal"
             >
-              {t('hero.subtitle', 'E.A.S. Academy brings together students, parents, teachers and administrators with a powerful, easy-to-use school management system.')}
+              {t('hero.subtitle', 'GGPS School brings together students, parents, teachers and administrators with a powerful, easy-to-use school management system.')}
             </motion.p>
 
             {/* CTA Buttons: Staggered Entrance with Hover Micro-Interactions */}
@@ -365,7 +365,7 @@ export default function Home() {
 
           </div>
 
-          {/* RIGHT COLUMN: Seamless Hero Visual Artwork (Branded E.A.S. Academy Composition) */}
+          {/* RIGHT COLUMN: Seamless Hero Visual Artwork (Branded GGPS School Composition) */}
           <motion.div
             style={{ y: yHeroImage }}
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
@@ -382,7 +382,7 @@ export default function Home() {
               <div className="relative w-full flex items-center justify-center">
                 <Image
                   src="/hero-banner.png"
-                  alt="E.A.S. Academy Modern School Management Platform"
+                  alt="GGPS School Modern Management Platform"
                   width={1600}
                   height={800}
                   priority
@@ -696,7 +696,7 @@ export default function Home() {
       </section>
 
       {/* ========================================== */}
-      {/* 3. "WHY E.A.S. ACADEMY" SECTION */}
+      {/* 3. "WHY GGPS SCHOOL" SECTION */}
       {/* ========================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -711,7 +711,7 @@ export default function Home() {
             className="lg:col-span-5"
           >
             <div className="inline-flex items-center gap-2 text-[#0050CB] dark:text-[#38BDF8] text-xs font-bold uppercase tracking-wider mb-3">
-              <span>WHY E.A.S. ACADEMY</span>
+              <span>WHY GGPS SCHOOL</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-[46px] font-black text-[#000E28] dark:text-white tracking-tight leading-tight mb-5">
@@ -719,7 +719,7 @@ export default function Home() {
             </h2>
 
             <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed mb-8">
-              From admissions to academic performance, E.A.S. Academy simplifies every process, so you can focus on what truly matters — your students.
+              From admissions to academic performance, GGPS School simplifies every process, so you can focus on what truly matters — your students.
             </p>
 
             {/* Checkmark Features List */}
@@ -1244,7 +1244,7 @@ export default function Home() {
           </h2>
 
           <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed font-normal">
-            Real stories from schools, teachers and parents who are building a better future with E.A.S. Academy.
+            Real stories from schools, teachers and parents who are building a better future with GGPS School.
           </p>
         </div>
 
@@ -1313,7 +1313,7 @@ export default function Home() {
 
                 {/* Body Quote */}
                 <p className="font-editorial italic text-slate-700 dark:text-slate-200 text-sm sm:text-[15.5px] leading-relaxed mb-6 font-normal">
-                  “E.A.S. Academy has made our school operations so much easier. The platform is intuitive, reliable and excellent support team!”
+                  “GGPS School has made our school operations so much easier. The platform is intuitive, reliable and excellent support team!”
                 </p>
               </div>
 
@@ -1495,7 +1495,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-bold text-xs text-[#000E28] dark:text-white leading-tight">
-                      Modern Learning Academy
+                      Modern Learning School
                     </h4>
                     <p className="text-[9px] font-semibold text-slate-400 tracking-wider uppercase">
                       EDUCATE · EMPOWER · EXCEL
@@ -1634,7 +1634,7 @@ export default function Home() {
           >
             <Image
               src="/cta-students-school.jpg"
-              alt="E.A.S. Academy Students"
+              alt="GGPS School Students"
               fill
               priority
               className="object-cover object-bottom"
@@ -1677,7 +1677,7 @@ export default function Home() {
 
             {/* Main Headline */}
             <h2 className="text-2xl sm:text-3xl lg:text-[34px] xl:text-[36px] font-black text-white tracking-tight leading-[1.15] mb-2 lg:whitespace-nowrap">
-              Join E.A.S. Academy Today
+              Join GGPS School Today
             </h2>
 
             {/* Subtitle */}
@@ -1751,7 +1751,7 @@ export default function Home() {
                 <div className="w-8 h-8 rounded-full bg-[#E5EEFF] text-[#0050CB] flex items-center justify-center">
                   <Play className="w-4 h-4 fill-current ml-0.5" />
                 </div>
-                <h3 className="text-lg font-black text-[#000E28] dark:text-white">E.A.S. Academy Overview</h3>
+                <h3 className="text-lg font-black text-[#000E28] dark:text-white">GGPS School Overview</h3>
               </div>
               <button
                 type="button"
@@ -1769,7 +1769,7 @@ export default function Home() {
               </div>
               <h4 className="text-2xl font-black mb-2 text-center">Interactive ERP Tour Video</h4>
               <p className="text-blue-100 text-sm max-w-md text-center">
-                Discover how E.A.S. Academy automates admissions, fee collection, student attendance, and report cards.
+                Discover how GGPS School automates admissions, fee collection, student attendance, and report cards.
               </p>
             </div>
           </motion.div>

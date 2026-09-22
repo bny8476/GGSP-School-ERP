@@ -88,7 +88,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
               <AcademyLogo size="sm" />
               <div className="leading-tight">
                 <span className="text-base font-black tracking-tight text-[#000E28] dark:text-white group-hover:text-[#0050CB] transition-colors">
-                  E.A.S.<span className="text-[#0050CB]">Academy</span>
+                  GGPS <span className="text-[#0050CB]">School</span>
                 </span>
                 <span className="block text-[10px] text-[#FF690C] font-extrabold uppercase tracking-wider">
                   Parent Portal
@@ -96,7 +96,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
             </Link>
           ) : (
-            <Link href="/portal" className="mx-auto" title="E.A.S. Academy">
+            <Link href="/portal" className="mx-auto" title="GGPS School">
               <AcademyLogo size="sm" />
             </Link>
           )}
@@ -194,7 +194,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
                 <AcademyLogo size="sm" />
                 <div className="leading-tight">
                   <span className="text-base font-black tracking-tight text-[#000E28] dark:text-white">
-                    E.A.S.<span className="text-[#0050CB]">Academy</span>
+                    GGPS <span className="text-[#0050CB]">School</span>
                   </span>
                   <span className="block text-[10px] text-[#FF690C] font-extrabold uppercase">
                     Parent Portal
@@ -352,7 +352,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
           {/* Portal Footer */}
           <footer className="mt-12 pt-6 border-t border-slate-200/80 dark:border-slate-800 max-w-[1600px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-[#000E28] dark:text-white">E.A.S. Academy</span>
+              <span className="font-bold text-[#000E28] dark:text-white">GGPS School</span>
               <span>&copy; {new Date().getFullYear()} Parent &amp; Student Portal. All rights reserved.</span>
             </div>
             <div className="flex items-center gap-4">
@@ -361,7 +361,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
                 Live Sync Connected
               </span>
               <span>•</span>
-              <span>Support: contact@easacademy.com</span>
+              <span>Support: contact@ggps.edu</span>
             </div>
           </footer>
         </div>

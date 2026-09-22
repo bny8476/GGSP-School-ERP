@@ -42,7 +42,7 @@ export default function Footer() {
 
   // Hide the public marketing footer on login and inside portal/dashboard views
   // (the dashboard has its own dedicated application footer)
-  if (pathname === '/login' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/portal')) {
+  if (pathname === '/login' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/portal') || pathname?.startsWith('/parent')) {
     return null;
   }
 
@@ -88,7 +88,7 @@ export default function Footer() {
             <Link href="/" className="inline-flex items-center gap-3 group">
               <AcademyLogo size="md" />
               <span className="text-2xl font-black tracking-tight text-white">
-                E.A.S.<span className="text-[#38BDF8]">Academy</span>
+                GGPS <span className="text-[#38BDF8]">School</span>
               </span>
             </Link>
 
@@ -201,7 +201,7 @@ export default function Footer() {
           
           {/* Copyright */}
           <p className="text-center sm:text-left text-slate-400 font-normal">
-            &copy; {new Date().getFullYear()} E.A.S. Academy School. {t("footer.rights", "All rights reserved.")}
+            &copy; {new Date().getFullYear()} GGPS School. {t("footer.rights", "All rights reserved.")}
           </p>
 
           {/* Trust Indicators & Portal Links */}

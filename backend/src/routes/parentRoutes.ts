@@ -1,10 +1,22 @@
 import express from 'express';
-import { getParents, createParent, getParentById, updateParent } from '../controllers/parentController';
+import { 
+  getParents, 
+  createParent, 
+  getParentById, 
+  updateParent,
+  getMyParentProfile,
+  updateMyParentProfile
+} from '../controllers/parentController';
 import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
 
 router.use(protect);
+
+// Current logged-in parent self-management
+router.route('/me')
+  .get(getMyParentProfile)
+  .put(updateMyParentProfile);
 
 router.route('/')
   .get(authorize('SuperAdmin', 'Admin', 'Principal', 'Teacher'), getParents)

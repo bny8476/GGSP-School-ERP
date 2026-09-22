@@ -7,7 +7,7 @@ import EmergencyBanner from "@/components/ui/EmergencyBanner";
 export default function SportsPage() {
   const [teams, setTeams] = useState([
     { id: 1, name: "Global Knights Football Club", sport: "Football", coach: "Coach Mark Davis", members: 18, achievements: "Inter-School Champions 2025" },
-    { id: 2, name: "E.A.S. Eagles Basketball Team", sport: "Basketball", coach: "Coach Sarah Connor", members: 12, achievements: "Regional Runners Up" },
+    { id: 2, name: "GGPS Eagles Basketball Team", sport: "Basketball", coach: "Coach Sarah Connor", members: 12, achievements: "Regional Runners Up" },
     { id: 3, name: "Lions Athletics Squad", sport: "Track & Field", coach: "Coach Robert Paul", members: 25, achievements: "State Gold Medalist" },
   ]);
 

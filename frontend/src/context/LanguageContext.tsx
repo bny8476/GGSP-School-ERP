@@ -53,7 +53,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "card.activeStudents": "Active Students",
 
     // Stats Section
-    "stats.badge": "Why E.A.S. Academy",
+    "stats.badge": "Why GGPS School",
     "stats.title1": "Built for",
     "stats.title2": "Smarter Education",
     "stats.subtitle": "Powerful tools and intelligent automation to make school management simpler, faster and more efficient — for everyone.",
@@ -109,7 +109,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     // Login Page
     "login.welcomeBack": "WELCOME BACK",
     "login.signInTitle": "Sign In to Your Account",
-    "login.signInSubtitle": "Access your E.A.S. Academy School portal and manage your academic journey.",
+    "login.signInSubtitle": "Access your GGPS School portal and manage your academic journey.",
     "login.email": "Email Address",
     "login.password": "Password",
     "login.forgotPassword": "Forgot password?",
@@ -131,7 +131,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "adm.eyebrow": "STUDENT ENROLLMENT",
     "adm.title": "Student",
     "adm.titleHighlight": "Enrollment",
-    "adm.subtitle": "Complete the details below to register a new student with E.A.S. Academy.",
+    "adm.subtitle": "Complete the details below to register a new student with GGPS School.",
     "adm.step1": "Student Information",
     "adm.step2": "Parent / Guardian",
     "adm.step3": "Review & Submit",
@@ -181,7 +181,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "card.activeStudents": "Estudiantes Activos",
 
     // Stats Section
-    "stats.badge": "Por qué E.A.S. Academy",
+    "stats.badge": "Por qué GGPS School",
     "stats.title1": "Diseñado para",
     "stats.title2": "una Educación Más Inteligente",
     "stats.subtitle": "Herramientas potentes y automatización inteligente para que la gestión escolar sea más simple, rápida y eficiente para todos.",
@@ -228,9 +228,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "footer.explore": "EXPLORAR",
     "footer.management": "GESTIÓN",
     "footer.contactSupport": "CONTACTO Y SOPORTE",
-    "footer.campusAddress": "Campus E.A.S. Academy, Avenida Principal",
+    "footer.campusAddress": "Campus GGPS , Avenida Principal",
     "footer.applyOnline": "Postular en Línea",
-    "footer.rights": "© 2026 E.A.S. Academy School. Todos los derechos reservados.",
+    "footer.rights": "© 2026 GGPS School. Todos los derechos reservados.",
     "footer.verified": "Portal Escolar Verificado",
     "footer.staffPortal": "Portal del Personal",
 
@@ -259,7 +259,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "adm.eyebrow": "INSCRIPCIÓN DE ESTUDIANTES",
     "adm.title": "Inscripción de",
     "adm.titleHighlight": "Estudiantes",
-    "adm.subtitle": "Complete los datos a continuación para registrar a un nuevo estudiante en E.A.S. Academy.",
+    "adm.subtitle": "Complete los datos a continuación para registrar a un nuevo estudiante en GGPS School.",
     "adm.step1": "Datos del Estudiante",
     "adm.step2": "Padre / Tutor",
     "adm.step3": "Revisar y Enviar",
@@ -309,7 +309,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "card.activeStudents": "Élèves Actifs",
 
     // Stats Section
-    "stats.badge": "Pourquoi E.A.S. Academy",
+    "stats.badge": "Pourquoi GGPS School",
     "stats.title1": "Conçu pour",
     "stats.title2": "une Éducation Plus Intelligente",
     "stats.subtitle": "Des outils puissants et une automatisation intelligente pour rendre la gestion scolaire plus simple et plus efficace pour tous.",
@@ -387,7 +387,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "adm.eyebrow": "INSCRIPTION SCOLAIRE",
     "adm.title": "Inscription de",
     "adm.titleHighlight": "l'Élève",
-    "adm.subtitle": "Remplissez les informations ci-dessous pour inscrire un nouvel élève à E.A.S. Academy.",
+    "adm.subtitle": "Remplissez les informations ci-dessous pour inscrire un nouvel élève à GGPS School.",
     "adm.step1": "Informations de l'Élève",
     "adm.step2": "Parent / Tuteur",
     "adm.step3": "Vérifier & Soumettre",
@@ -437,7 +437,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "card.activeStudents": "பயிலும் மாணவர்கள்",
 
     // Stats Section
-    "stats.badge": "ஏன் E.A.S. அகாடமி?",
+    "stats.badge": "ஏன் GGPS பள்ளி?",
     "stats.title1": "உருவாக்கப்பட்டது",
     "stats.title2": "சிறந்த கல்விக்காக",
     "stats.subtitle": "பள்ளி நிர்வாகத்தை எளிமையாகவும், வேகமாகவும், திறமையாகவும் மாற்ற உதவும் சக்திவாய்ந்த கருவிகள்.",
@@ -474,7 +474,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "cta.eyebrow": "கல்வியின் எதிர்காலத்திற்காக உருவாக்கப்பட்டது",
     "cta.title1": "உங்கள் பள்ளியை",
     "cta.title2": "இன்றே மாற்றுங்கள்",
-    "cta.subtitle": "தங்கள் கல்வித் தரத்தை உயர்த்த E.A.S. அகாடமியைப் பயன்படுத்தும் நூற்றுக்கணக்கான பள்ளிகளுடன் இணையுங்கள்.",
+    "cta.subtitle": "தங்கள் கல்வித் தரத்தை உயர்த்த   பயன்படுத்தும் நூற்றுக்கணக்கான பள்ளிகளுடன் இணையுங்கள்.",
     "cta.apply": "சேர்க்கைக்கு விண்ணப்பிக்கவும்",
     "cta.signIn": "நிர்வாகி உள்நுழைவு",
 
@@ -484,9 +484,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "footer.explore": "ஆராயுங்கள்",
     "footer.management": "மேலாண்மை",
     "footer.contactSupport": "தொடர்பு & ஆதரவு",
-    "footer.campusAddress": "E.A.S. அகாடமி வளாகம், முதன்மை சாலை",
+    "footer.campusAddress": "GGPS பள்ளி வளாகம், முதன்மை சாலை",
     "footer.applyOnline": "ஆன்லைனில் விண்ணப்பிக்க",
-    "footer.rights": "© 2026 E.A.S. Academy பள்ளி. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
+    "footer.rights": "© 2026 GGPS School. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
     "footer.verified": "சரிபார்க்கப்பட்ட பள்ளி போர்டல்",
     "footer.staffPortal": "பணியாளர் போர்டல்",
 
@@ -515,7 +515,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "adm.eyebrow": "மாணவர் சேர்க்கை",
     "adm.title": "மாணவர்",
     "adm.titleHighlight": "சேர்க்கை",
-    "adm.subtitle": "E.A.S. அகாடமியில் புதிய மாணவரைப் பதிவு செய்ய கீழே உள்ள விவரங்களைப் பூர்த்தி செய்யவும்.",
+    "adm.subtitle": "GGPS பள்ளியில் புதிய மாணவரைப் பதிவு செய்ய கீழே உள்ள விவரங்களைப் பூர்த்தி செய்யவும்.",
     "adm.step1": "மாணவர் விவரங்கள்",
     "adm.step2": "பெற்றோர் / பாதுகாவலர்",
     "adm.step3": "சரிபார்த்து சமர்ப்பிக்கவும்",
@@ -565,7 +565,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "card.activeStudents": "Aktive Schüler",
 
     // Stats Section
-    "stats.badge": "Warum E.A.S. Academy",
+    "stats.badge": "Warum GGPS School",
     "stats.title1": "Entwickelt für",
     "stats.title2": "Intelligentere Bildung",
     "stats.subtitle": "Leistungsstarke Tools und intelligente Automatisierung, um die Schulverwaltung für alle einfacher und schneller zu machen.",
@@ -643,7 +643,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "adm.eyebrow": "SCHÜLEREINSCHREIBUNG",
     "adm.title": "Schüler-",
     "adm.titleHighlight": "Einschreibung",
-    "adm.subtitle": "Füllen Sie die folgenden Angaben aus, um einen neuen Schüler an der E.A.S. Academy anzumelden.",
+    "adm.subtitle": "Füllen Sie die folgenden Angaben aus, um einen neuen Schüler an der GGPS School anzumelden.",
     "adm.step1": "Schülerdaten",
     "adm.step2": "Eltern / Erziehungsberechtigte",
     "adm.step3": "Überprüfen & Absenden",
@@ -693,7 +693,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "card.activeStudents": "الطلاب النشطون",
 
     // Stats Section
-    "stats.badge": "لماذا أكاديمية E.A.S.؟",
+    "stats.badge": "لماذا مدرسة GGPS؟",
     "stats.title1": "صُمم لـ",
     "stats.title2": "تعليم أكثر ذكاءً",
     "stats.subtitle": "أدوات قوية وأتمتة ذكية تجعل إدارة المدرسة أسهل وأسرع وأكثر كفاءة للجميع.",
@@ -771,7 +771,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "adm.eyebrow": "تسجيل الطلاب",
     "adm.title": "تسجيل",
     "adm.titleHighlight": "الطلاب",
-    "adm.subtitle": "يرجى تعبئة البيانات أدناه لتسجيل طالب جديد في أكاديمية E.A.S.",
+    "adm.subtitle": "يرجى تعبئة البيانات أدناه لتسجيل طالب جديد في مدرسة GGPS.",
     "adm.step1": "بيانات الطالب",
     "adm.step2": "ولي الأمر / الوصي",
     "adm.step3": "المراجعة والإرسال",

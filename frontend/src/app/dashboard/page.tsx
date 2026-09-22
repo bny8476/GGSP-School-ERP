@@ -118,7 +118,7 @@ export default function DashboardOverview() {
                 Welcome, {userName}!
               </h1>
               <p className="text-blue-100/90 text-xs sm:text-sm max-w-xl leading-relaxed">
-                Stay connected with your child's daily learning milestones, attendance records, and academic progress at E.A.S. Academy.
+                Stay connected with your child's daily learning milestones, attendance records, and academic progress at GGPS School.
               </p>
             </div>
 

@@ -49,7 +49,7 @@ export const generatePayslipPDF = (res: Response, payrollData: PayslipData) => {
   doc.pipe(res);
 
   // Header
-  doc.fillColor('#0050CB').fontSize(24).text('E.A.S. Academy School ERP', { align: 'center' });
+  doc.fillColor('#0050CB').fontSize(24).text('GGPS School ERP', { align: 'center' });
   doc.fillColor('#64748b').fontSize(10).text('123 Education Lane, Learning City, 10001', { align: 'center' });
   doc.moveDown(2);
 
@@ -113,7 +113,7 @@ export const generateReportCardPDF = (res: Response, student: StudentPDFData, as
   doc.pipe(res);
 
   // Header
-  doc.fillColor('#0050CB').fontSize(24).text('E.A.S. Academy School ERP', { align: 'center' });
+  doc.fillColor('#0050CB').fontSize(24).text('GGPS School ERP', { align: 'center' });
   doc.fillColor('#64748b').fontSize(10).text('Early Childhood Education Report', { align: 'center' });
   doc.moveDown(2);
 

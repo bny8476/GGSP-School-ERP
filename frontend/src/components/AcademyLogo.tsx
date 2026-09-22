@@ -93,7 +93,7 @@ export default function AcademyLogo({
             textColor === "light" ? "text-white" : "text-[#000E28]"
           } ${textClassName}`}
         >
-          E.A.S.<span className="text-[#0050CB]">Academy</span>
+          GGPS <span className="text-[#0050CB]">School</span>
         </span>
       )}
     </div>

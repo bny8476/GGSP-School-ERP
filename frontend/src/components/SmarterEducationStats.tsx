@@ -164,7 +164,7 @@ export default function SmarterEducationStats() {
           >
             <div className="w-8 h-[1px] bg-gradient-to-r from-transparent to-[#0050CB]/40 dark:to-blue-400/40" />
             <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#E5EEFF]/80 dark:bg-[#0050CB]/20 backdrop-blur-sm border border-[#0050CB]/20 dark:border-[#0050CB]/40 text-[#0050CB] dark:text-[#E5EEFF] text-xs sm:text-sm font-semibold tracking-wide shadow-sm">
-              {t("stats.badge", "Why E.A.S. Academy")}
+              {t("stats.badge", "Why GGPS School")}
             </span>
             <div className="w-8 h-[1px] bg-gradient-to-l from-transparent to-[#0050CB]/40 dark:to-blue-400/40" />
           </motion.div>

@@ -14,8 +14,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "E.A.S. Academy School ERP",
-  description: "Comprehensive management system for E.A.S. Academy School",
+  title: "GGPS School ERP",
+  description: "Comprehensive management system for GGPS School",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",

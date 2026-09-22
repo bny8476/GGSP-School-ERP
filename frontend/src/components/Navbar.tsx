@@ -28,7 +28,7 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (pathname === '/login' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/portal')) {
+  if (pathname === '/login' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/portal') || pathname?.startsWith('/parent')) {
     return null;
   }
 
@@ -42,7 +42,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <AcademyLogo size="md" />
           <span className="font-saas text-2xl font-black tracking-tight text-[#000E28] dark:text-white transition-colors">
-            E.A.S.<span className="text-[#0050CB]">Academy</span>
+            GGPS <span className="text-[#0050CB]">School</span>
           </span>
         </Link>
 

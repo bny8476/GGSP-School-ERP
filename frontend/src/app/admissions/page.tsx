@@ -154,7 +154,7 @@ export default function AdmissionsPage() {
               <strong className="text-[#000E28]">
                 {formData.childFirstName} {formData.childLastName}
               </strong>{" "}
-              has been successfully recorded in the E.A.S. Academy School ERP. The admissions committee will review credentials and reach out shortly.
+              has been successfully recorded in the GGPS School ERP. The admissions committee will review credentials and reach out shortly.
             </p>
           </div>
           <Link
@@ -193,7 +193,7 @@ export default function AdmissionsPage() {
                 {t("adm.title", "Student")} <span className="text-[#0050CB]">{t("adm.titleHighlight", "Enrollment")}</span>
               </h1>
               <p className="text-slate-500 text-xs sm:text-sm mt-1 font-normal">
-                {t("adm.subtitle", "Complete the details below to register a new student with E.A.S. Academy.")}
+                {t("adm.subtitle", "Complete the details below to register a new student with GGPS School.")}
               </p>
             </div>
           </div>
@@ -615,7 +615,7 @@ export default function AdmissionsPage() {
                     Review Application Details
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-400 font-normal">
-                    Verify all entered information before registering to the E.A.S. Academy School ERP
+                    Verify all entered information before registering to the GGPS School ERP
                   </p>
                 </div>
               </div>
@@ -655,7 +655,7 @@ export default function AdmissionsPage() {
 
               {/* Terms Info */}
               <div className="p-4 rounded-xl bg-[#E5EEFF]/50 border border-blue-100 text-xs text-slate-600 leading-relaxed">
-                By submitting this form, you confirm that the entered student and parent details are accurate and authorize E.A.S. Academy to initiate ERP enrollment and communications.
+                By submitting this form, you confirm that the entered student and parent details are accurate and authorize GGPS School to initiate ERP enrollment and communications.
               </div>
 
               {/* Actions: Back and Submit */}

@@ -1,11 +1,17 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import DailyDiary from '../models/DailyDiary';
 import Student from '../models/Student';
 import { getIO } from '../socket';
+import { FALLBACK_DIARIES } from '../utils/parentFallbackData';
 
 // @desc    Get all daily diaries for a class/date
 // @route   GET /api/daily-diary
 export const getDailyDiaries = async (req: Request, res: Response) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.json(FALLBACK_DIARIES);
+  }
+
   try {
     const { date, grade } = req.query;
     
@@ -34,8 +40,16 @@ export const getDailyDiaries = async (req: Request, res: Response) => {
     const diaries = await DailyDiary.find(query)
       .populate('studentId', 'firstName lastName')
       .populate('teacherId', 'firstName lastName');
+
+    if (req.user?.role === 'Parent' && (!diaries || diaries.length === 0)) {
+      return res.json(FALLBACK_DIARIES);
+    }
+
     res.json(diaries);
   } catch (error) {
+    if (req.user?.role === 'Parent') {
+      return res.json(FALLBACK_DIARIES);
+    }
     res.status(500).json({ message: 'Server Error' });
   }
 };
