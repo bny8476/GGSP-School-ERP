@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { getApiBaseUrl } from '@/lib/utils';
 
 export interface Child {
   _id: string;
@@ -112,7 +113,7 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
     setIsLoadingChildren(true);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const apiBase = getApiBaseUrl();
       const headers = {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -232,7 +233,7 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
   const updateParentProfile = useCallback(async (data: Partial<ParentProfile>): Promise<boolean> => {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/v1/parents/me`, {
         method: 'PUT',
         headers: {

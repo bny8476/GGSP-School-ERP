@@ -22,7 +22,23 @@ export function cn(...inputs: ClassValue[]): string {
   return classes.join(" ");
 }
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+export const getApiBaseUrl = (): string => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return "http://localhost:5001";
+    }
+    return "https://ggsp-school-erp.onrender.com";
+  }
+  return process.env.NODE_ENV === "production"
+    ? "https://ggsp-school-erp.onrender.com"
+    : "http://localhost:5001";
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export async function safeFetchJson<T = any>(url: string, options?: RequestInit): Promise<T> {
   const headers = new Headers(options?.headers);

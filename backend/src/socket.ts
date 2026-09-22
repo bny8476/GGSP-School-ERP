@@ -15,6 +15,7 @@ export const initSocket = (httpServer: HttpServer) => {
           'http://localhost:5173',
           'http://localhost:3000',
           'http://127.0.0.1:3000',
+          'https://ggsp-school-erp.vercel.app',
           'https://schoolerp-livid.vercel.app',
           'https://school-erp-bny2.vercel.app',
           process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/+$/, '').toLowerCase() : '',

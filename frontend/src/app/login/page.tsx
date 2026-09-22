@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { getApiBaseUrl } from "@/lib/utils";
 
 /* Academic Crest Logo with Laurel Wreath & Mortarboard */
 function AcademyCrest({ size = "md" }: { size?: "sm" | "md" }) {
@@ -112,7 +113,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const apiBase = getApiBaseUrl();
       let res: Response;
 
       try {

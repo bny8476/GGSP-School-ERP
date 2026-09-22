@@ -18,10 +18,17 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
+    const defaultBackend =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === "production"
+        ? "https://ggsp-school-erp.onrender.com"
+        : "http://localhost:5001");
+    const backendUrl = defaultBackend.replace(/\/+$/, "");
+
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001"}/api/:path*`,
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { getApiBaseUrl } from '@/lib/utils';
 
 export interface NotificationItem {
   _id: string;
@@ -146,7 +147,7 @@ export default function NotificationDrawer({ onNavigateTab }: NotificationDrawer
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       if (!token) return;
 
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const apiBase = getApiBaseUrl();
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
 
