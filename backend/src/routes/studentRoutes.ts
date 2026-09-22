@@ -2,6 +2,7 @@ import express from 'express';
 import { 
   getStudents, 
   createStudent, 
+  previewStudentIdentifiers,
   updateStudent, 
   deleteStudent, 
   downloadReportCard,
@@ -15,9 +16,11 @@ import { createStudentSchema, updateStudentSchema } from '../validators/studentV
 
 const router = express.Router();
 
+router.get('/preview-identifiers', protect, previewStudentIdentifiers);
+
 router.route('/')
   .get(protect, getStudents)
-  .post(protect, authorize('Admin', 'SuperAdmin'), validate(createStudentSchema), createStudent);
+  .post(protect, authorize('Admin', 'SuperAdmin', 'Teacher'), validate(createStudentSchema), createStudent);
 
 router.route('/:id')
   .put(protect, authorize('Admin', 'SuperAdmin'), validate(updateStudentSchema), updateStudent)

@@ -67,5 +67,9 @@ const EnrollmentSchema: Schema = new Schema(
 // A student can only have one active enrollment per academic year
 EnrollmentSchema.index({ studentId: 1, academicYearId: 1 }, { unique: true });
 EnrollmentSchema.index({ classId: 1, sectionId: 1, academicYearId: 1 });
+EnrollmentSchema.index(
+  { academicYearId: 1, classId: 1, sectionId: 1, rollNumber: 1 },
+  { unique: true, sparse: true }
+);
 
 export default mongoose.model<IEnrollment>('Enrollment', EnrollmentSchema);

@@ -46,6 +46,9 @@ const StudentSchema: Schema = new Schema(
     },
     admissionNumber: {
       type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
     },
     bloodGroup: {
       type: String,

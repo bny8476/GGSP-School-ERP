@@ -98,6 +98,10 @@ import ActivitiesWorkspace from './ActivitiesWorkspace';
 import LessonPlanWorkspace from './LessonPlanWorkspace';
 import ClassWorkWorkspace from './ClassWorkWorkspace';
 import AssessmentWorkspace from './AssessmentWorkspace';
+import HomeworkWorkspace from './HomeworkWorkspace';
+import ExamsMarksWorkspace from './ExamsMarksWorkspace';
+import TeacherHomeWorkspace from './TeacherHomeWorkspace';
+import EnrollChildModal from './EnrollChildModal';
 import {
   PremiumCard,
   CardHeader,
@@ -2486,52 +2490,34 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
     setEditFormData(null);
   };
 
-  const handleCreateStudent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newName.trim() || !newRollNo.trim()) {
-      toast.error('Please enter child name and roll number');
-      return;
-    }
-
-    const newStudent: StudentCardData = {
-      id: `s-${Date.now()}`,
-      rollNo: newRollNo,
-      admissionNo: newAdmissionNo || `GGSP-2024-LKG-${newRollNo.padStart(3, '0')}`,
-      name: newName,
-      photo: newGender === 'Female'
+  const handleChildEnrolled = (newChild: any) => {
+    const formattedStudent: StudentCardData = {
+      id: newChild.id || `s-${Date.now()}`,
+      rollNo: newChild.rollNo,
+      admissionNo: newChild.admissionNo,
+      name: newChild.name,
+      photo: newChild.photo || (newChild.gender === 'Female'
         ? 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80'
-        : 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&auto=format&fit=crop&q=80',
+        : 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&auto=format&fit=crop&q=80'),
       status: 'Present',
-      age: newAge || '4 years 2 months',
-      dob: newDob || '2022-07-15',
-      gender: newGender,
-      bloodGroup: newBloodGroup || 'O+',
-      allergies: newAllergies.trim() ? newAllergies.trim() : 'None (All clear)',
-      dietaryNote: newDietaryNote || 'Regular',
-      address: newAddress.trim() || 'Classroom Local Resident',
-      parentLabel: newParentLabel || 'Father',
-      parentName: newParentName || 'Guardian',
-      phone: newPhone || '+91 98765 00000',
-      emergencyContactName: newEmergencyContactName || newParentName || 'Emergency Contact',
-      emergencyContactPhone: newEmergencyContactPhone || newPhone || '+91 98112 34567',
-      authorizedPickupPerson: newAuthorizedPickupPerson || newParentName || 'Primary Guardian',
-      authorizedPickupRelation: newAuthorizedPickupRelation || newParentLabel || 'Guardian',
+      age: newChild.age || '4 years 2 months',
+      dob: newChild.dob || '2022-07-15',
+      gender: newChild.gender || 'Male',
+      bloodGroup: newChild.bloodGroup || 'O+',
+      allergies: newChild.allergies || 'None (All clear)',
+      dietaryNote: newChild.dietaryNote || 'Regular',
+      address: newChild.address || 'Classroom Local Resident',
+      parentLabel: newChild.parentLabel || 'Parent',
+      parentName: newChild.parentName || 'Guardian',
+      phone: newChild.phone || '+91 98765 00000',
+      emergencyContactName: newChild.parentName || 'Emergency Contact',
+      emergencyContactPhone: newChild.phone || '+91 98112 34567',
+      authorizedPickupPerson: newChild.authorizedPickupPerson || newChild.parentName || 'Primary Guardian',
+      authorizedPickupRelation: 'Guardian',
       attendanceRate: 100
     };
 
-    setStudents((prev) => [newStudent, ...prev]);
-    toast.success(`Child "${newName}" (Roll #${newRollNo}) enrolled in LKG - Section A successfully!`);
-    setAddChildModalOpen(false);
-    setNewRollNo('');
-    setNewAdmissionNo('');
-    setNewName('');
-    setNewAddress('');
-    setNewParentName('');
-    setNewPhone('');
-    setNewAllergies('');
-    setNewEmergencyContactName('');
-    setNewEmergencyContactPhone('');
-    setNewAuthorizedPickupPerson('');
+    setStudents((prev) => [formattedStudent, ...prev]);
   };
 
   const handleExportClassRosterCSV = () => {
@@ -2925,7 +2911,7 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
           <div className="flex items-center gap-3">
             {/* Notification Bell */}
             <div className="relative">
-              <NotificationDrawer />
+              <NotificationDrawer onNavigateTab={(tab) => setActiveTab(tab as any)} />
             </div>
 
             {/* Chat Bubble with Badge */}
@@ -3012,454 +2998,21 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
         {/* Main Scrollable Body */}
         <main className="flex-1 overflow-y-auto p-5 lg:p-6 space-y-6 custom-scrollbar">
           {/* ========================================================================= */}
-          {/* VIEW 1: HOME WORKSPACE (EXACT MATCH TO DASHBOARD SCREENSHOT)              */}
+          {/* VIEW 1: HOME WORKSPACE (HARMONIZED & INTEGRATED)                          */}
           {/* ========================================================================= */}
           {activeTab === 'HOME' && (
-            <>
-              {/* HERO GREETING BANNER */}
-              <div className="rounded-3xl p-6 lg:p-7 bg-gradient-to-r from-[#EBF2FF] via-[#F4EFFF] to-[#FDF8FE] dark:from-slate-800/90 dark:via-indigo-950/40 dark:to-purple-950/30 border border-blue-100/80 dark:border-slate-700/60 shadow-xs relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                <div className="space-y-2 max-w-xl">
-                  <h1 className="text-2xl lg:text-3xl font-black text-slate-800 dark:text-white tracking-tight">
-                    Good Morning, Priya! 👋
-                  </h1>
-                  <p className="text-xs lg:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                    Your classroom is ready for another great day of learning.
-                  </p>
-
-                  <div className="pt-2 flex flex-wrap items-center gap-2.5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white dark:bg-slate-800/80 text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 shadow-2xs">
-                      <CalendarIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      Friday, 18 September 2026
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                      LKG - Section A
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                      <Users className="w-3.5 h-3.5" />
-                      28 Children
-                    </span>
-                  </div>
-                </div>
-
-                <div className="hidden xl:flex flex-col items-center justify-center text-center px-4">
-                  <span className="text-sm font-serif italic text-purple-700 dark:text-purple-300 leading-snug">
-                    “Small steps<br />today,<br />big dreams<br />tomorrow.”
-                  </span>
-                  <span className="text-xs mt-1">✨ 💜</span>
-                </div>
-
-                <div className="relative shrink-0 w-full sm:w-80 h-36 rounded-2xl overflow-hidden shadow-sm border border-white/80 dark:border-slate-700">
-                  <img src="/teacher-hero-desk.jpg" alt="Classroom Desk" className="w-full h-full object-cover" />
-                </div>
-              </div>
-
-              {/* 4 TOP METRIC CARDS - EXACT REFERENCE CARD DESIGN */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                {/* 1. Total Subjects */}
-                <StatCard
-                  label="Total Subjects"
-                  value={10}
-                  subtitle="LKG - Section A"
-                  icon={Layers}
-                  color="purple"
-                  trend={{ text: "+2 this term", positive: true, arrow: "up-right" }}
-                  footer={{
-                    icon: GraduationCap,
-                    label: "100% completion",
-                  }}
-                  onArrowClick={() => setActiveTab('MY CLASS')}
-                />
-
-                {/* 2. Present Today */}
-                <StatCard
-                  label="Present Today"
-                  value={8}
-                  subtitle="92.8% Attendance"
-                  icon={CalendarIcon}
-                  color="emerald"
-                  badgeButton={{
-                    icon: "↗",
-                    onClick: () => setActiveTab('ATTENDANCE'),
-                  }}
-                  progressBar={{
-                    percentage: 92.8,
-                  }}
-                  footer={{
-                    icon: Users,
-                    label: "On Time",
-                  }}
-                  onArrowClick={() => setActiveTab('ATTENDANCE')}
-                />
-
-                {/* 3. Absent Today */}
-                <StatCard
-                  label="Absent Today"
-                  value={1}
-                  subtitle="2 on medical leave"
-                  icon={X}
-                  color="rose"
-                  badgeAction={{
-                    text: "Call Parents →",
-                    onClick: () => setMessageParentDrawerOpen(true),
-                  }}
-                  footer={{
-                    icon: Phone,
-                    label: "Contact Parents",
-                  }}
-                  onArrowClick={() => setActiveTab('ATTENDANCE')}
-                />
-
-                {/* 4. Pending Tasks */}
-                <StatCard
-                  label="Pending Tasks"
-                  value={3}
-                  subtitle="Homework review, Diary"
-                  icon={Clock}
-                  color="amber"
-                  trend={{ text: "Priority" }}
-                  footer={{
-                    icon: ClipboardList,
-                    label: "To Do",
-                  }}
-                  onArrowClick={() => setClassWorkDrawerOpen(true)}
-                />
-              </div>
-
-              {/* MIDDLE ROW (3 COLUMNS) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                {/* Column 1: Today's Class Schedule with ScheduleCards */}
-                <PremiumCard className="lg:col-span-4 flex flex-col justify-between">
-                  <div>
-                    <CardHeader>
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-[14px] bg-blue-50 dark:bg-blue-950/50 text-[#3157D5] flex items-center justify-center shrink-0">
-                          <CalendarIcon className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <CardTitle>Today&apos;s Class Schedule</CardTitle>
-                          <CardDescription>Plan and milestones for today</CardDescription>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setTimetableModalOpen(true)}
-                        className="text-xs font-bold text-[#3157D5] dark:text-blue-400 hover:underline cursor-pointer"
-                      >
-                        View Full →
-                      </button>
-                    </CardHeader>
-
-                    <div className="pt-4 space-y-2.5">
-                      <ScheduleCard
-                        time="08:30 AM"
-                        title="Morning Assembly & Circle Time"
-                        status="Completed"
-                        iconText="☀️"
-                        color="emerald"
-                        description="Welcome & Weather discussion"
-                      />
-                      <ScheduleCard
-                        time="09:00 AM"
-                        title="Numbers & Counting"
-                        status="In Progress"
-                        iconText="🔢"
-                        color="blue"
-                        description="1-10 counting with blocks"
-                      />
-                      <ScheduleCard
-                        time="10:00 AM"
-                        title="Drawing & Color Mixing"
-                        status="Upcoming"
-                        iconText="🎨"
-                        color="purple"
-                        description="Art Studio activity"
-                      />
-                      <ScheduleCard
-                        time="11:00 AM"
-                        title="Story Circle & English Phonics"
-                        status="Upcoming"
-                        iconText="🎵"
-                        color="amber"
-                        description="Library circle time"
-                      />
-                      <ScheduleCard
-                        time="12:00 PM"
-                        title="Lunch & Rest Period"
-                        status="Upcoming"
-                        iconText="🍎"
-                        color="blue"
-                        description="Early years dining room"
-                      />
-                    </div>
-                  </div>
-                </PremiumCard>
-
-                {/* Column 2: Quick Actions with ActionCards */}
-                <PremiumCard className="lg:col-span-4 flex flex-col justify-between">
-                  <div>
-                    <CardHeader>
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-[14px] bg-amber-50 dark:bg-amber-950/50 text-[#F79009] flex items-center justify-center shrink-0">
-                          <Zap className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <CardTitle>Quick Actions</CardTitle>
-                          <CardDescription>One-click classroom operations</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <div className="grid grid-cols-2 gap-2.5 pt-4">
-                      <ActionCard
-                        title="Mark Attendance"
-                        description="Record daily roll-call"
-                        icon={UserCheck}
-                        color="blue"
-                        onClick={() => setAttendanceDrawerOpen(true)}
-                      />
-                      <ActionCard
-                        title="Add Class Work"
-                        description="Publish daily diary"
-                        icon={FileText}
-                        color="blue"
-                        onClick={() => setClassWorkDrawerOpen(true)}
-                      />
-                      <ActionCard
-                        title="Create Activity"
-                        description="Plan creative session"
-                        icon={Smile}
-                        color="purple"
-                        onClick={() => setActivityDrawerOpen(true)}
-                      />
-                      <ActionCard
-                        title="Give Homework"
-                        description="Assign worksheet"
-                        icon={BookMarked}
-                        color="amber"
-                        onClick={() => setHomeworkDrawerOpen(true)}
-                      />
-                      <ActionCard
-                        title="Message Parents"
-                        description="Send announcements"
-                        icon={MessageSquare}
-                        color="rose"
-                        onClick={() => setMessageParentDrawerOpen(true)}
-                      />
-                      <ActionCard
-                        title="Add Remark"
-                        description="Observation notes"
-                        icon={CheckSquare}
-                        color="teal"
-                        onClick={() => setRemarkDrawerOpen(true)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-between gap-3">
-                    <span className="text-xl">🌿</span>
-                    <p className="text-[11px] font-medium text-emerald-900 dark:text-emerald-200 italic leading-snug flex-1">
-                      “Every child is a unique flower and together we make a beautiful garden.”
-                      <span className="block text-[10px] text-emerald-600 dark:text-emerald-400 font-bold not-italic mt-0.5">— Teacher</span>
-                    </p>
-                    <span className="text-xl">🌸</span>
-                  </div>
-                </PremiumCard>
-
-                {/* Column 3: Today's Focus & Attendance Overview & Class Preview */}
-                <div className="lg:col-span-4 space-y-4 flex flex-col justify-between">
-                  {/* Today's Focus */}
-                  <PremiumCard className="p-5 space-y-3">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <Target className="w-4 h-4 text-[#3157D5]" />
-                        <h4 className="font-bold text-sm text-slate-800 dark:text-white">Today&apos;s Focus</h4>
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-400">Fri, 18 Sep 2026</span>
-                    </div>
-
-                    <div className="space-y-2 text-xs">
-                      {[
-                        { title: 'Mark Attendance', time: '09:00 AM' },
-                        { title: 'Numbers & Counting', time: '09:00 AM' },
-                        { title: 'Drawing Activity', time: '10:00 AM' },
-                        { title: 'Story & Rhymes', time: '11:00 AM' }
-                      ].map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-slate-700 dark:text-slate-300 py-0.5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">✓</div>
-                            <span className="font-medium">{item.title}</span>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-semibold">{item.time}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => setTimetableModalOpen(true)}
-                      className="w-full py-2 bg-gradient-to-r from-[#3157D5] to-[#6366F1] hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-xs text-center cursor-pointer transition-opacity"
-                    >
-                      View Full Timetable →
-                    </button>
-                  </PremiumCard>
-
-                  {/* Attendance Overview Ring */}
-                  <ProgressRingCard
-                    title="Attendance Overview"
-                    subtitle="Live classroom presence"
-                    percentage={92}
-                    label="Present"
-                    detail="26 of 28 Children Present"
-                    onViewDetails={() => setActiveTab('ATTENDANCE')}
-                  />
-
-                  {/* My Class Preview */}
-                  <PremiumCard className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-[#3157D5]" /> My Class Preview
-                      </span>
-                      <button onClick={() => setActiveTab('MY CLASS')} className="text-[10px] font-bold text-[#3157D5] dark:text-blue-400 hover:underline cursor-pointer">
-                        View All →
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-5 gap-1.5 text-center pt-1">
-                      {students.slice(0, 5).map((child) => (
-                        <div
-                          key={child.id}
-                          onClick={() => setSelectedStudent(child)}
-                          className="p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
-                        >
-                          <img src={child.photo} alt={child.name} className="w-8 h-8 rounded-full object-cover mx-auto ring-1 ring-slate-200 dark:ring-slate-700" />
-                          <span className="font-bold text-[10px] text-slate-800 dark:text-white block truncate mt-1">{child.name}</span>
-                          <span className="text-[8px] text-slate-400 block">Roll: {child.rollNo}</span>
-                          <span className={`inline-block px-1 py-0.2 rounded-sm text-[8px] font-bold mt-0.5 ${
-                            child.status === 'Present' ? 'bg-emerald-50 text-emerald-600' : child.status === 'Absent' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
-                          }`}>
-                            • {child.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </PremiumCard>
-                </div>
-              </div>
-
-              {/* BOTTOM ROW (3 COLUMNS) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                {/* Recent Activity */}
-                <PremiumCard className="lg:col-span-4 p-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#3157D5] flex items-center justify-center">
-                        <Activity className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-sm text-slate-800 dark:text-white leading-none">Recent Activity</h3>
-                        <p className="text-[10px] text-slate-400 mt-1">Latest updates from your class</p>
-                      </div>
-                    </div>
-                    <button className="text-[11px] font-bold text-[#3157D5] dark:text-blue-400 hover:underline cursor-pointer">View All →</button>
-                  </div>
-                  <div className="pt-3 space-y-3">
-                    {[
-                      { text: 'Attendance marked for 26 children', time: '2 hours ago', icon: '🧑‍🎓' },
-                      { text: 'New activity added - Drawing Competition', time: '3 hours ago', icon: '🎨' },
-                      { text: "Parent message from Aarav's parent", time: '4 hours ago', icon: '💬' },
-                      { text: 'Homework submitted by Diya', time: '5 hours ago', icon: '📝' }
-                    ].map((act, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs">
-                        <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs shrink-0">{act.icon}</div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-800 dark:text-slate-200 truncate">{act.text}</p>
-                          <span className="text-[10px] text-slate-400">{act.time}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </PremiumCard>
-
-                {/* Upcoming Exams & Marks */}
-                <PremiumCard className="lg:col-span-4 p-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#3157D5] flex items-center justify-center">
-                        <FileSpreadsheet className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-sm text-slate-800 dark:text-white leading-none">Upcoming Exams & Marks</h3>
-                        <p className="text-[10px] text-slate-400 mt-1">Next 7 days</p>
-                      </div>
-                    </div>
-                    <button onClick={() => setActiveTab('EXAMS & MARKS')} className="text-[11px] font-bold text-[#3157D5] dark:text-blue-400 hover:underline cursor-pointer">View All →</button>
-                  </div>
-                  <div className="pt-3 space-y-3">
-                    {[
-                      { date: '22', month: 'SEP', title: 'Mid Term Assessment', sub: 'LKG-A • English' },
-                      { date: '25', month: 'SEP', title: 'Maths Test', sub: 'LKG-A • Numbers' },
-                      { date: '28', month: 'SEP', title: 'Oral Assessment', sub: 'LKG-A • Speaking' }
-                    ].map((ex, i) => (
-                      <div key={i} className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex flex-col items-center justify-center font-bold leading-tight">
-                            <span className="text-xs">{ex.date}</span>
-                            <span className="text-[8px] uppercase">{ex.month}</span>
-                          </div>
-                          <div>
-                            <span className="font-bold text-slate-800 dark:text-white block">{ex.title}</span>
-                            <span className="text-[10px] text-slate-400">{ex.sub}</span>
-                          </div>
-                        </div>
-                        <span className="px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold">Upcoming</span>
-                      </div>
-                    ))}
-                  </div>
-                </PremiumCard>
-
-                {/* Quick Stats + Inspire Card */}
-                <div className="lg:col-span-4 space-y-4">
-                  <PremiumCard className="p-4">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-[#3157D5]" />
-                        <div>
-                          <h3 className="font-bold text-xs text-slate-800 dark:text-white leading-none">Quick Stats</h3>
-                          <p className="text-[9px] text-slate-400">This Month</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 pt-2 text-center">
-                      <div>
-                        <span className="text-sm font-black text-slate-800 dark:text-white block">98%</span>
-                        <span className="text-[9px] text-slate-400 block">Attendance</span>
-                        <span className="text-[9px] font-bold text-emerald-600">↑ 2%</span>
-                      </div>
-                      <div>
-                        <span className="text-sm font-black text-slate-800 dark:text-white block">12</span>
-                        <span className="text-[9px] text-slate-400 block">Activities</span>
-                        <span className="text-[9px] font-bold text-purple-600">↑ 4</span>
-                      </div>
-                      <div>
-                        <span className="text-sm font-black text-slate-800 dark:text-white block">8</span>
-                        <span className="text-[9px] text-slate-400 block">Homework</span>
-                        <span className="text-[9px] font-bold text-blue-600">↑ 2</span>
-                      </div>
-                      <div>
-                        <span className="text-sm font-black text-slate-800 dark:text-white block">5</span>
-                        <span className="text-[9px] text-slate-400 block">Messages</span>
-                        <span className="text-[9px] font-bold text-amber-600">↑ 3</span>
-                      </div>
-                    </div>
-                  </PremiumCard>
-
-                  <div className="rounded-[20px] overflow-hidden border border-purple-100 dark:border-slate-800 shadow-xs relative h-28">
-                    <img src="/inspire-grow-art.jpg" alt="Inspire Encourage Grow" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-purple-900/40 via-transparent to-transparent flex items-end p-3 pointer-events-none">
-                      <p className="font-serif italic text-white text-xs font-bold drop-shadow">Inspire • Encourage • Grow</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
+            <TeacherHomeWorkspace
+              students={students}
+              onNavigateTab={(tab) => setActiveTab(tab as any)}
+              onOpenAttendanceDrawer={() => setAttendanceDrawerOpen(true)}
+              onOpenClassWorkDrawer={() => setClassWorkDrawerOpen(true)}
+              onOpenActivityDrawer={() => setActivityDrawerOpen(true)}
+              onOpenHomeworkDrawer={() => setHomeworkDrawerOpen(true)}
+              onOpenMessageParentDrawer={() => setMessageParentDrawerOpen(true)}
+              onOpenRemarkDrawer={() => setRemarkDrawerOpen(true)}
+              onOpenTimetableModal={() => setTimetableModalOpen(true)}
+              onSelectStudent={(student) => setSelectedStudent(student as any)}
+            />
           )}
 
           {/* ========================================================================= */}
@@ -5344,108 +4897,20 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
           {/* VIEW 9: HOMEWORK                                                          */}
           {/* ========================================================================= */}
           {activeTab === 'HOMEWORK' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-black text-slate-800 dark:text-white">Home Practice & Homework</h2>
-                  <p className="text-xs text-slate-500">Gentle home reinforcement for kindergarten students</p>
-                </div>
-                <button
-                  onClick={() => setHomeworkDrawerOpen(true)}
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 flex items-center gap-2 cursor-pointer transition-all"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Give Homework</span>
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {[
-                  {
-                    id: 'hw-1',
-                    title: 'Tracing Letters A to E in Red Activity Workbook',
-                    subject: 'English & Phonics',
-                    instructions: 'Trace uppercase and lowercase letters on pages 14-16. Color the picture matching letter A (Apple).',
-                    assignedDate: 'Friday, 18 Sep',
-                    dueDate: 'Monday, 21 Sep',
-                    submittedCount: 26,
-                    totalCount: 28
-                  },
-                  {
-                    id: 'hw-2',
-                    title: 'Find & Count 5 Round Objects at Home (Take a photo)',
-                    subject: 'Early Mathematics',
-                    instructions: 'Identify circles and spheres around the home with parents. Count together from 1 to 5.',
-                    assignedDate: 'Friday, 18 Sep',
-                    dueDate: 'Tuesday, 22 Sep',
-                    submittedCount: 24,
-                    totalCount: 28
-                  },
-                  {
-                    id: 'hw-3',
-                    title: 'Color the Butterfly using Primary Colors',
-                    subject: 'Art & Creativity',
-                    instructions: 'Color symmetrically within the wings using bright red, yellow, and blue crayons.',
-                    assignedDate: 'Thursday, 17 Sep',
-                    dueDate: 'Wednesday, 23 Sep',
-                    submittedCount: 28,
-                    totalCount: 28
-                  }
-                ].map((hw) => (
-                  <HomeworkCard
-                    key={hw.id}
-                    id={hw.id}
-                    title={hw.title}
-                    subject={hw.subject}
-                    instructions={hw.instructions}
-                    assignedDate={hw.assignedDate}
-                    dueDate={hw.dueDate}
-                    submittedCount={hw.submittedCount}
-                    totalCount={hw.totalCount}
-                    onReview={() => toast.success(`Reviewing submissions for ${hw.subject}`)}
-                  />
-                ))}
-              </div>
-            </div>
+            <HomeworkWorkspace
+              students={students}
+              onNavigateTab={(tab) => setActiveTab(tab as any)}
+            />
           )}
 
           {/* ========================================================================= */}
           {/* VIEW 10: EXAMS & MARKS                                                    */}
           {/* ========================================================================= */}
           {activeTab === 'EXAMS & MARKS' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-black text-slate-800 dark:text-white">Upcoming Exams & Evaluation Timetable</h2>
-                  <p className="text-xs text-slate-500">LKG - Section A • Term 1 Diagnostic Assessments</p>
-                </div>
-                <button
-                  onClick={() => toast.success("Exporting term marks ledger...")}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold cursor-pointer transition-colors"
-                >
-                  Download Marks Ledger ↓
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {[
-                  { time: '22 SEP • 09:30 AM', title: 'English Reading & Phonics', status: 'Upcoming', description: 'Oral sound matching and alphabet letter naming assessment.', color: 'blue' },
-                  { time: '25 SEP • 10:00 AM', title: 'Maths Skill Test', status: 'Upcoming', description: 'Object counting 1-10 and basic 2D geometric shape recognition.', color: 'emerald' },
-                  { time: '28 SEP • 11:15 AM', title: 'Oral Assessment & Recitation', status: 'Upcoming', description: 'Nursery rhymes recitation and short story answering.', color: 'purple' }
-                ].map((ex, i) => (
-                  <ScheduleCard
-                    key={i}
-                    time={ex.time}
-                    title={ex.title}
-                    room="Room 102 (Classroom)"
-                    status={ex.status as any}
-                    description={ex.description}
-                    color={ex.color as any}
-                    onClick={() => toast.success(`Exam details: ${ex.title}`)}
-                  />
-                ))}
-              </div>
-            </div>
+            <ExamsMarksWorkspace
+              students={students}
+              onNavigateTab={(tab) => setActiveTab(tab as any)}
+            />
           )}
 
           {/* ========================================================================= */}
@@ -8653,267 +8118,16 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
       {/* ========================================================================= */}
       {/* 3. MODALS & DRAWERS                                                       */}
       {/* ========================================================================= */}
-
-      {/* MODAL 1: ADD CHILD ENROLLMENT MODAL (FULL 2-COLUMN PROFILE) */}
-      <AnimatePresence>
-        {addChildModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="w-full max-w-2xl bg-white dark:bg-[#111827] rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 border border-slate-200/80 dark:border-slate-800 my-8 max-h-[92vh] overflow-y-auto"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#E5EEFF] dark:bg-blue-950/50 text-[#0050CB] dark:text-blue-300 flex items-center justify-center">
-                    <GraduationCap className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-base text-[#000E28] dark:text-white">Enroll Child to LKG - Section A</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Class Academic Year 2026–27 · Official Student Profile & Safety Record</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAddChildModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateStudent} className="space-y-5 text-xs">
-                {/* Section 1: Basic Child Info */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#0050CB] dark:text-blue-400 uppercase tracking-wider">
-                    <User className="w-3.5 h-3.5" />
-                    <span>1. Learner Identity</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Roll Number *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newRollNo}
-                        onChange={(e) => setNewRollNo(e.target.value)}
-                        placeholder="e.g. 11"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Admission Number</label>
-                      <input
-                        type="text"
-                        value={newAdmissionNo}
-                        onChange={(e) => setNewAdmissionNo(e.target.value)}
-                        placeholder="e.g. GGSP-2024-LKG-011"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Gender *</label>
-                      <select
-                        value={newGender}
-                        onChange={(e) => setNewGender(e.target.value as any)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                      >
-                        <option value="Male">Male (Boy)</option>
-                        <option value="Female">Female (Girl)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Child Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        placeholder="e.g. Advait Nair"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500/20"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Age</label>
-                        <input
-                          type="text"
-                          value={newAge}
-                          onChange={(e) => setNewAge(e.target.value)}
-                          placeholder="e.g. 4y 2m"
-                          className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Blood Group</label>
-                        <select
-                          value={newBloodGroup}
-                          onChange={(e) => setNewBloodGroup(e.target.value)}
-                          className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                        >
-                          <option value="O+">O+</option>
-                          <option value="O-">O-</option>
-                          <option value="A+">A+</option>
-                          <option value="A-">A-</option>
-                          <option value="B+">B+</option>
-                          <option value="B-">B-</option>
-                          <option value="AB+">AB+</option>
-                          <option value="AB-">AB-</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section 2: Health, Dietary & Residential Address */}
-                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#FF690C] uppercase tracking-wider">
-                    <HeartPulse className="w-3.5 h-3.5" />
-                    <span>2. Health, Dietary & Residential Address</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                        Allergies / Medical Alerts
-                      </label>
-                      <input
-                        type="text"
-                        value={newAllergies}
-                        onChange={(e) => setNewAllergies(e.target.value)}
-                        placeholder="e.g. Peanut Allergy / Dust Asthma / None"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-orange-500/20"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Dietary Preference</label>
-                      <select
-                        value={newDietaryNote}
-                        onChange={(e) => setNewDietaryNote(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                      >
-                        <option value="Regular">Regular / General Snackbox</option>
-                        <option value="Pure Vegetarian">Pure Vegetarian</option>
-                        <option value="Strict Vegetarian (Egg-free)">Strict Vegetarian (Egg-free)</option>
-                        <option value="Jain Meal">Jain Meal (No root vegetables)</option>
-                        <option value="Dairy-free">Dairy-free / Lactose-free</option>
-                        <option value="Nut-free">Nut-free Snackbox Only</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Residential Home Address *
-                    </label>
-                    <div className="relative">
-                      <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                      <input
-                        type="text"
-                        required
-                        value={newAddress}
-                        onChange={(e) => setNewAddress(e.target.value)}
-                        placeholder="e.g. Flat 402, Lotus Towers, Golf Course Rd, Gurgaon"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500/20"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section 3: Guardian & Authorized Pickup */}
-                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>3. Guardians & Gate Clearance Authorization</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Primary Relation</label>
-                      <select
-                        value={newParentLabel}
-                        onChange={(e) => setNewParentLabel(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                      >
-                        <option value="Father">Father</option>
-                        <option value="Mother">Mother</option>
-                        <option value="Guardian">Legal Guardian</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Primary Parent Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newParentName}
-                        onChange={(e) => setNewParentName(e.target.value)}
-                        placeholder="e.g. Suresh Nair"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Contact Phone *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newPhone}
-                        onChange={(e) => setNewPhone(e.target.value)}
-                        placeholder="e.g. +91 98765 11223"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Authorized Gate Pickup Person</label>
-                      <input
-                        type="text"
-                        value={newAuthorizedPickupPerson}
-                        onChange={(e) => setNewAuthorizedPickupPerson(e.target.value)}
-                        placeholder="e.g. Suresh Nair (Father) / Nanny ID #12"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Emergency Secondary Phone</label>
-                      <input
-                        type="text"
-                        value={newEmergencyContactPhone}
-                        onChange={(e) => setNewEmergencyContactPhone(e.target.value)}
-                        placeholder="e.g. +91 98112 34567 (Grandmother)"
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setAddChildModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0050CB] hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer transition-all"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Enroll Student & Create Profile</span>
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* MODAL 1: ADD CHILD ENROLLMENT MODAL (AUTOMATIC ID GENERATION & REGISTRAR AUTHORITY) */}
+      <EnrollChildModal
+        isOpen={addChildModalOpen}
+        onClose={() => setAddChildModalOpen(false)}
+        onStudentEnrolled={handleChildEnrolled}
+        defaultClassName="LKG"
+        defaultSectionName="A"
+        defaultAcademicYear="2026–27"
+        existingClassRoster={students.map((s) => ({ rollNo: s.rollNo, admissionNo: s.admissionNo }))}
+      />
 
       {/* MODAL 1B: EDIT LEARNER / STUDENT PROFILE MODAL */}
       <AnimatePresence>

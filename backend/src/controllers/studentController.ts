@@ -52,36 +52,128 @@ export const getStudents = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Create a student (with relational Enrollment and StudentParent sync)
+import Class from '../models/Class';
+import Section from '../models/Section';
+import { 
+  generateNextAdmissionNumber, 
+  generateNextRollNumber, 
+  peekNextIdentifiers 
+} from '../services/sequenceService';
+
+// @desc    Preview next student identifiers (non-binding preview)
+// @route   GET /api/students/preview-identifiers
+export const previewStudentIdentifiers = async (req: Request, res: Response) => {
+  try {
+    const { academicYear, className, sectionName } = req.query;
+    const preview = await peekNextIdentifiers(
+      academicYear ? String(academicYear) : undefined,
+      className ? String(className) : undefined,
+      sectionName ? String(sectionName) : undefined
+    );
+    res.json(preview);
+  } catch (error) {
+    res.status(500).json({ message: 'Error previewing student identifiers', error });
+  }
+};
+
+// @desc    Create a student with authoritative atomic ID generation & Enrollment creation
 // @route   POST /api/students
 export const createStudent = async (req: Request, res: Response) => {
   try {
-    const student = await Student.create(req.body);
+    // 1. Resolve Academic Year
+    let activeYear = await AcademicYear.findOne({ isCurrent: true });
+    if (!activeYear) {
+      activeYear = await AcademicYear.findOne().sort({ createdAt: -1 });
+    }
+    if (!activeYear) {
+      activeYear = await AcademicYear.create({
+        name: '2026-2027',
+        startDate: new Date('2026-04-01'),
+        endDate: new Date('2027-03-31'),
+        status: 'active',
+        isCurrent: true,
+      });
+    }
 
-    // 1. Relational Sync: If classId is provided, create/link active Enrollment
-    if (student.classId) {
-      try {
-        const activeYear = (await AcademicYear.findOne({ isCurrent: true })) || (await AcademicYear.findOne().sort({ createdAt: -1 }));
-        if (activeYear) {
-          await Enrollment.findOneAndUpdate(
-            { studentId: student._id, academicYearId: activeYear._id },
-            {
-              studentId: student._id,
-              academicYearId: activeYear._id,
-              classId: student.classId,
-              sectionId: student.sectionId,
-              admissionDate: student.enrollmentDate || new Date(),
-              status: 'Active',
-            },
-            { upsert: true, new: true }
-          );
-        }
-      } catch (enrollmentErr) {
-        console.warn('Non-blocking enrollment sync error:', enrollmentErr);
+    // 2. Resolve Class Document (by ID or by name)
+    let classDoc = null;
+    if (req.body.classId && mongoose.isValidObjectId(req.body.classId)) {
+      classDoc = await Class.findById(req.body.classId);
+    }
+    if (!classDoc && (req.body.className || req.body.grade)) {
+      const cName = req.body.className || req.body.grade;
+      classDoc = await Class.findOne({ name: { $regex: new RegExp(`^${cName}$`, 'i') } });
+      if (!classDoc) {
+        classDoc = await Class.create({ name: cName });
       }
     }
 
-    // 2. Relational Sync: If parentId is provided, link in StudentParent junction
+    // 3. Resolve Section Document (by ID or by name)
+    let sectionDoc = null;
+    if (req.body.sectionId && mongoose.isValidObjectId(req.body.sectionId)) {
+      sectionDoc = await Section.findById(req.body.sectionId);
+    }
+    if (!sectionDoc && classDoc && req.body.sectionName) {
+      const sName = req.body.sectionName;
+      sectionDoc = await Section.findOne({ classId: classDoc._id, name: { $regex: new RegExp(`^${sName}$`, 'i') } });
+      if (!sectionDoc) {
+        sectionDoc = await Section.create({ name: sName, classId: classDoc._id, capacity: 30 });
+      }
+    }
+
+    const yearStr = req.body.academicYear || activeYear?.name || '2026-27';
+    const classStr = req.body.className || req.body.grade || classDoc?.name || 'LKG';
+    const sectionStr = req.body.sectionName || sectionDoc?.name || 'A';
+
+    // 4. Concurrency-safe atomic generation with retry on collision
+    let student = null;
+    let enrollment = null;
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      try {
+        const admissionNumber = await generateNextAdmissionNumber(yearStr, classStr);
+        const rollNumber = await generateNextRollNumber(yearStr, classStr, sectionStr);
+
+        // Strip any manual IDs if mistakenly passed by client
+        const studentData = {
+          ...req.body,
+          admissionNumber,
+          classId: classDoc?._id || req.body.classId,
+          sectionId: sectionDoc?._id || req.body.sectionId,
+          enrollmentDate: req.body.enrollmentDate || new Date(),
+          status: 'Active',
+        };
+
+        student = await Student.create(studentData);
+
+        enrollment = await Enrollment.create({
+          studentId: student._id,
+          academicYearId: activeYear._id,
+          classId: classDoc?._id || student.classId,
+          sectionId: sectionDoc?._id || student.sectionId,
+          rollNumber,
+          admissionDate: student.enrollmentDate || new Date(),
+          status: 'Active',
+        });
+
+        break;
+      } catch (err: any) {
+        if (err.code === 11000 && attempts < maxAttempts) {
+          console.warn(`Duplicate key collision during enrollment (attempt ${attempts}), retrying atomic counter...`);
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!student) {
+      return res.status(500).json({ message: 'Failed to assign unique enrollment identifiers after retries' });
+    }
+
+    // 5. Relational Sync: If parentId is provided, link in StudentParent junction
     if (student.parentId) {
       try {
         await StudentParent.findOneAndUpdate(
@@ -99,9 +191,19 @@ export const createStudent = async (req: Request, res: Response) => {
       }
     }
 
-    res.status(201).json(student);
+    res.status(201).json({
+      success: true,
+      message: 'Student enrolled successfully with authoritative identifiers',
+      student,
+      enrollment,
+      admissionNumber: student.admissionNumber,
+      rollNumber: enrollment?.rollNumber,
+      academicYear: yearStr,
+      className: classStr,
+      sectionName: sectionStr,
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Invalid student data', error });
+    res.status(400).json({ message: 'Invalid student enrollment data', error });
   }
 };
 

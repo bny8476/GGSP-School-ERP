@@ -84,6 +84,7 @@ export function ProgressRingCard({
   detail = "26 of 28 Children",
   className = "",
   onViewDetails,
+  children,
 }: {
   title: string;
   subtitle?: string;
@@ -92,9 +93,10 @@ export function ProgressRingCard({
   detail?: string;
   className?: string;
   onViewDetails?: () => void;
+  children?: React.ReactNode;
 }) {
   return (
-    <PremiumCard className={`p-5 flex flex-col justify-between ${className}`}>
+    <PremiumCard className={`p-5 flex flex-col ${className}`}>
       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80">
         <div>
           <h4 className="font-bold text-sm text-slate-800 dark:text-white">{title}</h4>
@@ -103,7 +105,7 @@ export function ProgressRingCard({
         {onViewDetails && (
           <button
             onClick={onViewDetails}
-            className="text-[11px] font-bold text-[#3157D5] dark:text-blue-400 hover:underline cursor-pointer"
+            className="text-[11px] font-bold text-[#0050CB] dark:text-blue-400 hover:underline cursor-pointer"
           >
             View Details →
           </button>
@@ -152,6 +154,8 @@ export function ProgressRingCard({
           </p>
         </div>
       </div>
+
+      {children}
     </PremiumCard>
   );
 }
