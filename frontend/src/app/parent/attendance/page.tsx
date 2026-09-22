@@ -215,30 +215,6 @@ export default function ParentAttendancePage() {
           transition={{ duration: 0.25, ease: "easeOut" }}
           className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#EBF3FF]/70 dark:from-[#07142F] dark:via-[#091838] dark:to-[#0D2452] border border-blue-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(0,80,203,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(0,80,203,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
         >
-          {/* Subtle Decorative Upward Trend Wave (Exact to reference screenshot) */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg
-              viewBox="0 0 100 45"
-              fill="none"
-              className="absolute bottom-1 right-1 w-20 h-10 overflow-visible"
-            >
-              <defs>
-                <linearGradient id="blueLineGradAtt" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#60A5FA" />
-                  <stop offset="100%" stopColor="#0050CB" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5"
-                stroke="url(#blueLineGradAtt)"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-              />
-              <polygon points="90,2 96,5 91,8" fill="#0050CB" />
-            </svg>
-          </div>
-
           {/* Row 1: Circular Blue Icon on left, Chevron on right */}
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#E1EFFF] to-[#C8E0FF] dark:from-blue-950/60 dark:to-blue-900/40 p-[2.5px] shadow-sm shadow-blue-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -290,30 +266,6 @@ export default function ParentAttendancePage() {
           transition={{ duration: 0.25, ease: "easeOut" }}
           className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#E6F9F0]/60 dark:from-[#07142F] dark:via-[#09221C] dark:to-[#0D382E] border border-emerald-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(16,185,129,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(16,185,129,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
         >
-          {/* Subtle Decorative Upward Trend Wave */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg
-              viewBox="0 0 100 45"
-              fill="none"
-              className="absolute bottom-1 right-1 w-20 h-10 overflow-visible"
-            >
-              <defs>
-                <linearGradient id="emeraldLineGradAtt" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#34D399" />
-                  <stop offset="100%" stopColor="#059669" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5"
-                stroke="url(#emeraldLineGradAtt)"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-              />
-              <polygon points="90,2 96,5 91,8" fill="#059669" />
-            </svg>
-          </div>
-
           {/* Row 1: Icon on left, Chevron on right */}
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#D1FAE5] to-[#A7F3D0] dark:from-emerald-950/60 dark:to-emerald-900/40 p-[2.5px] shadow-sm shadow-emerald-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -349,23 +301,6 @@ export default function ParentAttendancePage() {
           transition={{ duration: 0.25, ease: "easeOut" }}
           className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#FFF1F2]/70 dark:from-[#07142F] dark:via-[#220B11] dark:to-[#380E18] border border-rose-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(244,63,94,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(244,63,94,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
         >
-          {/* Subtle Decorative Wave */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg
-              viewBox="0 0 100 45"
-              fill="none"
-              className="absolute bottom-1 right-1 w-20 h-10 overflow-visible"
-            >
-              <path
-                d="M 5 32 Q 20 30, 35 22 T 60 25 T 80 14 T 95 10"
-                stroke="#F43F5E"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-              />
-            </svg>
-          </div>
-
           {/* Row 1: Icon on left, Chevron on right */}
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FFE4E6] to-[#FECDD3] dark:from-rose-950/60 dark:to-rose-900/40 p-[2.5px] shadow-sm shadow-rose-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -401,23 +336,6 @@ export default function ParentAttendancePage() {
           transition={{ duration: 0.25, ease: "easeOut" }}
           className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#FFFBEB]/70 dark:from-[#07142F] dark:via-[#241705] dark:to-[#382307] border border-amber-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(245,158,11,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(245,158,11,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
         >
-          {/* Subtle Decorative Wave */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg
-              viewBox="0 0 100 45"
-              fill="none"
-              className="absolute bottom-1 right-1 w-20 h-10 overflow-visible"
-            >
-              <path
-                d="M 5 35 Q 25 25, 50 30 T 92 12"
-                stroke="#F59E0B"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                fill="none"
-              />
-            </svg>
-          </div>
-
           {/* Row 1: Icon on left, Chevron on right */}
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FEF3C7] to-[#FDE68A] dark:from-amber-950/60 dark:to-amber-900/40 p-[2.5px] shadow-sm shadow-amber-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">

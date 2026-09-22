@@ -94,9 +94,6 @@ export default function TeacherHomeWorkspace({
   onOpenTimetableModal,
   onSelectStudent
 }: TeacherHomeWorkspaceProps) {
-  // Morning Triage Dismissal State
-  const [showTriageBanner, setShowTriageBanner] = useState(true);
-
   // Single-Source Real Metric Aggregations
   const totalEnrolled = students.length || 28;
   const presentCount = students.filter((s) => s.status === 'Present').length || 26;
@@ -197,50 +194,6 @@ export default function TeacherHomeWorkspace({
           <img src="/teacher-hero-desk.jpg" alt="Classroom Desk" className="w-full h-full object-cover" />
         </div>
       </div>
-
-      {/* 2. MORNING OPERATIONAL TRIAGE BANNER (DISMISSIBLE) */}
-      {showTriageBanner && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
-              <Bell className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-2">
-                <span>Morning Operational Triage</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 font-bold">
-                  Action Required
-                </span>
-              </h4>
-              <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
-                • <strong>Diya Verma</strong> reported absent with mild flu (Parent medical note attached). <br />
-                • <strong>Aarav Sharma</strong> has a dietary reminder (Cow milk intolerance; almond milk provided in snack bag).
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-            <button
-              onClick={() => onNavigateTab('PARENTS')}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs"
-            >
-              View Notes
-            </button>
-            <button
-              onClick={() => setShowTriageBanner(false)}
-              className="p-1.5 text-amber-700 hover:text-amber-900 dark:text-amber-300 cursor-pointer"
-              title="Dismiss banner"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
-      )}
 
       {/* 3. 4 UNIFIED TOP METRIC CARDS (HARMONIZED SINGLE SOURCE OF TRUTH) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -468,65 +421,69 @@ export default function TeacherHomeWorkspace({
           </ProgressRingCard>
 
           {/* Classroom Health, Dietary & Pickup Watch */}
-          <PremiumCard className="p-4 space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <HeartPulse className="w-4 h-4 text-[#FF690C]" />
-                <h4 className="font-bold text-xs text-slate-800 dark:text-white">
-                  Health & Dietary Watch
-                </h4>
-              </div>
-              <span className="text-[10px] font-bold text-slate-400">Class LKG-A</span>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              {healthWatchlist.slice(0, 3).map((child) => (
-                <div
-                  key={child.id}
-                  onClick={() => onSelectStudent?.(child)}
-                  className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 hover:border-[#0050CB]/40 flex items-center justify-between gap-2 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={child.photo}
-                      alt={child.name}
-                      className="w-7 h-7 rounded-full object-cover border"
-                    />
-                    <div>
-                      <span className="font-bold text-slate-800 dark:text-white block text-[11px]">
-                        {child.name}
-                      </span>
-                      <span className="text-[10px] text-slate-500 block truncate max-w-[150px]">
-                        {child.allergies || 'Absent (Flu)'}
-                      </span>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
-                      child.status === 'Absent'
-                        ? 'bg-rose-50 text-rose-600'
-                        : 'bg-amber-50 text-amber-700'
-                    }`}
-                  >
-                    {child.status === 'Absent' ? 'Absent' : 'Medical Note'}
-                  </span>
+          <PremiumCard className="p-4 flex-1 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <HeartPulse className="w-4 h-4 text-[#FF690C]" />
+                  <h4 className="font-bold text-xs text-slate-800 dark:text-white">
+                    Health & Dietary Watch
+                  </h4>
                 </div>
-              ))}
+                <span className="text-[10px] font-bold text-slate-400">Class LKG-A</span>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                {healthWatchlist.slice(0, 4).map((child) => (
+                  <div
+                    key={child.id}
+                    onClick={() => onSelectStudent?.(child)}
+                    className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 hover:border-[#0050CB]/40 flex items-center justify-between gap-2 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={child.photo}
+                        alt={child.name}
+                        className="w-7 h-7 rounded-full object-cover border"
+                      />
+                      <div>
+                        <span className="font-bold text-slate-800 dark:text-white block text-[11px]">
+                          {child.name}
+                        </span>
+                        <span className="text-[10px] text-slate-500 block truncate max-w-[150px]">
+                          {child.allergies || 'Absent (Flu)'}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
+                        child.status === 'Absent'
+                          ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300'
+                          : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                      }`}
+                    >
+                      {child.status === 'Absent' ? 'Absent' : 'Medical Note'}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* End-of-Day Transit Summary */}
-            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-[11px] flex items-center justify-between text-slate-600 dark:text-slate-300">
-              <span className="font-medium">🚌 Bus #04: <strong className="text-slate-800 dark:text-white">18</strong></span>
-              <span className="text-slate-300 dark:text-slate-700">•</span>
-              <span className="font-medium">🚗 Parent Pickup: <strong className="text-slate-800 dark:text-white">10</strong></span>
-            </div>
+            <div className="space-y-2.5 pt-3">
+              {/* End-of-Day Transit Summary */}
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-[11px] flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span className="font-medium">🚌 Bus #04: <strong className="text-slate-800 dark:text-white">18</strong></span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="font-medium">🚗 Parent Pickup: <strong className="text-slate-800 dark:text-white">10</strong></span>
+              </div>
 
-            <button
-              onClick={() => onNavigateTab('MY CLASS')}
-              className="w-full py-1.5 bg-[#E5EEFF] hover:bg-blue-100 text-[#0050CB] rounded-xl text-[11px] font-bold text-center cursor-pointer transition-colors"
-            >
-              View All 28 Children Profiles →
-            </button>
+              <button
+                onClick={() => onNavigateTab('MY CLASS')}
+                className="w-full py-2 bg-[#E5EEFF] hover:bg-blue-100 text-[#0050CB] dark:bg-blue-950/60 dark:text-blue-300 rounded-xl text-[11px] font-bold text-center cursor-pointer transition-colors shadow-2xs"
+              >
+                View All 28 Children Profiles →
+              </button>
+            </div>
           </PremiumCard>
         </div>
       </div>

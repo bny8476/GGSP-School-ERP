@@ -478,26 +478,22 @@ export default function EnrollChildModal({
             </div>
 
             {/* ------------------------------------------------------------- */}
-            {/* SECTION 1: LEARNER IDENTITY (AUTO-GENERATED IDS)              */}
+            {/* SECTION 1: LEARNER IDENTITY & CREDENTIALS                      */}
             {/* ------------------------------------------------------------- */}
             <div className="space-y-3.5">
               <div className="flex items-center gap-2 text-xs font-bold text-[#0050CB] dark:text-blue-400 uppercase tracking-wider">
                 <User className="w-3.5 h-3.5" />
-                <span>1. Learner Identity & Auto-Generated Credentials</span>
+                <span>1. Learner Identity & Credentials</span>
               </div>
 
-              {/* READ-ONLY AUTO-GENERATED IDENTIFIERS */}
+              {/* READ-ONLY IDENTIFIERS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Roll Number (Read-only Auto-Generated) */}
+                {/* Roll Number */}
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80">
                   <div className="flex items-center justify-between mb-1">
                     <label className="font-bold text-slate-700 dark:text-slate-300 text-xs">
                       Roll Number
                     </label>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                      <Lock className="w-3 h-3 text-[#0050CB]" />
-                      <span>Auto-generated</span>
-                    </span>
                   </div>
 
                   <motion.div
@@ -516,7 +512,7 @@ export default function EnrollChildModal({
                   </motion.div>
                 </div>
 
-                {/* Admission Number (Read-only Auto-Generated) */}
+                {/* Admission Number */}
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80">
                   <div className="flex items-center justify-between mb-1">
                     <label className="font-bold text-slate-700 dark:text-slate-300 text-xs">
@@ -524,7 +520,7 @@ export default function EnrollChildModal({
                     </label>
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                       <Lock className="w-3 h-3 text-[#FF690C]" />
-                      <span>Auto-generated • Permanent</span>
+                      <span>Permanent</span>
                     </span>
                   </div>
 

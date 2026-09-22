@@ -164,20 +164,6 @@ export default function ParentHomeworkPage() {
             filter === "all" ? "border-blue-400 ring-2 ring-blue-200" : "border-blue-100/90"
           } dark:border-white/10 shadow-[0_4px_20px_rgba(0,80,203,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(0,80,203,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer`}
         >
-          {/* Decorative Upward Wave */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-20 h-10 overflow-visible">
-              <defs>
-                <linearGradient id="hwBlueGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#60A5FA" />
-                  <stop offset="100%" stopColor="#0050CB" />
-                </linearGradient>
-              </defs>
-              <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#hwBlueGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-              <polygon points="90,2 96,5 91,8" fill="#0050CB" />
-            </svg>
-          </div>
-
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#E1EFFF] to-[#C8E0FF] dark:from-blue-950/60 dark:to-blue-900/40 p-[2.5px] shadow-sm shadow-blue-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
               <div className="w-full h-full rounded-full bg-gradient-to-b from-[#2563EB] to-[#0050CB] flex items-center justify-center shadow-inner">
@@ -213,20 +199,6 @@ export default function ParentHomeworkPage() {
             filter === "Pending" ? "border-amber-400 ring-2 ring-amber-200" : "border-amber-100/90"
           } dark:border-white/10 shadow-[0_4px_20px_rgba(249,115,22,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(249,115,22,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer`}
         >
-          {/* Decorative Upward Wave */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-20 h-10 overflow-visible">
-              <defs>
-                <linearGradient id="hwAmberGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#FDBA74" />
-                  <stop offset="100%" stopColor="#EA580C" />
-                </linearGradient>
-              </defs>
-              <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#hwAmberGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-              <polygon points="90,2 96,5 91,8" fill="#EA580C" />
-            </svg>
-          </div>
-
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FFEDD5] to-[#FED7AA] dark:from-orange-950/60 dark:to-orange-900/40 p-[2.5px] shadow-sm shadow-orange-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
               <div className="w-full h-full rounded-full bg-gradient-to-b from-[#FB923C] to-[#EA580C] flex items-center justify-center shadow-inner">
@@ -262,20 +234,6 @@ export default function ParentHomeworkPage() {
             filter === "Completed" ? "border-emerald-400 ring-2 ring-emerald-200" : "border-emerald-100/90"
           } dark:border-white/10 shadow-[0_4px_20px_rgba(16,185,129,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(16,185,129,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer`}
         >
-          {/* Decorative Upward Wave */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-20 h-10 overflow-visible">
-              <defs>
-                <linearGradient id="hwEmeraldGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#34D399" />
-                  <stop offset="100%" stopColor="#059669" />
-                </linearGradient>
-              </defs>
-              <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#hwEmeraldGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-              <polygon points="90,2 96,5 91,8" fill="#059669" />
-            </svg>
-          </div>
-
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#D1FAE5] to-[#A7F3D0] dark:from-emerald-950/60 dark:to-emerald-900/40 p-[2.5px] shadow-sm shadow-emerald-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
               <div className="w-full h-full rounded-full bg-gradient-to-b from-[#10B981] to-[#059669] flex items-center justify-center shadow-inner">
@@ -311,13 +269,6 @@ export default function ParentHomeworkPage() {
             filter === "Overdue" ? "border-rose-400 ring-2 ring-rose-200" : "border-rose-100/90"
           } dark:border-white/10 shadow-[0_4px_20px_rgba(244,63,94,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(244,63,94,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer`}
         >
-          {/* Decorative Upward Wave */}
-          <div className="absolute -bottom-1 -right-1 w-28 h-16 pointer-events-none select-none opacity-85">
-            <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-20 h-10 overflow-visible">
-              <path d="M 5 32 Q 20 30, 35 22 T 60 25 T 80 14 T 95 10" stroke="#F43F5E" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-            </svg>
-          </div>
-
           <div className="relative z-10 flex items-center justify-between">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FFE4E6] to-[#FECDD3] dark:from-rose-950/60 dark:to-rose-900/40 p-[2.5px] shadow-sm shadow-rose-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
               <div className="w-full h-full rounded-full bg-gradient-to-b from-[#F43F5E] to-[#E11D48] flex items-center justify-center shadow-inner">

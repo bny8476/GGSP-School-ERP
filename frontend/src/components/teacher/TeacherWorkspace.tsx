@@ -1473,7 +1473,7 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
   const filteredMonthlyAttendanceData = useMemo(() => {
     if (!attendanceSearchQuery.trim()) return monthlyAttendanceData;
     const q = attendanceSearchQuery.toLowerCase().trim();
-    return monthlyAttendanceData.filter(({ student }) => 
+    return monthlyAttendanceData.filter(({ student }) =>
       student.name.toLowerCase().includes(q) ||
       student.rollNo.toLowerCase().includes(q) ||
       (student.parentName && student.parentName.toLowerCase().includes(q))
@@ -1915,7 +1915,7 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
   const [examDuties] = useState<ExamInvigilationItem[]>(initialExamDuties);
   const [schoolWorkSubTab, setSchoolWorkSubTab] = useState<'DUTIES' | 'TASKS' | 'MEETINGS' | 'INVIGILATION'>('DUTIES');
   const [dutyFilter, setDutyFilter] = useState<'ALL' | 'Upcoming' | 'Completed'>('ALL');
-  
+
   // Duty Swap Modal
   const [isSwapDutyModalOpen, setIsSwapDutyModalOpen] = useState(false);
   const [selectedDutyForSwap, setSelectedDutyForSwap] = useState<SchoolDutyItem | null>(null);
@@ -1984,10 +1984,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
         prev.map((d) =>
           d.id === selectedDutyForSwap.id
             ? {
-                ...d,
-                status: 'Swap Requested',
-                swapRequestedWith: swapFormData.replacementTeacher,
-              }
+              ...d,
+              status: 'Swap Requested',
+              swapRequestedWith: swapFormData.replacementTeacher,
+            }
             : d
         )
       );
@@ -2056,7 +2056,8 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
   const [isSchedulePTMModalOpen, setIsSchedulePTMModalOpen] = useState(false);
   const [selectedParentForPTM, setSelectedParentForPTM] = useState<ParentMessageThread | null>(null);
   const [ptmForm, setPtmForm] = useState({
-    studentId: '',
+    studentId: 'ALL',
+    targetScope: 'ALL' as 'ALL' | 'INDIVIDUAL',
     date: '2026-09-26',
     timeSlot: '09:30 AM - 09:45 AM',
     mode: 'In-Person (Room 102)' as 'In-Person (Room 102)' | 'Online (Google Meet)',
@@ -2247,27 +2248,83 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
   };
 
   // PTM Scheduling Handler
-  const handleOpenSchedulePTM = (thread: ParentMessageThread) => {
-    setSelectedParentForPTM(thread);
-    setPtmForm({
-      studentId: thread.studentId,
-      date: thread.ptmDate || '2026-09-26',
-      timeSlot: thread.ptmTime || thread.ptmSlot?.split(' - ')[0] || '09:30 AM - 09:45 AM',
-      mode: thread.ptmMode || 'In-Person (Room 102)',
-      reason: thread.ptmReason || 'Term 1 Diagnostic Progress & Foundational Phonics Evaluation',
-      teacherNotes: thread.ptmNotes || 'Please bring student activity workbook and term art portfolio.',
-      status: thread.ptmStatus || 'Confirmed',
-      parentResponseNote: thread.ptmParentNote || '',
-    });
+  const handleOpenSchedulePTM = (thread?: ParentMessageThread | null) => {
+    if (thread) {
+      setSelectedParentForPTM(thread);
+      setPtmForm({
+        studentId: thread.studentId,
+        targetScope: 'INDIVIDUAL',
+        date: thread.ptmDate || '2026-09-26',
+        timeSlot: thread.ptmTime || thread.ptmSlot?.split(' • ')[1] || '09:30 AM - 09:45 AM',
+        mode: thread.ptmMode || 'In-Person (Room 102)',
+        reason: thread.ptmReason || 'Term 1 Diagnostic Progress & Foundational Phonics Evaluation',
+        teacherNotes: thread.ptmNotes || 'Please bring student activity workbook and term art portfolio.',
+        status: thread.ptmStatus || 'Confirmed',
+        parentResponseNote: thread.ptmParentNote || '',
+      });
+    } else {
+      setSelectedParentForPTM(null);
+      setPtmForm({
+        studentId: 'ALL',
+        targetScope: 'ALL',
+        date: '2026-09-26',
+        timeSlot: '09:30 AM - 09:45 AM',
+        mode: 'In-Person (Room 102)',
+        reason: 'Term 1 Diagnostic Progress & Foundational Phonics Evaluation',
+        teacherNotes: 'Please bring student coloring workbook and phonics practice sheets.',
+        status: 'Confirmed',
+        parentResponseNote: '',
+      });
+    }
     setIsSchedulePTMModalOpen(true);
   };
 
   const handleSavePTMSchedule = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedParentForPTM) return;
 
     const formattedSlot = `${ptmForm.date} • ${ptmForm.timeSlot}`;
 
+    if (!selectedParentForPTM || ptmForm.targetScope === 'ALL') {
+      // Apply PTM configuration across ALL students in the class
+      setParentThreads((prev) =>
+        prev.map((pt) => ({
+          ...pt,
+          ptmSlot: formattedSlot,
+          ptmDate: ptmForm.date,
+          ptmTime: ptmForm.timeSlot,
+          ptmMode: ptmForm.mode,
+          ptmReason: ptmForm.reason,
+          ptmNotes: ptmForm.teacherNotes,
+          ptmStatus: ptmForm.status,
+          ptmParentNote: ptmForm.parentResponseNote || pt.ptmParentNote,
+          ptmConfirmedAt: ptmForm.status === 'Confirmed' ? 'Scheduled by Teacher' : undefined,
+        }))
+      );
+      if (selectedParentForChat) {
+        setSelectedParentForChat((prev) =>
+          prev
+            ? {
+                ...prev,
+                ptmSlot: formattedSlot,
+                ptmDate: ptmForm.date,
+                ptmTime: ptmForm.timeSlot,
+                ptmMode: ptmForm.mode,
+                ptmReason: ptmForm.reason,
+                ptmNotes: ptmForm.teacherNotes,
+                ptmStatus: ptmForm.status,
+                ptmParentNote: ptmForm.parentResponseNote || prev.ptmParentNote,
+                ptmConfirmedAt: ptmForm.status === 'Confirmed' ? 'Scheduled by Teacher' : undefined,
+              }
+            : null
+        );
+      }
+
+      setIsSchedulePTMModalOpen(false);
+      toast.success(`PTM slot configured for all ${parentThreads.length} students! Invitations dispatched to all parents.`);
+      return;
+    }
+
+    // Apply PTM configuration to individual selected student
     const updatedThread: ParentMessageThread = {
       ...selectedParentForPTM,
       ptmSlot: formattedSlot,
@@ -2397,12 +2454,12 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
       setSelectedParentForChat((prev) =>
         prev
           ? {
-              ...prev,
-              lastMessage: `📢 ${broadcastForm.title}: ${broadcastForm.message.slice(0, 50)}...`,
-              lastMessageTime: 'Just now',
-              lastSender: 'Teacher',
-              messages: [...prev.messages, broadcastChatItem],
-            }
+            ...prev,
+            lastMessage: `📢 ${broadcastForm.title}: ${broadcastForm.message.slice(0, 50)}...`,
+            lastMessageTime: 'Just now',
+            lastSender: 'Teacher',
+            messages: [...prev.messages, broadcastChatItem],
+          }
           : null
       );
     }
@@ -2817,11 +2874,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                           setActiveTab(item.id as TeacherTab);
                           setIsMobileSidebarOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                          isActive
+                        className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${isActive
                             ? 'bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white shadow-md shadow-blue-600/30 font-bold'
                             : 'text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -2901,19 +2957,16 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                   key={item.id}
                   onClick={() => setActiveTab(item.id as TeacherTab)}
                   title={isSidebarCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center ${
-                    isSidebarCollapsed ? "justify-center px-0 py-2.5" : "justify-between px-3.5 py-2"
-                  } rounded-xl text-xs font-semibold transition-all cursor-pointer relative group ${
-                    isActive
+                  className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center px-0 py-2.5" : "justify-between px-3.5 py-2"
+                    } rounded-xl text-xs font-semibold transition-all cursor-pointer relative group ${isActive
                       ? "bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white shadow-md shadow-blue-600/30 font-bold"
                       : "text-slate-400 hover:text-white hover:bg-white/5"
-                  }`}
+                    }`}
                 >
                   <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-3"} min-w-0`}>
                     <Icon
-                      className={`w-4 h-4 shrink-0 ${
-                        isActive ? "text-white" : "text-slate-400 group-hover:text-white"
-                      }`}
+                      className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-white"
+                        }`}
                     />
                     {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
                   </div>
@@ -3299,11 +3352,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       setSubTab('children');
                       setClassPage(1);
                     }}
-                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                      subTab === 'children'
+                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${subTab === 'children'
                         ? 'text-[#0050CB] dark:text-blue-400 border-b-2 border-[#0050CB]'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     <Users className="w-4 h-4" />
                     <span>Children (Cards)</span>
@@ -3317,11 +3369,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       setSubTab('details');
                       setClassPage(1);
                     }}
-                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                      subTab === 'details'
+                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${subTab === 'details'
                         ? 'text-[#0050CB] dark:text-blue-400 border-b-2 border-[#0050CB]'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     <ClipboardList className="w-4 h-4" />
                     <span>Child Details (Ledger Table)</span>
@@ -3332,11 +3383,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       setSubTab('parents');
                       setClassPage(1);
                     }}
-                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                      subTab === 'parents'
+                    className={`flex items-center gap-2 pb-2 text-xs font-bold transition-all cursor-pointer shrink-0 ${subTab === 'parents'
                         ? 'text-[#0050CB] dark:text-blue-400 border-b-2 border-[#0050CB]'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     <ShieldCheck className="w-4 h-4" />
                     <span>Parent & Emergency Directory</span>
@@ -3360,11 +3410,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
 
                   <button
                     onClick={() => setIsClassFilterOpen((prev) => !prev)}
-                    className={`p-2 rounded-xl border transition-colors cursor-pointer relative ${
-                      isClassFilterOpen || classGenderFilter !== 'ALL' || classHealthFilter !== 'ALL' || classAttendanceFilter !== 'ALL'
+                    className={`p-2 rounded-xl border transition-colors cursor-pointer relative ${isClassFilterOpen || classGenderFilter !== 'ALL' || classHealthFilter !== 'ALL' || classAttendanceFilter !== 'ALL'
                         ? 'bg-[#E5EEFF] dark:bg-blue-950/50 border-[#0050CB] text-[#0050CB] dark:text-blue-300'
                         : 'bg-white dark:bg-[#111827] border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100'
-                    }`}
+                      }`}
                     title="Toggle Filter Options"
                   >
                     <SlidersHorizontal className="w-4 h-4" />
@@ -3426,11 +3475,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                                   setClassGenderFilter(g);
                                   setClassPage(1);
                                 }}
-                                className={`flex-1 py-1 text-center rounded-lg font-bold transition-all text-xs cursor-pointer ${
-                                  classGenderFilter === g
+                                className={`flex-1 py-1 text-center rounded-lg font-bold transition-all text-xs cursor-pointer ${classGenderFilter === g
                                     ? 'bg-white dark:bg-slate-900 text-[#0050CB] dark:text-blue-300 shadow-2xs'
                                     : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                  }`}
                               >
                                 {g === 'ALL' ? 'All' : g === 'Male' ? '👦 Boys' : '👧 Girls'}
                               </button>
@@ -3449,11 +3497,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                                   setClassHealthFilter(h);
                                   setClassPage(1);
                                 }}
-                                className={`flex-1 py-1 text-center rounded-lg font-bold transition-all text-xs cursor-pointer ${
-                                  classHealthFilter === h
+                                className={`flex-1 py-1 text-center rounded-lg font-bold transition-all text-xs cursor-pointer ${classHealthFilter === h
                                     ? 'bg-white dark:bg-slate-900 text-[#FF690C] shadow-2xs font-black'
                                     : 'text-slate-500 hover:text-slate-700'
-                                }`}
+                                  }`}
                               >
                                 {h === 'ALL' ? 'All Kids' : '⚠️ Allergies Only'}
                               </button>
@@ -3918,11 +3965,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       <button
                         key={pageNum}
                         onClick={() => setClassPage(pageNum)}
-                        className={`w-8 h-8 rounded-xl font-black flex items-center justify-center shadow-xs cursor-pointer ${
-                          classPage === pageNum
+                        className={`w-8 h-8 rounded-xl font-black flex items-center justify-center shadow-xs cursor-pointer ${classPage === pageNum
                             ? 'bg-[#0050CB] text-white'
                             : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#111827] text-slate-600 dark:text-slate-300 hover:bg-slate-50'
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </button>
@@ -3969,1038 +4015,1019 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
           {/* ========================================================================= */}
           {activeTab === 'ATTENDANCE' && (
             <div className="w-full space-y-5">
-                {/* 1. Top Hero Banner */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#DBEAFE] via-[#EDE9FE] to-[#FCE7F3] dark:from-slate-900 dark:via-indigo-950/40 dark:to-purple-950/40 border border-blue-200/70 dark:border-slate-800 p-6 shadow-xs">
-                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="max-w-xl">
-                      {/* Attendance Pill Badge */}
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs border border-blue-200/50 text-[#0050CB] dark:text-blue-400 text-xs font-bold mb-2.5 shadow-xs">
-                        <Calendar className="w-3.5 h-3.5 text-[#0050CB] dark:text-blue-400" />
-                        <span>Daily Homeroom Roll-Call</span>
-                      </div>
-
-                      {/* Heading */}
-                      <h1 className="text-2xl sm:text-3xl font-black text-[#000E28] dark:text-white tracking-tight flex items-baseline gap-2 flex-wrap">
-                        <span>Class Attendance</span>
-                        <span className="font-serif italic font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600">
-                          Register
-                        </span>
-                      </h1>
-
-                      {/* Subtitle */}
-                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
-                        Instant morning roll call, real-time presence tracking, and automated guardian safety alerts.
-                      </p>
-
-                      {/* Metadata Badges */}
-                      <div className="flex flex-wrap items-center gap-2 mt-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-800/90 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs border border-slate-200/70 dark:border-slate-700">
-                          <Calendar className="w-3.5 h-3.5 text-[#0050CB]" />
-                          <span>{formattedAttendanceDateStr}</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-800/90 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs border border-slate-200/70 dark:border-slate-700">
-                          <GraduationCap className="w-3.5 h-3.5 text-[#0050CB]" />
-                          <span>LKG - Section A</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-800/90 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs border border-slate-200/70 dark:border-slate-700">
-                          <Users className="w-3.5 h-3.5 text-[#0050CB]" />
-                          <span>{students.length} Learners</span>
-                        </span>
-                      </div>
-
-                      {/* Lock Status Alert */}
-                      {isAttendanceLocked ? (
-                        <div className="mt-3.5 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold shadow-xs">
-                          <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          <span>Register Officially Submitted & Locked for Daily Audit</span>
-                          <button
-                            onClick={handleUnlockAttendance}
-                            className="ml-2 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-[#0050CB] dark:text-blue-300 hover:bg-slate-50 cursor-pointer text-[11px] font-bold transition-all"
-                          >
-                            <Unlock className="w-3 h-3 inline mr-1" />
-                            Unlock to Edit
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="mt-3.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs font-medium">
-                          <Clock className="w-3.5 h-3.5 text-[#FF690C]" />
-                          <span>Live Session In Progress • Remember to submit when complete</span>
-                        </div>
-                      )}
+              {/* 1. Top Hero Banner */}
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#DBEAFE] via-[#EDE9FE] to-[#FCE7F3] dark:from-slate-900 dark:via-indigo-950/40 dark:to-purple-950/40 border border-blue-200/70 dark:border-slate-800 p-6 shadow-xs">
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="max-w-xl">
+                    {/* Attendance Pill Badge */}
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs border border-blue-200/50 text-[#0050CB] dark:text-blue-400 text-xs font-bold mb-2.5 shadow-xs">
+                      <Calendar className="w-3.5 h-3.5 text-[#0050CB] dark:text-blue-400" />
+                      <span>Daily Homeroom Roll-Call</span>
                     </div>
 
-                    {/* Right Artwork & Quote */}
-                    <div className="relative flex items-center justify-end pr-2 select-none pointer-events-none hidden sm:flex">
-                      <div className="flex items-center gap-4">
-                        <div className="relative flex items-end gap-2">
-                          {/* Sprout plant */}
-                          <div className="flex flex-col items-center">
-                            <svg width="34" height="42" viewBox="0 0 34 42" fill="none">
-                              <path d="M17 38V18" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" />
-                              <path d="M17 24C11 18 5 21 5 27C5 33 14 31 17 27" fill="#34D399" />
-                              <path d="M17 19C23 13 29 16 29 22C29 28 20 26 17 22" fill="#10B981" />
-                              <rect x="9" y="34" width="16" height="8" rx="2" fill="#3B82F6" opacity="0.8" />
-                            </svg>
-                          </div>
-                          {/* Stacked books */}
-                          <div className="flex flex-col items-center gap-0.5">
-                            <div className="w-12 h-2.5 rounded-xs bg-[#0050CB] shadow-xs" />
-                            <div className="w-14 h-3 rounded-xs bg-[#10B981] shadow-xs" />
-                          </div>
-                        </div>
+                    {/* Heading */}
+                    <h1 className="text-2xl sm:text-3xl font-black text-[#000E28] dark:text-white tracking-tight flex items-baseline gap-2 flex-wrap">
+                      <span>Class Attendance</span>
+                      <span className="font-serif italic font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600">
+                        Register
+                      </span>
+                    </h1>
 
-                        {/* Calligraphy Quote */}
-                        <div className="text-right leading-tight pr-2">
-                          <div className="font-serif italic text-base text-indigo-900/90 dark:text-indigo-200 font-semibold tracking-wide">
-                            Every child
-                          </div>
-                          <div className="font-serif italic text-xl text-indigo-950 dark:text-white font-black tracking-wider flex items-center justify-end gap-1">
-                            <span>Every day</span>
-                            <span className="text-rose-500 text-sm">♡</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                    {/* Subtitle */}
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
+                      Instant morning roll call, real-time presence tracking, and automated guardian safety alerts.
+                    </p>
 
-                {/* 2. OPTION 1: UNIFIED INTEGRATED ATTENDANCE COMMAND HEADER */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
-                  {/* UPPER ROW: Classroom Identity, Date Navigator & Primary Submission CTA */}
-                  <div className="p-3 sm:p-3.5 border-b border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900">
-                    {/* Left: Class Identity & Live Session Status */}
-                    <div className="flex items-center gap-2.5 sm:gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-[#E5EEFF] dark:bg-blue-950/60 flex items-center justify-center text-[#0050CB] dark:text-blue-300 font-black text-xs border border-[#0050CB]/20 shrink-0">
-                        A
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">
-                            LKG - Section A
-                          </h3>
-                          {isAttendanceLocked ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 text-[10px] font-bold">
-                              <Lock className="w-2.5 h-2.5 text-emerald-600" />
-                              <span>Locked</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 text-[10px] font-bold">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                              <span>Live Session</span>
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-slate-400 font-medium">
-                          {students.length} Registered Learners • Room 102
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Right: Date Navigator & Primary Lock/Submit CTA */}
-                    <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
-                      {/* Compact Date Navigator Group */}
-                      <div className="inline-flex items-center bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-0.5 sm:p-1 shadow-2xs">
-                        <button
-                          onClick={() => setAttendanceDateOffset((d) => d - 1)}
-                          className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
-                          title="Previous Day"
-                        >
-                          <ChevronLeft className="w-3.5 h-3.5" />
-                        </button>
-                        
-                        <button
-                          onClick={() => setAttendanceDateOffset(0)}
-                          className="px-2 sm:px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white hover:text-[#0050CB] dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 cursor-pointer"
-                          title="Click to jump to Today"
-                        >
-                          <CalendarIcon className="w-3.5 h-3.5 text-[#0050CB] shrink-0" />
-                          <span>{formattedAttendanceDateStr}</span>
-                        </button>
-
-                        <button
-                          onClick={() => setAttendanceDateOffset((d) => d + 1)}
-                          className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
-                          title="Next Day"
-                        >
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* Submit & Lock CTA / Unlock CTA */}
-                      {isAttendanceLocked ? (
-                        <button
-                          onClick={handleUnlockAttendance}
-                          className="px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
-                        >
-                          <Unlock className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Unlock</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setIsAttendanceSubmitModalOpen(true)}
-                          className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#0050CB] hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shrink-0"
-                        >
-                          <Lock className="w-3.5 h-3.5" />
-                          <span>Submit & Lock</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* LOWER SECTION: Filters, Full-Fit Search & Action Tools */}
-                  <div className="p-3 bg-slate-50/60 dark:bg-slate-800/40 space-y-2.5">
-                    {/* Top Row: Segmented Switch on Left + Actions on Right */}
-                    <div className="flex flex-wrap items-center justify-between gap-2.5">
-                      {/* Left: Segmented Switch (All, Absent, Late, Monthly History) */}
-                      <div className="inline-flex items-center p-1 bg-white dark:bg-slate-800 rounded-xl gap-1 border border-slate-200/80 dark:border-slate-700 shadow-2xs shrink-0">
-                        <button
-                          onClick={() => setAttendanceSubTab('MARK')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            attendanceSubTab === 'MARK'
-                              ? 'bg-[#0050CB] text-white shadow-2xs font-black'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                          }`}
-                        >
-                          <span>All</span>
-                          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                            attendanceSubTab === 'MARK'
-                              ? 'bg-white/20 text-white'
-                              : 'bg-blue-50 text-[#0050CB] dark:bg-blue-950/60 dark:text-blue-300'
-                          }`}>
-                            {students.length}
-                          </span>
-                        </button>
-
-                        <button
-                          onClick={() => setAttendanceSubTab('ABSENT')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            attendanceSubTab === 'ABSENT'
-                              ? 'bg-rose-500 text-white shadow-2xs'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-rose-600'
-                          }`}
-                        >
-                          <span>Absent</span>
-                          {absentCount > 0 && (
-                            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                              attendanceSubTab === 'ABSENT'
-                                ? 'bg-white/20 text-white'
-                                : 'bg-rose-100 text-rose-700'
-                            }`}>
-                              {absentCount}
-                            </span>
-                          )}
-                        </button>
-
-                        <button
-                          onClick={() => setAttendanceSubTab('LATE')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            attendanceSubTab === 'LATE'
-                              ? 'bg-amber-500 text-white shadow-2xs'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
-                          }`}
-                        >
-                          <span>Late</span>
-                          {lateCount > 0 && (
-                            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                              attendanceSubTab === 'LATE'
-                                ? 'bg-white/20 text-white'
-                                : 'bg-amber-100 text-amber-700'
-                            }`}>
-                              {lateCount}
-                            </span>
-                          )}
-                        </button>
-
-                        <button
-                          onClick={() => setAttendanceSubTab('HISTORY')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            attendanceSubTab === 'HISTORY'
-                              ? 'bg-[#0050CB] text-white shadow-2xs'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-[#0050CB]'
-                          }`}
-                        >
-                          <CalendarRange className="w-3.5 h-3.5" />
-                          <span>Monthly History</span>
-                        </button>
-                      </div>
-
-                      {/* Right: Quick Action Controls */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {attendanceSubTab !== 'HISTORY' && (
-                          <>
-                            <button
-                              onClick={() => handleMarkAll('Present')}
-                              disabled={isAttendanceLocked}
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 shadow-2xs cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                              title="Mark all registered learners as Present"
-                            >
-                              <Zap className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>All Present</span>
-                            </button>
-
-                            <button
-                              onClick={() => handleMarkAll('Absent')}
-                              disabled={isAttendanceLocked}
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 shadow-2xs cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                              title="Mark all registered learners as Absent"
-                            >
-                              <X className="w-3.5 h-3.5 text-rose-500" />
-                              <span>All Absent</span>
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                if (absentCount === 0) {
-                                  toast('No learners are marked absent today!', { icon: '🎉' });
-                                } else {
-                                  const absentKids = students.filter((s) => s.status === 'Absent').map((k) => k.name).join(', ');
-                                  toast.success(`Triggering absence alerts for: ${absentKids}`);
-                                }
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:text-[#0050CB] hover:border-blue-200 shadow-2xs cursor-pointer transition-all flex items-center gap-1.5"
-                              title="Send alert notifications to absent parents"
-                            >
-                              <Send className="w-3.5 h-3.5 text-[#0050CB]" />
-                              <span className="hidden sm:inline">Alert Parents</span>
-                            </button>
-
-                            <button
-                              onClick={() => setRemarkDrawerOpen(true)}
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 shadow-2xs cursor-pointer transition-all flex items-center gap-1.5"
-                              title="Add classroom attendance remark or log"
-                            >
-                              <ClipboardList className="w-3.5 h-3.5 text-purple-600" />
-                              <span className="hidden sm:inline">Remark</span>
-                            </button>
-                          </>
-                        )}
-
-                        {attendanceSubTab !== 'HISTORY' && (
-                          <div className="flex items-center bg-white dark:bg-slate-800 rounded-xl p-0.5 border border-slate-200/80 dark:border-slate-700 shadow-2xs">
-                            <button
-                              onClick={() => setAttendanceViewMode('TABLE')}
-                              className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                attendanceViewMode === 'TABLE'
-                                  ? 'bg-[#0050CB] text-white shadow-2xs'
-                                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                              }`}
-                              title="Table Register View"
-                            >
-                              <List className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => setAttendanceViewMode('CARDS')}
-                              className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                attendanceViewMode === 'CARDS'
-                                  ? 'bg-[#0050CB] text-white shadow-2xs'
-                                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                              }`}
-                              title="Rapid Cards View"
-                            >
-                              <LayoutGrid className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
-
-                        <button
-                          onClick={attendanceSubTab === 'HISTORY' ? handleExportMonthlyAttendanceCSV : handleExportAttendanceCSV}
-                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer text-xs font-bold flex items-center gap-1.5 shadow-2xs"
-                          title={attendanceSubTab === 'HISTORY' ? "Export Monthly Register CSV" : "Export Daily Attendance Register CSV"}
-                        >
-                          <Download className="w-3.5 h-3.5 text-[#0050CB]" />
-                          <span>Export</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Bottom Row: INCREASED & PERFECTLY FITTED SEARCH BAR */}
-                    <div className="relative w-full">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        type="text"
-                        value={attendanceSearchQuery}
-                        onChange={(e) => setAttendanceSearchQuery(e.target.value)}
-                        placeholder="Search child by name, roll number, parent name, or address..."
-                        className="w-full pl-10 pr-9 py-2 bg-white dark:bg-slate-800 rounded-xl text-xs border border-slate-200/90 dark:border-slate-700 focus:border-[#0050CB] focus:ring-2 focus:ring-[#0050CB]/10 focus:outline-none transition-all placeholder:text-slate-400 text-slate-800 dark:text-white shadow-2xs font-medium"
-                      />
-                      {attendanceSearchQuery && (
-                        <button
-                          onClick={() => setAttendanceSearchQuery('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. MAIN ATTENDANCE DISPLAY: MONTHLY HISTORY MATRIX VS DAILY ROLL-CALL */}
-                {attendanceSubTab === 'HISTORY' ? (
-                  /* ========================================================================= */
-                  /* MONTHLY ATTENDANCE HISTORY VIEW                                           */
-                  /* ========================================================================= */
-                  <div className="space-y-4">
-                    {/* OPTION A: UNIFIED MONTH NAVIGATOR BAR */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3">
-                      {/* Left: Unified Integrated Month Selector Group */}
-                      <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-                        {/* Unified Pill: [ ‹ ] Month Year [ › ] */}
-                        <div className="inline-flex items-center bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-1 shadow-2xs">
-                          <button
-                            onClick={handlePrevHistoryMonth}
-                            className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
-                            title="Previous Month"
-                          >
-                            <ChevronLeft className="w-4 h-4" />
-                          </button>
-
-                          {/* Interactive Month & Year Display / Quick Dropdowns */}
-                          <div className="flex items-center px-2 py-0.5 gap-1.5 font-black text-xs text-slate-800 dark:text-white">
-                            <CalendarIcon className="w-3.5 h-3.5 text-[#0050CB]" />
-                            <select
-                              value={selectedHistoryMonth}
-                              onChange={(e) => setSelectedHistoryMonth(Number(e.target.value))}
-                              className="bg-transparent font-black text-xs text-slate-800 dark:text-white focus:outline-none cursor-pointer hover:text-[#0050CB] transition-colors"
-                            >
-                              {monthNames.map((m, idx) => (
-                                <option key={m} value={idx} className="text-slate-800 dark:text-slate-900">
-                                  {m}
-                                </option>
-                              ))}
-                            </select>
-
-                            <select
-                              value={selectedHistoryYear}
-                              onChange={(e) => setSelectedHistoryYear(Number(e.target.value))}
-                              className="bg-transparent font-black text-xs text-slate-800 dark:text-white focus:outline-none cursor-pointer hover:text-[#0050CB] transition-colors"
-                            >
-                              <option value={2025} className="text-slate-800 dark:text-slate-900">2025</option>
-                              <option value={2026} className="text-slate-800 dark:text-slate-900">2026</option>
-                              <option value={2027} className="text-slate-800 dark:text-slate-900">2027</option>
-                            </select>
-                          </div>
-
-                          <button
-                            onClick={handleNextHistoryMonth}
-                            className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
-                            title="Next Month"
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        {/* Quick Jump to Current Month */}
-                        <button
-                          onClick={handleSetCurrentMonth}
-                          className="px-2.5 py-1.5 rounded-xl bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 hover:bg-blue-100 text-xs font-black border border-[#0050CB]/20 transition-all cursor-pointer"
-                          title="Jump to Current Month"
-                        >
-                          This Month
-                        </button>
-                      </div>
-
-                      {/* Right: Compact Clean Actions */}
-                      <div className="flex items-center gap-2 ml-auto">
-                        <button
-                          onClick={() => window.print()}
-                          className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                          title="Print Monthly Attendance Register"
-                        >
-                          <Printer className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Print</span>
-                        </button>
-
-                        <button
-                          onClick={handleExportMonthlyAttendanceCSV}
-                          className="px-3 py-1.5 rounded-xl bg-[#0050CB] hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
-                          title="Download Complete Monthly CSV"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Export CSV</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* 4 Monthly KPI Metric Cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {/* Card 1: Attendance Rate */}
-                      <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
-                        <div className="flex items-center justify-between text-slate-500 text-xs">
-                          <span>Monthly Rate</span>
-                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        </div>
-                        <div className="text-2xl font-black text-slate-900 dark:text-white">
-                          {monthlyKpis.avgRate}%
-                        </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                          <div
-                            className="bg-[#0050CB] h-full rounded-full transition-all duration-500"
-                            style={{ width: `${monthlyKpis.avgRate}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Card 2: Total Working Student Days */}
-                      <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
-                        <div className="flex items-center justify-between text-slate-500 text-xs">
-                          <span>Student-Days</span>
-                          <CalendarIcon className="w-3.5 h-3.5 text-[#0050CB]" />
-                        </div>
-                        <div className="text-2xl font-black text-slate-900 dark:text-white">
-                          {monthlyKpis.totalStudentDays}
-                        </div>
-                        <p className="text-[10px] text-slate-400">
-                          Across {monthlyDays.filter((d) => !d.isWeekend).length} school days
-                        </p>
-                      </div>
-
-                      {/* Card 3: Total Absences Recorded */}
-                      <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
-                        <div className="flex items-center justify-between text-slate-500 text-xs">
-                          <span>Total Absences</span>
-                          <span className="w-2 h-2 rounded-full bg-rose-500" />
-                        </div>
-                        <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
-                          {monthlyKpis.totalAbsences}
-                        </div>
-                        <p className="text-[10px] text-slate-400">
-                          Avg {(monthlyKpis.totalAbsences / (students.length || 1)).toFixed(1)} per student
-                        </p>
-                      </div>
-
-                      {/* Card 4: Perfect Attendance Learners */}
-                      <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
-                        <div className="flex items-center justify-between text-slate-500 text-xs">
-                          <span>100% Attendance</span>
-                          <Award className="w-3.5 h-3.5 text-amber-500" />
-                        </div>
-                        <div className="text-2xl font-black text-slate-900 dark:text-white">
-                          {monthlyKpis.perfectLearners} <span className="text-xs font-normal text-slate-400">/ {students.length}</span>
-                        </div>
-                        <p className="text-[10px] text-emerald-600 font-semibold">
-                          Zero absences logged
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Heatmap Legend Bar */}
-                    <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs flex-wrap gap-2">
-                      <div className="flex items-center gap-4 flex-wrap">
-                        <span className="text-slate-500 font-semibold">Register Key:</span>
-                        <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
-                          <span className="w-4 h-4 rounded-md bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">
-                            P
-                          </span>
-                          <span>Present</span>
-                        </span>
-                        <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
-                          <span className="w-4 h-4 rounded-md bg-rose-500 text-white flex items-center justify-center text-[10px] font-black">
-                            A
-                          </span>
-                          <span>Absent</span>
-                        </span>
-                        <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
-                          <span className="w-4 h-4 rounded-md bg-amber-500 text-white flex items-center justify-center text-[10px] font-black">
-                            L
-                          </span>
-                          <span>Late</span>
-                        </span>
-                        <span className="flex items-center gap-1.5 font-bold text-slate-400">
-                          <span className="w-4 h-4 rounded-md bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] text-slate-500">
-                            —
-                          </span>
-                          <span>Weekend</span>
-                        </span>
-                      </div>
-
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        Showing {monthNames[selectedHistoryMonth]} {selectedHistoryYear}
+                    {/* Metadata Badges */}
+                    <div className="flex flex-wrap items-center gap-2 mt-4">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-800/90 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs border border-slate-200/70 dark:border-slate-700">
+                        <Calendar className="w-3.5 h-3.5 text-[#0050CB]" />
+                        <span>{formattedAttendanceDateStr}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-800/90 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs border border-slate-200/70 dark:border-slate-700">
+                        <GraduationCap className="w-3.5 h-3.5 text-[#0050CB]" />
+                        <span>LKG - Section A</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-800/90 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs border border-slate-200/70 dark:border-slate-700">
+                        <Users className="w-3.5 h-3.5 text-[#0050CB]" />
+                        <span>{students.length} Learners</span>
                       </span>
                     </div>
 
-                    {/* FULL MONTHLY ATTENDANCE MATRIX TABLE */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
-                      <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-xs text-left border-collapse">
-                          {/* Table Header */}
-                          <thead className="bg-slate-50/90 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-                            <tr>
-                              {/* Sticky Learner Identity Column */}
-                              <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-3.5 py-3 w-56 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.08)] border-r border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">
-                                Learner Identity
-                              </th>
+                    {/* Lock Status Alert */}
+                    {isAttendanceLocked ? (
+                      <div className="mt-3.5 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold shadow-xs">
+                        <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span>Register Officially Submitted & Locked for Daily Audit</span>
+                        <button
+                          onClick={handleUnlockAttendance}
+                          className="ml-2 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-[#0050CB] dark:text-blue-300 hover:bg-slate-50 cursor-pointer text-[11px] font-bold transition-all"
+                        >
+                          <Unlock className="w-3 h-3 inline mr-1" />
+                          Unlock to Edit
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-3.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs font-medium">
+                        <Clock className="w-3.5 h-3.5 text-[#FF690C]" />
+                        <span>Live Session In Progress • Remember to submit when complete</span>
+                      </div>
+                    )}
+                  </div>
 
-                              {/* Days 1 to 30/31 */}
-                              {monthlyDays.map((d) => (
-                                <th
-                                  key={d.day}
-                                  className={`px-1.5 py-2.5 text-center min-w-[30px] border-r border-slate-100 dark:border-slate-800 ${
-                                    d.isWeekend ? 'bg-slate-100/90 dark:bg-slate-800/70 text-slate-400' : 'text-slate-700 dark:text-slate-200'
+                  {/* Right Artwork & Quote */}
+                  <div className="relative flex items-center justify-end pr-2 select-none pointer-events-none hidden sm:flex">
+                    <div className="flex items-center gap-4">
+                      <div className="relative flex items-end gap-2">
+                        {/* Sprout plant */}
+                        <div className="flex flex-col items-center">
+                          <svg width="34" height="42" viewBox="0 0 34 42" fill="none">
+                            <path d="M17 38V18" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" />
+                            <path d="M17 24C11 18 5 21 5 27C5 33 14 31 17 27" fill="#34D399" />
+                            <path d="M17 19C23 13 29 16 29 22C29 28 20 26 17 22" fill="#10B981" />
+                            <rect x="9" y="34" width="16" height="8" rx="2" fill="#3B82F6" opacity="0.8" />
+                          </svg>
+                        </div>
+                        {/* Stacked books */}
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="w-12 h-2.5 rounded-xs bg-[#0050CB] shadow-xs" />
+                          <div className="w-14 h-3 rounded-xs bg-[#10B981] shadow-xs" />
+                        </div>
+                      </div>
+
+                      {/* Calligraphy Quote */}
+                      <div className="text-right leading-tight pr-2">
+                        <div className="font-serif italic text-base text-indigo-900/90 dark:text-indigo-200 font-semibold tracking-wide">
+                          Every child
+                        </div>
+                        <div className="font-serif italic text-xl text-indigo-950 dark:text-white font-black tracking-wider flex items-center justify-end gap-1">
+                          <span>Every day</span>
+                          <span className="text-rose-500 text-sm">♡</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. OPTION 1: UNIFIED INTEGRATED ATTENDANCE COMMAND HEADER */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+                {/* UPPER ROW: Classroom Identity, Date Navigator & Primary Submission CTA */}
+                <div className="p-3 sm:p-3.5 border-b border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900">
+                  {/* Left: Class Identity & Live Session Status */}
+                  <div className="flex items-center gap-2.5 sm:gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-[#E5EEFF] dark:bg-blue-950/60 flex items-center justify-center text-[#0050CB] dark:text-blue-300 font-black text-xs border border-[#0050CB]/20 shrink-0">
+                      A
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">
+                          LKG - Section A
+                        </h3>
+                        {isAttendanceLocked ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 text-[10px] font-bold">
+                            <Lock className="w-2.5 h-2.5 text-emerald-600" />
+                            <span>Locked</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 text-[10px] font-bold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                            <span>Live Session</span>
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-medium">
+                        {students.length} Registered Learners • Room 102
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: Date Navigator & Primary Lock/Submit CTA */}
+                  <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
+                    {/* Compact Date Navigator Group */}
+                    <div className="inline-flex items-center bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-0.5 sm:p-1 shadow-2xs">
+                      <button
+                        onClick={() => setAttendanceDateOffset((d) => d - 1)}
+                        className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
+                        title="Previous Day"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => setAttendanceDateOffset(0)}
+                        className="px-2 sm:px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-white hover:text-[#0050CB] dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 cursor-pointer"
+                        title="Click to jump to Today"
+                      >
+                        <CalendarIcon className="w-3.5 h-3.5 text-[#0050CB] shrink-0" />
+                        <span>{formattedAttendanceDateStr}</span>
+                      </button>
+
+                      <button
+                        onClick={() => setAttendanceDateOffset((d) => d + 1)}
+                        className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
+                        title="Next Day"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Submit & Lock CTA / Unlock CTA */}
+                    {isAttendanceLocked ? (
+                      <button
+                        onClick={handleUnlockAttendance}
+                        className="px-3 py-1.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Unlock className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Unlock</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setIsAttendanceSubmitModalOpen(true)}
+                        className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#0050CB] hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shrink-0"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Submit & Lock</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* LOWER SECTION: Filters, Full-Fit Search & Action Tools */}
+                <div className="p-3 bg-slate-50/60 dark:bg-slate-800/40 space-y-2.5">
+                  {/* Top Row: Segmented Switch on Left + Actions on Right */}
+                  <div className="flex flex-wrap items-center justify-between gap-2.5">
+                    {/* Left: Segmented Switch (All, Absent, Late, Monthly History) */}
+                    <div className="inline-flex items-center p-1 bg-white dark:bg-slate-800 rounded-xl gap-1 border border-slate-200/80 dark:border-slate-700 shadow-2xs shrink-0">
+                      <button
+                        onClick={() => setAttendanceSubTab('MARK')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${attendanceSubTab === 'MARK'
+                            ? 'bg-[#0050CB] text-white shadow-2xs font-black'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                          }`}
+                      >
+                        <span>All</span>
+                        <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${attendanceSubTab === 'MARK'
+                            ? 'bg-white/20 text-white'
+                            : 'bg-blue-50 text-[#0050CB] dark:bg-blue-950/60 dark:text-blue-300'
+                          }`}>
+                          {students.length}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => setAttendanceSubTab('ABSENT')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${attendanceSubTab === 'ABSENT'
+                            ? 'bg-rose-500 text-white shadow-2xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-rose-600'
+                          }`}
+                      >
+                        <span>Absent</span>
+                        {absentCount > 0 && (
+                          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${attendanceSubTab === 'ABSENT'
+                              ? 'bg-white/20 text-white'
+                              : 'bg-rose-100 text-rose-700'
+                            }`}>
+                            {absentCount}
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => setAttendanceSubTab('LATE')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${attendanceSubTab === 'LATE'
+                            ? 'bg-amber-500 text-white shadow-2xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
+                          }`}
+                      >
+                        <span>Late</span>
+                        {lateCount > 0 && (
+                          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${attendanceSubTab === 'LATE'
+                              ? 'bg-white/20 text-white'
+                              : 'bg-amber-100 text-amber-700'
+                            }`}>
+                            {lateCount}
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => setAttendanceSubTab('HISTORY')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${attendanceSubTab === 'HISTORY'
+                            ? 'bg-[#0050CB] text-white shadow-2xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-[#0050CB]'
+                          }`}
+                      >
+                        <CalendarRange className="w-3.5 h-3.5" />
+                        <span>Monthly History</span>
+                      </button>
+                    </div>
+
+                    {/* Right: Quick Action Controls */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {attendanceSubTab !== 'HISTORY' && (
+                        <>
+                          <button
+                            onClick={() => handleMarkAll('Present')}
+                            disabled={isAttendanceLocked}
+                            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 shadow-2xs cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            title="Mark all registered learners as Present"
+                          >
+                            <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>All Present</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleMarkAll('Absent')}
+                            disabled={isAttendanceLocked}
+                            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 shadow-2xs cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            title="Mark all registered learners as Absent"
+                          >
+                            <X className="w-3.5 h-3.5 text-rose-500" />
+                            <span>All Absent</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              if (absentCount === 0) {
+                                toast('No learners are marked absent today!', { icon: '🎉' });
+                              } else {
+                                const absentKids = students.filter((s) => s.status === 'Absent').map((k) => k.name).join(', ');
+                                toast.success(`Triggering absence alerts for: ${absentKids}`);
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:text-[#0050CB] hover:border-blue-200 shadow-2xs cursor-pointer transition-all flex items-center gap-1.5"
+                            title="Send alert notifications to absent parents"
+                          >
+                            <Send className="w-3.5 h-3.5 text-[#0050CB]" />
+                            <span className="hidden sm:inline">Alert Parents</span>
+                          </button>
+
+                          <button
+                            onClick={() => setRemarkDrawerOpen(true)}
+                            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 shadow-2xs cursor-pointer transition-all flex items-center gap-1.5"
+                            title="Add classroom attendance remark or log"
+                          >
+                            <ClipboardList className="w-3.5 h-3.5 text-purple-600" />
+                            <span className="hidden sm:inline">Remark</span>
+                          </button>
+                        </>
+                      )}
+
+                      {attendanceSubTab !== 'HISTORY' && (
+                        <div className="flex items-center bg-white dark:bg-slate-800 rounded-xl p-0.5 border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+                          <button
+                            onClick={() => setAttendanceViewMode('TABLE')}
+                            className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${attendanceViewMode === 'TABLE'
+                                ? 'bg-[#0050CB] text-white shadow-2xs'
+                                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                              }`}
+                            title="Table Register View"
+                          >
+                            <List className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setAttendanceViewMode('CARDS')}
+                            className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${attendanceViewMode === 'CARDS'
+                                ? 'bg-[#0050CB] text-white shadow-2xs'
+                                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                              }`}
+                            title="Rapid Cards View"
+                          >
+                            <LayoutGrid className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={attendanceSubTab === 'HISTORY' ? handleExportMonthlyAttendanceCSV : handleExportAttendanceCSV}
+                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer text-xs font-bold flex items-center gap-1.5 shadow-2xs"
+                        title={attendanceSubTab === 'HISTORY' ? "Export Monthly Register CSV" : "Export Daily Attendance Register CSV"}
+                      >
+                        <Download className="w-3.5 h-3.5 text-[#0050CB]" />
+                        <span>Export</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Bottom Row: INCREASED & PERFECTLY FITTED SEARCH BAR */}
+                  <div className="relative w-full">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={attendanceSearchQuery}
+                      onChange={(e) => setAttendanceSearchQuery(e.target.value)}
+                      placeholder="Search child by name, roll number, parent name, or address..."
+                      className="w-full pl-10 pr-9 py-2 bg-white dark:bg-slate-800 rounded-xl text-xs border border-slate-200/90 dark:border-slate-700 focus:border-[#0050CB] focus:ring-2 focus:ring-[#0050CB]/10 focus:outline-none transition-all placeholder:text-slate-400 text-slate-800 dark:text-white shadow-2xs font-medium"
+                    />
+                    {attendanceSearchQuery && (
+                      <button
+                        onClick={() => setAttendanceSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. MAIN ATTENDANCE DISPLAY: MONTHLY HISTORY MATRIX VS DAILY ROLL-CALL */}
+              {attendanceSubTab === 'HISTORY' ? (
+                /* ========================================================================= */
+                /* MONTHLY ATTENDANCE HISTORY VIEW                                           */
+                /* ========================================================================= */
+                <div className="space-y-4">
+                  {/* OPTION A: UNIFIED MONTH NAVIGATOR BAR */}
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                    {/* Left: Unified Integrated Month Selector Group */}
+                    <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                      {/* Unified Pill: [ ‹ ] Month Year [ › ] */}
+                      <div className="inline-flex items-center bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-1 shadow-2xs">
+                        <button
+                          onClick={handlePrevHistoryMonth}
+                          className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
+                          title="Previous Month"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        {/* Interactive Month & Year Display / Quick Dropdowns */}
+                        <div className="flex items-center px-2 py-0.5 gap-1.5 font-black text-xs text-slate-800 dark:text-white">
+                          <CalendarIcon className="w-3.5 h-3.5 text-[#0050CB]" />
+                          <select
+                            value={selectedHistoryMonth}
+                            onChange={(e) => setSelectedHistoryMonth(Number(e.target.value))}
+                            className="bg-transparent font-black text-xs text-slate-800 dark:text-white focus:outline-none cursor-pointer hover:text-[#0050CB] transition-colors"
+                          >
+                            {monthNames.map((m, idx) => (
+                              <option key={m} value={idx} className="text-slate-800 dark:text-slate-900">
+                                {m}
+                              </option>
+                            ))}
+                          </select>
+
+                          <select
+                            value={selectedHistoryYear}
+                            onChange={(e) => setSelectedHistoryYear(Number(e.target.value))}
+                            className="bg-transparent font-black text-xs text-slate-800 dark:text-white focus:outline-none cursor-pointer hover:text-[#0050CB] transition-colors"
+                          >
+                            <option value={2025} className="text-slate-800 dark:text-slate-900">2025</option>
+                            <option value={2026} className="text-slate-800 dark:text-slate-900">2026</option>
+                            <option value={2027} className="text-slate-800 dark:text-slate-900">2027</option>
+                          </select>
+                        </div>
+
+                        <button
+                          onClick={handleNextHistoryMonth}
+                          className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
+                          title="Next Month"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Quick Jump to Current Month */}
+                      <button
+                        onClick={handleSetCurrentMonth}
+                        className="px-2.5 py-1.5 rounded-xl bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 hover:bg-blue-100 text-xs font-black border border-[#0050CB]/20 transition-all cursor-pointer"
+                        title="Jump to Current Month"
+                      >
+                        This Month
+                      </button>
+                    </div>
+
+                    {/* Right: Compact Clean Actions */}
+                    <div className="flex items-center gap-2 ml-auto">
+                      <button
+                        onClick={() => window.print()}
+                        className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                        title="Print Monthly Attendance Register"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Print</span>
+                      </button>
+
+                      <button
+                        onClick={handleExportMonthlyAttendanceCSV}
+                        className="px-3 py-1.5 rounded-xl bg-[#0050CB] hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                        title="Download Complete Monthly CSV"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Export CSV</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 4 Monthly KPI Metric Cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {/* Card 1: Attendance Rate */}
+                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
+                      <div className="flex items-center justify-between text-slate-500 text-xs">
+                        <span>Monthly Rate</span>
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      </div>
+                      <div className="text-2xl font-black text-slate-900 dark:text-white">
+                        {monthlyKpis.avgRate}%
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#0050CB] h-full rounded-full transition-all duration-500"
+                          style={{ width: `${monthlyKpis.avgRate}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Card 2: Total Working Student Days */}
+                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
+                      <div className="flex items-center justify-between text-slate-500 text-xs">
+                        <span>Student-Days</span>
+                        <CalendarIcon className="w-3.5 h-3.5 text-[#0050CB]" />
+                      </div>
+                      <div className="text-2xl font-black text-slate-900 dark:text-white">
+                        {monthlyKpis.totalStudentDays}
+                      </div>
+                      <p className="text-[10px] text-slate-400">
+                        Across {monthlyDays.filter((d) => !d.isWeekend).length} school days
+                      </p>
+                    </div>
+
+                    {/* Card 3: Total Absences Recorded */}
+                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
+                      <div className="flex items-center justify-between text-slate-500 text-xs">
+                        <span>Total Absences</span>
+                        <span className="w-2 h-2 rounded-full bg-rose-500" />
+                      </div>
+                      <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                        {monthlyKpis.totalAbsences}
+                      </div>
+                      <p className="text-[10px] text-slate-400">
+                        Avg {(monthlyKpis.totalAbsences / (students.length || 1)).toFixed(1)} per student
+                      </p>
+                    </div>
+
+                    {/* Card 4: Perfect Attendance Learners */}
+                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-1.5">
+                      <div className="flex items-center justify-between text-slate-500 text-xs">
+                        <span>100% Attendance</span>
+                        <Award className="w-3.5 h-3.5 text-amber-500" />
+                      </div>
+                      <div className="text-2xl font-black text-slate-900 dark:text-white">
+                        {monthlyKpis.perfectLearners} <span className="text-xs font-normal text-slate-400">/ {students.length}</span>
+                      </div>
+                      <p className="text-[10px] text-emerald-600 font-semibold">
+                        Zero absences logged
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Heatmap Legend Bar */}
+                  <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs flex-wrap gap-2">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <span className="text-slate-500 font-semibold">Register Key:</span>
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                        <span className="w-4 h-4 rounded-md bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">
+                          P
+                        </span>
+                        <span>Present</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                        <span className="w-4 h-4 rounded-md bg-rose-500 text-white flex items-center justify-center text-[10px] font-black">
+                          A
+                        </span>
+                        <span>Absent</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                        <span className="w-4 h-4 rounded-md bg-amber-500 text-white flex items-center justify-center text-[10px] font-black">
+                          L
+                        </span>
+                        <span>Late</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 font-bold text-slate-400">
+                        <span className="w-4 h-4 rounded-md bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] text-slate-500">
+                          —
+                        </span>
+                        <span>Weekend</span>
+                      </span>
+                    </div>
+
+                    <span className="text-[11px] text-slate-400 font-medium">
+                      Showing {monthNames[selectedHistoryMonth]} {selectedHistoryYear}
+                    </span>
+                  </div>
+
+                  {/* FULL MONTHLY ATTENDANCE MATRIX TABLE */}
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+                    <div className="overflow-x-auto custom-scrollbar">
+                      <table className="w-full text-xs text-left border-collapse">
+                        {/* Table Header */}
+                        <thead className="bg-slate-50/90 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                          <tr>
+                            {/* Sticky Learner Identity Column */}
+                            <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-3.5 py-3 w-56 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.08)] border-r border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200">
+                              Learner Identity
+                            </th>
+
+                            {/* Days 1 to 30/31 */}
+                            {monthlyDays.map((d) => (
+                              <th
+                                key={d.day}
+                                className={`px-1.5 py-2.5 text-center min-w-[30px] border-r border-slate-100 dark:border-slate-800 ${d.isWeekend ? 'bg-slate-100/90 dark:bg-slate-800/70 text-slate-400' : 'text-slate-700 dark:text-slate-200'
                                   }`}
-                                >
-                                  <div className="font-bold text-[11px]">{d.day}</div>
-                                  <div className={`text-[9px] uppercase font-bold ${d.isWeekend ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                                    {d.dayLetter}
-                                  </div>
-                                </th>
-                              ))}
+                              >
+                                <div className="font-bold text-[11px]">{d.day}</div>
+                                <div className={`text-[9px] uppercase font-bold ${d.isWeekend ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                  {d.dayLetter}
+                                </div>
+                              </th>
+                            ))}
 
-                              {/* Summary Columns Grouped */}
-                              <th className="px-2.5 py-3 text-center text-emerald-700 dark:text-emerald-300 font-black min-w-[38px] bg-emerald-50/60 dark:bg-emerald-950/30 border-l-2 border-[#0050CB]/30" title="Total Present Days">
-                                P
-                              </th>
-                              <th className="px-2.5 py-3 text-center text-rose-700 dark:text-rose-300 font-black min-w-[38px] bg-rose-50/60 dark:bg-rose-950/30" title="Total Absent Days">
-                                A
-                              </th>
-                              <th className="px-2.5 py-3 text-center text-amber-700 dark:text-amber-300 font-black min-w-[38px] bg-amber-50/60 dark:bg-amber-950/30" title="Total Late Days">
-                                L
-                              </th>
-                              <th className="px-3 py-3 text-center font-black min-w-[62px] bg-[#E5EEFF]/80 dark:bg-blue-950/40 text-[#0050CB] dark:text-blue-300" title="Monthly Attendance Rate">
-                                Rate
-                              </th>
-                              <th className="px-3 py-3 text-center min-w-[45px] bg-slate-50 dark:bg-slate-800 text-slate-500">
-                                Action
-                              </th>
+                            {/* Summary Columns Grouped */}
+                            <th className="px-2.5 py-3 text-center text-emerald-700 dark:text-emerald-300 font-black min-w-[38px] bg-emerald-50/60 dark:bg-emerald-950/30 border-l-2 border-[#0050CB]/30" title="Total Present Days">
+                              P
+                            </th>
+                            <th className="px-2.5 py-3 text-center text-rose-700 dark:text-rose-300 font-black min-w-[38px] bg-rose-50/60 dark:bg-rose-950/30" title="Total Absent Days">
+                              A
+                            </th>
+                            <th className="px-2.5 py-3 text-center text-amber-700 dark:text-amber-300 font-black min-w-[38px] bg-amber-50/60 dark:bg-amber-950/30" title="Total Late Days">
+                              L
+                            </th>
+                            <th className="px-3 py-3 text-center font-black min-w-[62px] bg-[#E5EEFF]/80 dark:bg-blue-950/40 text-[#0050CB] dark:text-blue-300" title="Monthly Attendance Rate">
+                              Rate
+                            </th>
+                            <th className="px-3 py-3 text-center min-w-[45px] bg-slate-50 dark:bg-slate-800 text-slate-500">
+                              Action
+                            </th>
+                          </tr>
+                        </thead>
+
+                        {/* Table Body */}
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                          {filteredMonthlyAttendanceData.length === 0 ? (
+                            <tr>
+                              <td colSpan={monthlyDays.length + 6} className="text-center py-12 text-slate-400">
+                                <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
+                                <p className="font-bold text-sm text-slate-600 dark:text-slate-300">No learners match "{attendanceSearchQuery}"</p>
+                                <p className="text-xs text-slate-400">Check roll number, child name, or clear search filter</p>
+                              </td>
                             </tr>
-                          </thead>
-
-                          {/* Table Body */}
-                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                            {filteredMonthlyAttendanceData.length === 0 ? (
-                              <tr>
-                                <td colSpan={monthlyDays.length + 6} className="text-center py-12 text-slate-400">
-                                  <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
-                                  <p className="font-bold text-sm text-slate-600 dark:text-slate-300">No learners match "{attendanceSearchQuery}"</p>
-                                  <p className="text-xs text-slate-400">Check roll number, child name, or clear search filter</p>
-                                </td>
-                              </tr>
-                            ) : (
-                              filteredMonthlyAttendanceData.map(({ student, records, presentCount, absentCount, lateCount, attendanceRate }) => (
-                                <tr
-                                  key={student.id}
-                                  className="even:bg-slate-50/30 dark:even:bg-slate-800/20 hover:bg-blue-50/40 dark:hover:bg-slate-800/50 transition-colors group"
-                                >
-                                  {/* Sticky Student Name & Roll */}
-                                  <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-blue-50/60 dark:group-hover:bg-slate-800 px-3.5 py-2.5 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.08)] border-r border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center gap-2.5">
-                                      <span className="px-1.5 py-0.5 rounded bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 font-black text-[10px] shrink-0 border border-[#0050CB]/20">
-                                        #{student.rollNo}
-                                      </span>
-                                      <img
-                                        src={student.photo}
-                                        alt={student.name}
-                                        className="w-6.5 h-6.5 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
-                                      />
-                                      <span
-                                        onClick={() => setSelectedStudent(student)}
-                                        className="font-bold text-slate-800 dark:text-white truncate max-w-[125px] hover:text-[#0050CB] cursor-pointer text-xs transition-colors"
-                                        title={student.name}
-                                      >
-                                        {student.name}
-                                      </span>
-                                    </div>
-                                  </td>
-
-                                  {/* Day Status Cells */}
-                                  {records.map((r) => (
-                                    <td
-                                      key={r.day}
-                                      className={`px-1 py-2 text-center border-r border-slate-100 dark:border-slate-800/60 ${
-                                        r.isWeekend ? 'bg-slate-100/60 dark:bg-slate-800/40' : ''
-                                      }`}
-                                    >
-                                      {r.isWeekend ? (
-                                        <span className="text-slate-300 dark:text-slate-600 text-[10px] font-bold">—</span>
-                                      ) : r.status === 'P' ? (
-                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-500 text-white font-black text-[9px] shadow-2xs">
-                                          P
-                                        </span>
-                                      ) : r.status === 'A' ? (
-                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-rose-500 text-white font-black text-[9px] shadow-2xs">
-                                          A
-                                        </span>
-                                      ) : (
-                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-amber-500 text-white font-black text-[9px] shadow-2xs">
-                                          L
-                                        </span>
-                                      )}
-                                    </td>
-                                  ))}
-
-                                  {/* Summary Counts (Shaded Group) */}
-                                  <td className="px-2.5 py-2 text-center font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50/20 dark:bg-emerald-950/10 border-l-2 border-[#0050CB]/20">
-                                    {presentCount}
-                                  </td>
-                                  <td className="px-2.5 py-2 text-center font-black text-rose-700 dark:text-rose-400 bg-rose-50/20 dark:bg-rose-950/10">
-                                    {absentCount}
-                                  </td>
-                                  <td className="px-2.5 py-2 text-center font-black text-amber-700 dark:text-amber-400 bg-amber-50/20 dark:bg-amber-950/10">
-                                    {lateCount}
-                                  </td>
-
-                                  {/* Attendance Rate % Pill */}
-                                  <td className="px-3 py-2 text-center bg-[#E5EEFF]/20 dark:bg-blue-950/10">
+                          ) : (
+                            filteredMonthlyAttendanceData.map(({ student, records, presentCount, absentCount, lateCount, attendanceRate }) => (
+                              <tr
+                                key={student.id}
+                                className="even:bg-slate-50/30 dark:even:bg-slate-800/20 hover:bg-blue-50/40 dark:hover:bg-slate-800/50 transition-colors group"
+                              >
+                                {/* Sticky Student Name & Roll */}
+                                <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-blue-50/60 dark:group-hover:bg-slate-800 px-3.5 py-2.5 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.08)] border-r border-slate-100 dark:border-slate-800">
+                                  <div className="flex items-center gap-2.5">
+                                    <span className="px-1.5 py-0.5 rounded bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 font-black text-[10px] shrink-0 border border-[#0050CB]/20">
+                                      #{student.rollNo}
+                                    </span>
+                                    <img
+                                      src={student.photo}
+                                      alt={student.name}
+                                      className="w-6.5 h-6.5 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
+                                    />
                                     <span
-                                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
-                                        attendanceRate >= 90
-                                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60'
-                                          : attendanceRate >= 80
+                                      onClick={() => setSelectedStudent(student)}
+                                      className="font-bold text-slate-800 dark:text-white truncate max-w-[125px] hover:text-[#0050CB] cursor-pointer text-xs transition-colors"
+                                      title={student.name}
+                                    >
+                                      {student.name}
+                                    </span>
+                                  </div>
+                                </td>
+
+                                {/* Day Status Cells */}
+                                {records.map((r) => (
+                                  <td
+                                    key={r.day}
+                                    className={`px-1 py-2 text-center border-r border-slate-100 dark:border-slate-800/60 ${r.isWeekend ? 'bg-slate-100/60 dark:bg-slate-800/40' : ''
+                                      }`}
+                                  >
+                                    {r.isWeekend ? (
+                                      <span className="text-slate-300 dark:text-slate-600 text-[10px] font-bold">—</span>
+                                    ) : r.status === 'P' ? (
+                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-500 text-white font-black text-[9px] shadow-2xs">
+                                        P
+                                      </span>
+                                    ) : r.status === 'A' ? (
+                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-rose-500 text-white font-black text-[9px] shadow-2xs">
+                                        A
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-amber-500 text-white font-black text-[9px] shadow-2xs">
+                                        L
+                                      </span>
+                                    )}
+                                  </td>
+                                ))}
+
+                                {/* Summary Counts (Shaded Group) */}
+                                <td className="px-2.5 py-2 text-center font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50/20 dark:bg-emerald-950/10 border-l-2 border-[#0050CB]/20">
+                                  {presentCount}
+                                </td>
+                                <td className="px-2.5 py-2 text-center font-black text-rose-700 dark:text-rose-400 bg-rose-50/20 dark:bg-rose-950/10">
+                                  {absentCount}
+                                </td>
+                                <td className="px-2.5 py-2 text-center font-black text-amber-700 dark:text-amber-400 bg-amber-50/20 dark:bg-amber-950/10">
+                                  {lateCount}
+                                </td>
+
+                                {/* Attendance Rate % Pill */}
+                                <td className="px-3 py-2 text-center bg-[#E5EEFF]/20 dark:bg-blue-950/10">
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${attendanceRate >= 90
+                                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60'
+                                        : attendanceRate >= 80
                                           ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/60'
                                           : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300/60'
                                       }`}
-                                    >
-                                      {attendanceRate}%
-                                    </span>
-                                  </td>
+                                  >
+                                    {attendanceRate}%
+                                  </span>
+                                </td>
 
-                                  {/* Quick Profile View Action */}
-                                  <td className="px-2 py-2 text-center">
+                                {/* Quick Profile View Action */}
+                                <td className="px-2 py-2 text-center">
+                                  <button
+                                    onClick={() => setSelectedStudent(student)}
+                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-[#0050CB] transition-colors cursor-pointer"
+                                    title="View Learner Profile"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Monthly Register Footer */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 text-xs text-slate-500">
+                    <span>
+                      Showing {students.length} students enrolled in LKG - Section A
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#0050CB]">
+                        {monthNames[selectedHistoryMonth]} {selectedHistoryYear} Official Record
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* ========================================================================= */
+                /* DAILY ROLL-CALL ATTENDANCE VIEW (TABLE OR CARDS)                          */
+                /* ========================================================================= */
+                <>
+                  {/* 4A. VIEW MODE 1: STREAMLINED ROLL-CALL TABLE */}
+                  {attendanceViewMode === 'TABLE' ? (
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-slate-50/80 dark:bg-slate-800/40 text-slate-400 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-100 dark:border-slate-800">
+                            <tr>
+                              <th className="px-3 py-3.5 w-10 text-center">#</th>
+                              <th className="px-4 py-3.5 text-slate-600 dark:text-slate-300">Learner Identity</th>
+                              <th className="px-4 py-3.5 text-slate-600 dark:text-slate-300">Primary Guardian</th>
+                              <th className="px-4 py-3.5 text-center text-slate-600 dark:text-slate-300">
+                                Status Toggle [ P | A | L ]
+                              </th>
+                              <th className="px-4 py-3.5 text-slate-600 dark:text-slate-300">Absence Reason / Remark</th>
+                              <th className="px-4 py-3.5 text-center text-slate-600 dark:text-slate-300">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                            {attendanceStudents.map((c) => (
+                              <tr
+                                key={c.id}
+                                className="hover:bg-blue-50/30 dark:hover:bg-slate-800/40 transition-colors group"
+                              >
+                                {/* Roll Number Index */}
+                                <td className="px-3 py-3 text-center">
+                                  <span className="px-2 py-0.5 rounded-md bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 font-black text-[11px] border border-[#0050CB]/20">
+                                    #{c.rollNo}
+                                  </span>
+                                </td>
+
+                                {/* Child Details */}
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-3">
+                                    <img
+                                      src={c.photo}
+                                      alt={c.name}
+                                      className="w-9 h-9 rounded-full object-cover ring-2 ring-[#0050CB]/15 shrink-0"
+                                    />
+                                    <div className="min-w-0">
+                                      <span
+                                        onClick={() => setSelectedStudent(c)}
+                                        className="font-bold text-slate-800 dark:text-white block text-xs group-hover:text-[#0050CB] transition-colors truncate cursor-pointer"
+                                      >
+                                        {c.name}
+                                      </span>
+                                      <span className="text-[10px] text-slate-400 block truncate">
+                                        {c.address ? c.address.slice(0, 30) + '...' : 'Address on record'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Parent Contact */}
+                                <td className="px-4 py-3">
+                                  <div className="text-xs">
+                                    <span className="text-slate-700 dark:text-slate-300 font-bold block truncate max-w-[130px]">
+                                      {c.parentName}
+                                    </span>
+                                    <a
+                                      href={`tel:${c.phone}`}
+                                      className="text-[11px] text-slate-400 hover:text-[#0050CB] flex items-center gap-1 mt-0.5 transition-colors"
+                                    >
+                                      <Phone className="w-2.5 h-2.5 text-emerald-600" />
+                                      <span>{c.phone}</span>
+                                    </a>
+                                  </div>
+                                </td>
+
+                                {/* UNIFIED SEGMENTED STATUS TOGGLE [ P | A | L ] */}
+                                <td className="px-4 py-3 text-center">
+                                  <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 gap-1 shadow-2xs">
+                                    {/* P - Present */}
                                     <button
-                                      onClick={() => setSelectedStudent(student)}
-                                      className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-[#0050CB] transition-colors cursor-pointer"
-                                      title="View Learner Profile"
+                                      onClick={() => handleUpdateStudentStatus(c.id, 'Present')}
+                                      disabled={isAttendanceLocked}
+                                      title={`Mark ${c.name} as Present`}
+                                      className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer disabled:cursor-not-allowed ${c.status === 'Present'
+                                          ? 'bg-emerald-500 text-white shadow-xs scale-105'
+                                          : 'text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                                        }`}
+                                    >
+                                      P
+                                    </button>
+
+                                    {/* A - Absent */}
+                                    <button
+                                      onClick={() => handleUpdateStudentStatus(c.id, 'Absent')}
+                                      disabled={isAttendanceLocked}
+                                      title={`Mark ${c.name} as Absent`}
+                                      className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer disabled:cursor-not-allowed ${c.status === 'Absent'
+                                          ? 'bg-rose-500 text-white shadow-xs scale-105'
+                                          : 'text-slate-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40'
+                                        }`}
+                                    >
+                                      A
+                                    </button>
+
+                                    {/* L - Late */}
+                                    <button
+                                      onClick={() => handleUpdateStudentStatus(c.id, 'Late')}
+                                      disabled={isAttendanceLocked}
+                                      title={`Mark ${c.name} as Late`}
+                                      className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer disabled:cursor-not-allowed ${c.status === 'Late'
+                                          ? 'bg-amber-500 text-white shadow-xs scale-105'
+                                          : 'text-slate-500 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+                                        }`}
+                                    >
+                                      L
+                                    </button>
+                                  </div>
+                                </td>
+
+                                {/* ABSENCE REASON / STATUS REMARKS */}
+                                <td className="px-4 py-3">
+                                  {c.status === 'Absent' ? (
+                                    c.isExcused ? (
+                                      <span
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#0050CB] dark:text-blue-300 border border-blue-200/60 font-semibold text-[11px] max-w-[190px] truncate"
+                                        title={c.absenceReason}
+                                      >
+                                        <ShieldAlert className="w-3.5 h-3.5 shrink-0 text-[#0050CB]" />
+                                        <span className="truncate">{c.absenceReason || 'Excused Parent Note'}</span>
+                                      </span>
+                                    ) : (
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 font-bold text-[10px]">
+                                          ⚠️ Unexplained
+                                        </span>
+                                        <button
+                                          onClick={() => {
+                                            setActiveTab('PARENTS');
+                                            toast.success(`Opening parent chat for absent student ${c.name}`);
+                                          }}
+                                          className="px-2 py-0.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[10px] cursor-pointer shadow-2xs transition-colors"
+                                        >
+                                          SMS
+                                        </button>
+                                      </div>
+                                    )
+                                  ) : c.status === 'Late' ? (
+                                    <span
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 font-semibold text-[11px] max-w-[190px] truncate"
+                                      title={c.arrivalNote || 'Arrived after homeroom'}
+                                    >
+                                      <Clock className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                                      <span className="truncate">{c.arrivalNote || 'Arrived Late'}</span>
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 font-semibold text-[10px]">
+                                      <Check className="w-3 h-3" />
+                                      <span>On Time</span>
+                                    </span>
+                                  )}
+                                </td>
+
+                                {/* ACTION BUTTONS */}
+                                <td className="px-4 py-3 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      onClick={() => {
+                                        toast.success(`Calling primary guardian of ${c.name}`);
+                                        window.open(`tel:${c.phone}`);
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                                      title="Call Parent"
+                                    >
+                                      <Phone className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setActiveTab('PARENTS');
+                                        toast.success(`Opening messages for ${c.name}`);
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-[#0050CB] transition-colors cursor-pointer"
+                                      title="Message Parent"
+                                    >
+                                      <MessageCircle className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => setSelectedStudent(c)}
+                                      className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                                      title="View Full Profile"
                                     >
                                       <Eye className="w-3.5 h-3.5" />
                                     </button>
-                                  </td>
-                                </tr>
-                              ))
-                            )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                       </div>
                     </div>
-
-                    {/* Monthly Register Footer */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 text-xs text-slate-500">
-                      <span>
-                        Showing {students.length} students enrolled in LKG - Section A
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#0050CB]">
-                          {monthNames[selectedHistoryMonth]} {selectedHistoryYear} Official Record
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* ========================================================================= */
-                  /* DAILY ROLL-CALL ATTENDANCE VIEW (TABLE OR CARDS)                          */
-                  /* ========================================================================= */
-                  <>
-                    {/* 4A. VIEW MODE 1: STREAMLINED ROLL-CALL TABLE */}
-                    {attendanceViewMode === 'TABLE' ? (
-                      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs text-left">
-                            <thead className="bg-slate-50/80 dark:bg-slate-800/40 text-slate-400 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-100 dark:border-slate-800">
-                              <tr>
-                                <th className="px-3 py-3.5 w-10 text-center">#</th>
-                                <th className="px-4 py-3.5 text-slate-600 dark:text-slate-300">Learner Identity</th>
-                                <th className="px-4 py-3.5 text-slate-600 dark:text-slate-300">Primary Guardian</th>
-                                <th className="px-4 py-3.5 text-center text-slate-600 dark:text-slate-300">
-                                  Status Toggle [ P | A | L ]
-                                </th>
-                                <th className="px-4 py-3.5 text-slate-600 dark:text-slate-300">Absence Reason / Remark</th>
-                                <th className="px-4 py-3.5 text-center text-slate-600 dark:text-slate-300">Action</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
-                              {attendanceStudents.map((c) => (
-                                <tr
-                                  key={c.id}
-                                  className="hover:bg-blue-50/30 dark:hover:bg-slate-800/40 transition-colors group"
-                                >
-                                  {/* Roll Number Index */}
-                                  <td className="px-3 py-3 text-center">
-                                    <span className="px-2 py-0.5 rounded-md bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 font-black text-[11px] border border-[#0050CB]/20">
-                                      #{c.rollNo}
-                                    </span>
-                                  </td>
-
-                                  {/* Child Details */}
-                                  <td className="px-4 py-3">
-                                    <div className="flex items-center gap-3">
-                                      <img
-                                        src={c.photo}
-                                        alt={c.name}
-                                        className="w-9 h-9 rounded-full object-cover ring-2 ring-[#0050CB]/15 shrink-0"
-                                      />
-                                      <div className="min-w-0">
-                                        <span
-                                          onClick={() => setSelectedStudent(c)}
-                                          className="font-bold text-slate-800 dark:text-white block text-xs group-hover:text-[#0050CB] transition-colors truncate cursor-pointer"
-                                        >
-                                          {c.name}
-                                        </span>
-                                        <span className="text-[10px] text-slate-400 block truncate">
-                                          {c.address ? c.address.slice(0, 30) + '...' : 'Address on record'}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </td>
-
-                                  {/* Parent Contact */}
-                                  <td className="px-4 py-3">
-                                    <div className="text-xs">
-                                      <span className="text-slate-700 dark:text-slate-300 font-bold block truncate max-w-[130px]">
-                                        {c.parentName}
-                                      </span>
-                                      <a
-                                        href={`tel:${c.phone}`}
-                                        className="text-[11px] text-slate-400 hover:text-[#0050CB] flex items-center gap-1 mt-0.5 transition-colors"
-                                      >
-                                        <Phone className="w-2.5 h-2.5 text-emerald-600" />
-                                        <span>{c.phone}</span>
-                                      </a>
-                                    </div>
-                                  </td>
-
-                                  {/* UNIFIED SEGMENTED STATUS TOGGLE [ P | A | L ] */}
-                                  <td className="px-4 py-3 text-center">
-                                    <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 gap-1 shadow-2xs">
-                                      {/* P - Present */}
-                                      <button
-                                        onClick={() => handleUpdateStudentStatus(c.id, 'Present')}
-                                        disabled={isAttendanceLocked}
-                                        title={`Mark ${c.name} as Present`}
-                                        className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer disabled:cursor-not-allowed ${
-                                          c.status === 'Present'
-                                            ? 'bg-emerald-500 text-white shadow-xs scale-105'
-                                            : 'text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
-                                        }`}
-                                      >
-                                        P
-                                      </button>
-
-                                      {/* A - Absent */}
-                                      <button
-                                        onClick={() => handleUpdateStudentStatus(c.id, 'Absent')}
-                                        disabled={isAttendanceLocked}
-                                        title={`Mark ${c.name} as Absent`}
-                                        className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer disabled:cursor-not-allowed ${
-                                          c.status === 'Absent'
-                                            ? 'bg-rose-500 text-white shadow-xs scale-105'
-                                            : 'text-slate-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40'
-                                        }`}
-                                      >
-                                        A
-                                      </button>
-
-                                      {/* L - Late */}
-                                      <button
-                                        onClick={() => handleUpdateStudentStatus(c.id, 'Late')}
-                                        disabled={isAttendanceLocked}
-                                        title={`Mark ${c.name} as Late`}
-                                        className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer disabled:cursor-not-allowed ${
-                                          c.status === 'Late'
-                                            ? 'bg-amber-500 text-white shadow-xs scale-105'
-                                            : 'text-slate-500 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40'
-                                        }`}
-                                      >
-                                        L
-                                      </button>
-                                    </div>
-                                  </td>
-
-                                  {/* ABSENCE REASON / STATUS REMARKS */}
-                                  <td className="px-4 py-3">
-                                    {c.status === 'Absent' ? (
-                                      c.isExcused ? (
-                                        <span
-                                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#0050CB] dark:text-blue-300 border border-blue-200/60 font-semibold text-[11px] max-w-[190px] truncate"
-                                          title={c.absenceReason}
-                                        >
-                                          <ShieldAlert className="w-3.5 h-3.5 shrink-0 text-[#0050CB]" />
-                                          <span className="truncate">{c.absenceReason || 'Excused Parent Note'}</span>
-                                        </span>
-                                      ) : (
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 font-bold text-[10px]">
-                                            ⚠️ Unexplained
-                                          </span>
-                                          <button
-                                            onClick={() => {
-                                              setActiveTab('PARENTS');
-                                              toast.success(`Opening parent chat for absent student ${c.name}`);
-                                            }}
-                                            className="px-2 py-0.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[10px] cursor-pointer shadow-2xs transition-colors"
-                                          >
-                                            SMS
-                                          </button>
-                                        </div>
-                                      )
-                                    ) : c.status === 'Late' ? (
-                                      <span
-                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 font-semibold text-[11px] max-w-[190px] truncate"
-                                        title={c.arrivalNote || 'Arrived after homeroom'}
-                                      >
-                                        <Clock className="w-3.5 h-3.5 shrink-0 text-amber-500" />
-                                        <span className="truncate">{c.arrivalNote || 'Arrived Late'}</span>
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 font-semibold text-[10px]">
-                                        <Check className="w-3 h-3" />
-                                        <span>On Time</span>
-                                      </span>
-                                    )}
-                                  </td>
-
-                                  {/* ACTION BUTTONS */}
-                                  <td className="px-4 py-3 text-center">
-                                    <div className="flex items-center justify-center gap-1">
-                                      <button
-                                        onClick={() => {
-                                          toast.success(`Calling primary guardian of ${c.name}`);
-                                          window.open(`tel:${c.phone}`);
-                                        }}
-                                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
-                                        title="Call Parent"
-                                      >
-                                        <Phone className="w-3.5 h-3.5" />
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          setActiveTab('PARENTS');
-                                          toast.success(`Opening messages for ${c.name}`);
-                                        }}
-                                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-[#0050CB] transition-colors cursor-pointer"
-                                        title="Message Parent"
-                                      >
-                                        <MessageCircle className="w-3.5 h-3.5" />
-                                      </button>
-                                      <button
-                                        onClick={() => setSelectedStudent(c)}
-                                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
-                                        title="View Full Profile"
-                                      >
-                                        <Eye className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    ) : (
-                      /* 4B. VIEW MODE 2: RAPID CARDS VIEW (TABLET / MOBILE OPTIMIZED) */
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {attendanceStudents.map((c) => (
-                          <div
-                            key={c.id}
-                            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs space-y-3"
-                          >
-                            {/* Card Header */}
-                            <div className="flex items-center justify-between">
-                              <span className="px-2.5 py-0.5 rounded-lg bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 font-black text-xs border border-[#0050CB]/20">
-                                Roll #{c.rollNo}
-                              </span>
-                              <span
-                                className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                                  c.status === 'Present'
-                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                    : c.status === 'Absent'
+                  ) : (
+                    /* 4B. VIEW MODE 2: RAPID CARDS VIEW (TABLET / MOBILE OPTIMIZED) */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {attendanceStudents.map((c) => (
+                        <div
+                          key={c.id}
+                          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs space-y-3"
+                        >
+                          {/* Card Header */}
+                          <div className="flex items-center justify-between">
+                            <span className="px-2.5 py-0.5 rounded-lg bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 font-black text-xs border border-[#0050CB]/20">
+                              Roll #{c.rollNo}
+                            </span>
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${c.status === 'Present'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : c.status === 'Absent'
                                     ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                     : 'bg-amber-50 text-amber-700 border border-amber-200'
                                 }`}
-                              >
-                                {c.status}
-                              </span>
-                            </div>
+                            >
+                              {c.status}
+                            </span>
+                          </div>
 
-                            {/* Child Identity */}
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={c.photo}
-                                alt={c.name}
-                                className="w-12 h-12 rounded-xl object-cover ring-2 ring-[#0050CB]/15 shrink-0"
-                              />
-                              <div className="min-w-0 flex-1">
-                                <h4
-                                  onClick={() => setSelectedStudent(c)}
-                                  className="font-bold text-sm text-slate-900 dark:text-white truncate cursor-pointer hover:text-[#0050CB]"
-                                >
-                                  {c.name}
-                                </h4>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                  {c.parentLabel}: {c.parentName} • {c.phone}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Remark / Absence Note */}
-                            {c.status === 'Absent' && (
-                              <div className="p-2 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 text-xs text-rose-700 dark:text-rose-300">
-                                {c.isExcused ? (
-                                  <span>🩺 Excused: {c.absenceReason}</span>
-                                ) : (
-                                  <span>⚠️ Unexcused Absence - Follow-up needed</span>
-                                )}
-                              </div>
-                            )}
-                            {c.status === 'Late' && (
-                              <div className="p-2 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 text-xs text-amber-700 dark:text-amber-300">
-                                <span>⏰ {c.arrivalNote || 'Arrived Late'}</span>
-                              </div>
-                            )}
-
-                            {/* Large Segmented Touch Buttons */}
-                            <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
-                              <button
-                                onClick={() => handleUpdateStudentStatus(c.id, 'Present')}
-                                disabled={isAttendanceLocked}
-                                className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:cursor-not-allowed ${
-                                  c.status === 'Present'
-                                    ? 'bg-emerald-500 text-white shadow-xs'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                                }`}
+                          {/* Child Identity */}
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={c.photo}
+                              alt={c.name}
+                              className="w-12 h-12 rounded-xl object-cover ring-2 ring-[#0050CB]/15 shrink-0"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <h4
+                                onClick={() => setSelectedStudent(c)}
+                                className="font-bold text-sm text-slate-900 dark:text-white truncate cursor-pointer hover:text-[#0050CB]"
                               >
-                                ✓ Present
-                              </button>
-                              <button
-                                onClick={() => handleUpdateStudentStatus(c.id, 'Absent')}
-                                disabled={isAttendanceLocked}
-                                className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:cursor-not-allowed ${
-                                  c.status === 'Absent'
-                                    ? 'bg-rose-500 text-white shadow-xs'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                                }`}
-                              >
-                                ✕ Absent
-                              </button>
-                              <button
-                                onClick={() => handleUpdateStudentStatus(c.id, 'Late')}
-                                disabled={isAttendanceLocked}
-                                className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:cursor-not-allowed ${
-                                  c.status === 'Late'
-                                    ? 'bg-amber-500 text-white shadow-xs'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                                }`}
-                              >
-                                ⏰ Late
-                              </button>
+                                {c.name}
+                              </h4>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                {c.parentLabel}: {c.parentName} • {c.phone}
+                              </p>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
 
-                    {/* 5. Dynamic Pagination Bar */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 text-xs text-slate-500">
-                      <span>
-                        Showing {attendanceStudents.length} of {students.length} registered learners
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-[#0050CB] dark:text-blue-400">
-                          LKG - Section A Active Roster
-                        </span>
-                      </div>
+                          {/* Remark / Absence Note */}
+                          {c.status === 'Absent' && (
+                            <div className="p-2 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 text-xs text-rose-700 dark:text-rose-300">
+                              {c.isExcused ? (
+                                <span>🩺 Excused: {c.absenceReason}</span>
+                              ) : (
+                                <span>⚠️ Unexcused Absence - Follow-up needed</span>
+                              )}
+                            </div>
+                          )}
+                          {c.status === 'Late' && (
+                            <div className="p-2 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 text-xs text-amber-700 dark:text-amber-300">
+                              <span>⏰ {c.arrivalNote || 'Arrived Late'}</span>
+                            </div>
+                          )}
+
+                          {/* Large Segmented Touch Buttons */}
+                          <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+                            <button
+                              onClick={() => handleUpdateStudentStatus(c.id, 'Present')}
+                              disabled={isAttendanceLocked}
+                              className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:cursor-not-allowed ${c.status === 'Present'
+                                  ? 'bg-emerald-500 text-white shadow-xs'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                }`}
+                            >
+                              ✓ Present
+                            </button>
+                            <button
+                              onClick={() => handleUpdateStudentStatus(c.id, 'Absent')}
+                              disabled={isAttendanceLocked}
+                              className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:cursor-not-allowed ${c.status === 'Absent'
+                                  ? 'bg-rose-500 text-white shadow-xs'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                }`}
+                            >
+                              ✕ Absent
+                            </button>
+                            <button
+                              onClick={() => handleUpdateStudentStatus(c.id, 'Late')}
+                              disabled={isAttendanceLocked}
+                              className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:cursor-not-allowed ${c.status === 'Late'
+                                  ? 'bg-amber-500 text-white shadow-xs'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                }`}
+                            >
+                              ⏰ Late
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </>
-                )}
+                  )}
+
+                  {/* 5. Dynamic Pagination Bar */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 text-xs text-slate-500">
+                    <span>
+                      Showing {attendanceStudents.length} of {students.length} registered learners
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-[#0050CB] dark:text-blue-400">
+                        LKG - Section A Active Roster
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -5094,7 +5121,7 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
 
                 <div className="flex items-center gap-2.5 flex-wrap w-full sm:w-auto">
                   <button
-                    onClick={() => handleOpenSchedulePTM(parentThreads[0])}
+                    onClick={() => handleOpenSchedulePTM(null)}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer"
                   >
                     <CalendarRange className="w-4 h-4 text-[#0050CB]" />
@@ -5177,11 +5204,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       <button
                         key={tab.id}
                         onClick={() => setParentFilter(tab.id)}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                          isActive
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isActive
                             ? 'bg-[#0050CB] text-white shadow-xs'
                             : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                        }`}
+                          }`}
                       >
                         {tab.label}
                       </button>
@@ -5243,17 +5269,16 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                     return (
                       <div
                         key={thread.id}
-                        className={`bg-white dark:bg-[#000E28] rounded-2xl border transition-all p-5 flex flex-col justify-between shadow-xs hover:shadow-md ${
-                          hasUnread
+                        className={`bg-white dark:bg-[#000E28] rounded-2xl border transition-all p-5 flex flex-col justify-between shadow-xs hover:shadow-md ${hasUnread
                             ? 'border-[#FF690C]/60 ring-1 ring-[#FF690C]/20'
                             : hasAbsence
-                            ? 'border-amber-200 dark:border-amber-900/60 bg-amber-50/10'
-                            : isDeclined
-                            ? 'border-rose-200 dark:border-rose-900/60'
-                            : isRescheduled
-                            ? 'border-purple-200 dark:border-purple-900/60'
-                            : 'border-slate-200 dark:border-slate-800'
-                        }`}
+                              ? 'border-amber-200 dark:border-amber-900/60 bg-amber-50/10'
+                              : isDeclined
+                                ? 'border-rose-200 dark:border-rose-900/60'
+                                : isRescheduled
+                                  ? 'border-purple-200 dark:border-purple-900/60'
+                                  : 'border-slate-200 dark:border-slate-800'
+                          }`}
                       >
                         <div className="space-y-3.5">
                           {/* Parent & Child Profile Header */}
@@ -5302,29 +5327,27 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                           </div>
 
                           {/* PTM Details & Parent Confirmation Status Card */}
-                          <div className={`p-2.5 rounded-xl border text-xs space-y-1.5 ${
-                            isConfirmed
+                          <div className={`p-2.5 rounded-xl border text-xs space-y-1.5 ${isConfirmed
                               ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-800/40'
                               : isDeclined
-                              ? 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-200/80 dark:border-rose-800/40'
-                              : isRescheduled
-                              ? 'bg-purple-50/70 dark:bg-purple-950/20 border-purple-200/80 dark:border-purple-800/40'
-                              : 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200/80 dark:border-amber-800/40'
-                          }`}>
+                                ? 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-200/80 dark:border-rose-800/40'
+                                : isRescheduled
+                                  ? 'bg-purple-50/70 dark:bg-purple-950/20 border-purple-200/80 dark:border-purple-800/40'
+                                  : 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200/80 dark:border-amber-800/40'
+                            }`}>
                             <div className="flex items-center justify-between gap-1">
                               <span className="font-bold text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1">
                                 <CalendarRange className="w-3.5 h-3.5 text-[#0050CB]" />
                                 <span>{thread.ptmDate || '2026-09-26'} • {thread.ptmTime || thread.ptmSlot?.split(' - ')[0] || '10:00 AM'}</span>
                               </span>
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                                isConfirmed
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isConfirmed
                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
                                   : isDeclined
-                                  ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300'
-                                  : isRescheduled
-                                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300'
-                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300'
-                              }`}>
+                                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300'
+                                    : isRescheduled
+                                      ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300'
+                                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300'
+                                }`}>
                                 {isConfirmed && '✓ Confirmed'}
                                 {isDeclined && '✕ Declined'}
                                 {isRescheduled && '↻ Reschedule Req.'}
@@ -5496,15 +5519,14 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                             <CalendarRange className="w-3.5 h-3.5 text-[#0050CB]" />
                             PTM Conference: {selectedParentForChat.ptmDate || '2026-09-26'} • {selectedParentForChat.ptmTime || selectedParentForChat.ptmSlot}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                            selectedParentForChat.ptmStatus === 'Confirmed'
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${selectedParentForChat.ptmStatus === 'Confirmed'
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300'
                               : selectedParentForChat.ptmStatus === 'Declined'
-                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300'
-                              : selectedParentForChat.ptmStatus === 'Rescheduled'
-                              ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
-                              : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
-                          }`}>
+                                ? 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300'
+                                : selectedParentForChat.ptmStatus === 'Rescheduled'
+                                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
+                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
+                            }`}>
                             {selectedParentForChat.ptmStatus === 'Confirmed' && '✓ Confirmed by Parent'}
                             {selectedParentForChat.ptmStatus === 'Declined' && '✕ Declined by Parent'}
                             {selectedParentForChat.ptmStatus === 'Rescheduled' && '↻ Reschedule Requested'}
@@ -5567,11 +5589,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                               className={`flex flex-col ${isTeacher ? 'items-end' : 'items-start'}`}
                             >
                               <div
-                                className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
-                                  isTeacher
+                                className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${isTeacher
                                     ? 'bg-[#0050CB] text-white rounded-br-xs shadow-xs'
                                     : 'bg-white dark:bg-[#000E28] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-xs shadow-2xs'
-                                }`}
+                                  }`}
                               >
                                 <p className="font-medium whitespace-pre-line">{m.text}</p>
                               </div>
@@ -5642,7 +5663,7 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
               {/* MODAL: PTM SCHEDULING & CONFERENCE CONFIGURATION                 */}
               {/* ================================================================= */}
               <AnimatePresence>
-                {isSchedulePTMModalOpen && selectedParentForPTM && (
+                {isSchedulePTMModalOpen && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <motion.div
                       initial={{ opacity: 0 }}
@@ -5664,7 +5685,11 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                           </div>
                           <div>
                             <h3 className="text-base font-black text-[#000E28] dark:text-white">Configure PTM Conference Slot</h3>
-                            <p className="text-[11px] text-slate-500">Class LKG-A • Parent-Teacher Consultation</p>
+                            <p className="text-[11px] text-slate-500">
+                              {selectedParentForPTM && ptmForm.targetScope !== 'ALL'
+                                ? `Class LKG-A • ${selectedParentForPTM.studentName} (${selectedParentForPTM.parentLabel}) Consultation`
+                                : 'Class LKG-A • All Students & Parents Consultation'}
+                            </p>
                           </div>
                         </div>
                         <button
@@ -5676,15 +5701,68 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       </div>
 
                       <form onSubmit={handleSavePTMSchedule} className="space-y-3.5 text-xs">
-                        {/* Student / Guardian Profile */}
-                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                        {/* Target Audience / Student Profile Selector */}
+                        <div className="p-3.5 rounded-xl bg-[#E5EEFF]/80 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900/60 space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-slate-800 dark:text-white">
-                              Student: {selectedParentForPTM.studentName} (Roll {selectedParentForPTM.rollNo})
+                            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                              <Users className="w-3.5 h-3.5 text-[#0050CB] dark:text-blue-400" />
+                              <span>Consultation Target</span>
+                            </label>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 dark:bg-blue-900 text-[#0050CB] dark:text-blue-300">
+                              {!selectedParentForPTM || ptmForm.targetScope === 'ALL'
+                                ? `${parentThreads.length} Enrolled Pupils`
+                                : '1 Student Selected'}
                             </span>
-                            <span className="text-[11px] text-[#0050CB] font-bold">{selectedParentForPTM.parentLabel}: {selectedParentForPTM.parentName}</span>
                           </div>
-                          <p className="text-[10px] text-slate-400 mt-0.5">Phone: {selectedParentForPTM.phone}</p>
+
+                          <select
+                            value={ptmForm.targetScope === 'ALL' || !selectedParentForPTM ? 'ALL' : selectedParentForPTM.id}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === 'ALL') {
+                                setSelectedParentForPTM(null);
+                                setPtmForm((prev) => ({ ...prev, targetScope: 'ALL', studentId: 'ALL' }));
+                              } else {
+                                const found = parentThreads.find((pt) => pt.id === val);
+                                if (found) {
+                                  setSelectedParentForPTM(found);
+                                  setPtmForm((prev) => ({
+                                    ...prev,
+                                    targetScope: 'INDIVIDUAL',
+                                    studentId: found.studentId,
+                                    date: found.ptmDate || prev.date,
+                                    timeSlot: found.ptmTime || prev.timeSlot,
+                                    mode: found.ptmMode || prev.mode,
+                                    reason: found.ptmReason || prev.reason,
+                                    teacherNotes: found.ptmNotes || prev.teacherNotes,
+                                    status: found.ptmStatus || 'Confirmed',
+                                    parentResponseNote: found.ptmParentNote || '',
+                                  }));
+                                }
+                              }
+                            }}
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl font-bold text-xs text-slate-800 dark:text-white focus:outline-hidden focus:border-[#0050CB]"
+                          >
+                            <option value="ALL">👥 All Students — Entire Class LKG-A ({parentThreads.length} Students & Families)</option>
+                            <optgroup label="Individual Student Slots">
+                              {parentThreads.map((pt) => (
+                                <option key={pt.id} value={pt.id}>
+                                  Roll {pt.rollNo} • {pt.studentName} ({pt.parentLabel}: {pt.parentName})
+                                </option>
+                              ))}
+                            </optgroup>
+                          </select>
+
+                          {!selectedParentForPTM || ptmForm.targetScope === 'ALL' ? (
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                              Applies class-wide consultation schedule to all {parentThreads.length} registered students and dispatches notices to guardians.
+                            </p>
+                          ) : (
+                            <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 border-t border-blue-200/60 dark:border-blue-900/60">
+                              <span>Guardian: <strong className="text-slate-800 dark:text-white">{selectedParentForPTM.parentName}</strong> ({selectedParentForPTM.parentLabel})</span>
+                              <span>Phone: <strong className="text-slate-800 dark:text-white">{selectedParentForPTM.phone}</strong></span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Date & Time Slot */}
@@ -5813,7 +5891,9 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                             type="submit"
                             className="px-5 py-2 bg-[#0050CB] hover:bg-[#003da1] text-white rounded-xl font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer"
                           >
-                            Save & Notify Parent
+                            {!selectedParentForPTM || ptmForm.targetScope === 'ALL'
+                              ? 'Save & Notify All Parents'
+                              : 'Save & Notify Parent'}
                           </button>
                         </div>
                       </form>
@@ -6012,11 +6092,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                     <button
                       key={tab.id}
                       onClick={() => setSchoolWorkSubTab(tab.id)}
-                      className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                        isActive
+                      className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isActive
                           ? 'bg-[#0050CB] text-white shadow-xs'
                           : 'bg-white dark:bg-[#000E28] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
+                        }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
                       {tab.label}
@@ -6037,11 +6116,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                         <button
                           key={filter}
                           onClick={() => setDutyFilter(filter)}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            dutyFilter === filter
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${dutyFilter === filter
                               ? 'bg-[#E5EEFF] dark:bg-blue-950 text-[#0050CB] dark:text-blue-300 border border-blue-300 dark:border-blue-700'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                          }`}
+                            }`}
                         >
                           {filter === 'ALL' ? 'All Shifts' : filter}
                         </button>
@@ -6061,37 +6139,34 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       return (
                         <div
                           key={duty.id}
-                          className={`bg-white dark:bg-[#000E28] rounded-2xl border transition-all p-5 space-y-4 flex flex-col justify-between shadow-xs ${
-                            isCompleted
+                          className={`bg-white dark:bg-[#000E28] rounded-2xl border transition-all p-5 space-y-4 flex flex-col justify-between shadow-xs ${isCompleted
                               ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/20'
                               : isSwap
-                              ? 'border-orange-200 dark:border-orange-900/60 bg-orange-50/20'
-                              : 'border-slate-200 dark:border-slate-800 hover:shadow-md'
-                          }`}
+                                ? 'border-orange-200 dark:border-orange-900/60 bg-orange-50/20'
+                                : 'border-slate-200 dark:border-slate-800 hover:shadow-md'
+                            }`}
                         >
                           <div className="space-y-3">
                             {/* Card Header */}
                             <div className="flex items-start justify-between gap-2">
                               <span
-                                className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider ${
-                                  duty.category === 'Assembly & Gate'
+                                className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider ${duty.category === 'Assembly & Gate'
                                     ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-400 border border-blue-200/60'
                                     : duty.category === 'Cafeteria & Recess'
-                                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60'
-                                    : 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200/60'
-                                }`}
+                                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60'
+                                      : 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200/60'
+                                  }`}
                               >
                                 {duty.category}
                               </span>
 
                               <span
-                                className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
-                                  isCompleted
+                                className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${isCompleted
                                     ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
                                     : isSwap
-                                    ? 'bg-orange-100 dark:bg-orange-950 text-[#FF690C]'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                                }`}
+                                      ? 'bg-orange-100 dark:bg-orange-950 text-[#FF690C]'
+                                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                  }`}
                               >
                                 {isCompleted ? (
                                   <>
@@ -6169,11 +6244,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
                             <button
                               onClick={() => handleToggleDutyStatus(duty.id)}
-                              className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                isCompleted
+                              className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${isCompleted
                                   ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
                                   : 'bg-[#0050CB] hover:bg-[#003da1] text-white shadow-xs shadow-blue-500/20'
-                              }`}
+                                }`}
                             >
                               <Check className="w-3.5 h-3.5" />
                               {isCompleted ? 'Mark Upcoming' : 'Acknowledge Done'}
@@ -6221,18 +6295,16 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                       return (
                         <div
                           key={task.id}
-                          className={`py-3.5 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
-                            isCompleted ? 'opacity-65' : ''
-                          }`}
+                          className={`py-3.5 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${isCompleted ? 'opacity-65' : ''
+                            }`}
                         >
                           <div className="flex items-start gap-3 min-w-0">
                             <button
                               onClick={() => handleToggleTaskStatus(task.id)}
-                              className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
-                                isCompleted
+                              className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center transition-colors cursor-pointer shrink-0 ${isCompleted
                                   ? 'bg-emerald-600 border-emerald-600 text-white'
                                   : 'border-slate-300 dark:border-slate-600 hover:border-[#0050CB]'
-                              }`}
+                                }`}
                             >
                               {isCompleted && <Check className="w-3.5 h-3.5" />}
                             </button>
@@ -6240,20 +6312,18 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                             <div className="space-y-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h4
-                                  className={`text-xs font-bold ${
-                                    isCompleted
+                                  className={`text-xs font-bold ${isCompleted
                                       ? 'line-through text-slate-400 dark:text-slate-500'
                                       : 'text-[#000E28] dark:text-white'
-                                  }`}
+                                    }`}
                                 >
                                   {task.title}
                                 </h4>
                                 <span
-                                  className={`text-[10px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider ${
-                                    task.priority === 'High'
+                                  className={`text-[10px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider ${task.priority === 'High'
                                       ? 'bg-orange-50 text-[#FF690C] border border-[#FF690C]/30'
                                       : 'bg-blue-50 text-[#0050CB] border border-blue-200'
-                                  }`}
+                                    }`}
                                 >
                                   {task.priority} Priority
                                 </span>
@@ -6274,13 +6344,12 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
 
                           <div className="sm:text-right shrink-0">
                             <span
-                              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                                isCompleted
+                              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full ${isCompleted
                                   ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40'
                                   : task.dueInDays.includes('2 days')
-                                  ? 'bg-orange-50 text-[#FF690C] dark:bg-orange-950/40'
-                                  : 'bg-blue-50 text-[#0050CB] dark:bg-blue-950/40'
-                              }`}
+                                    ? 'bg-orange-50 text-[#FF690C] dark:bg-orange-950/40'
+                                    : 'bg-blue-50 text-[#0050CB] dark:bg-blue-950/40'
+                                }`}
                             >
                               <CalendarIcon className="w-3 h-3" />
                               {task.dueInDays} ({task.deadline})
@@ -6769,11 +6838,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                         <button
                           key={tab.id}
                           onClick={() => setLeaveFilter(tab.id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                            isActive
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isActive
                               ? 'bg-[#0050CB] text-white shadow-xs'
                               : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                          }`}
+                            }`}
                         >
                           {tab.label}
                         </button>
@@ -6847,13 +6915,12 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                               <td className="py-3.5 px-4">
                                 <div className="flex items-center gap-2.5">
                                   <div
-                                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold ${
-                                      item.leaveType === 'Casual'
+                                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold ${item.leaveType === 'Casual'
                                         ? 'bg-blue-50 dark:bg-blue-950/50 text-[#0050CB]'
                                         : item.leaveType === 'Sick'
-                                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600'
-                                        : 'bg-purple-50 dark:bg-purple-950/50 text-purple-600'
-                                    }`}
+                                          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600'
+                                          : 'bg-purple-50 dark:bg-purple-950/50 text-purple-600'
+                                      }`}
                                   >
                                     {item.leaveType === 'Casual' ? (
                                       <CalendarIcon className="w-4 h-4" />
@@ -6916,11 +6983,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                                   </div>
                                   {item.substituteTeacher !== 'None Designated' && (
                                     <span
-                                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                                        item.substituteStatus === 'Accepted'
+                                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${item.substituteStatus === 'Accepted'
                                           ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                                           : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
-                                      }`}
+                                        }`}
                                     >
                                       {item.substituteStatus === 'Accepted' ? (
                                         <Check className="w-2.5 h-2.5" />
@@ -6936,15 +7002,14 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                               {/* Status Badge */}
                               <td className="py-3.5 px-4">
                                 <span
-                                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                                    isPending
+                                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full ${isPending
                                       ? 'bg-orange-50 dark:bg-orange-950/50 text-[#FF690C] border border-[#FF690C]/30'
                                       : isApproved
-                                      ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-                                      : isRejected
-                                      ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-500/20'
-                                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
-                                  }`}
+                                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+                                        : isRejected
+                                          ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-500/20'
+                                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
+                                    }`}
                                 >
                                   {isPending && <Clock className="w-3 h-3 animate-spin" />}
                                   {isApproved && <CheckCircle2 className="w-3 h-3" />}
@@ -7025,15 +7090,14 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
 
                       {/* Status Banner */}
                       <div
-                        className={`p-3.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
-                          selectedLeaveDetail.status === 'Approved'
+                        className={`p-3.5 rounded-xl border flex items-center justify-between text-xs font-bold ${selectedLeaveDetail.status === 'Approved'
                             ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                             : selectedLeaveDetail.status === 'Pending'
-                            ? 'bg-orange-50 dark:bg-orange-950/40 text-[#FF690C] border-orange-200 dark:border-orange-800'
-                            : selectedLeaveDetail.status === 'Rejected'
-                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
-                            : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                        }`}
+                              ? 'bg-orange-50 dark:bg-orange-950/40 text-[#FF690C] border-orange-200 dark:border-orange-800'
+                              : selectedLeaveDetail.status === 'Rejected'
+                                ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                                : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-current" />
@@ -7043,10 +7107,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                           {selectedLeaveDetail.status === 'Pending'
                             ? 'In Review with Principal'
                             : selectedLeaveDetail.status === 'Approved'
-                            ? 'Sanctioned & Recorded'
-                            : selectedLeaveDetail.status === 'Rejected'
-                            ? 'Application Declined'
-                            : 'Withdrawn by Faculty'}
+                              ? 'Sanctioned & Recorded'
+                              : selectedLeaveDetail.status === 'Rejected'
+                                ? 'Application Declined'
+                                : 'Withdrawn by Faculty'}
                         </span>
                       </div>
 
@@ -7191,11 +7255,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                                   type="button"
                                   key={cat.id}
                                   onClick={() => setNewLeaveForm((prev) => ({ ...prev, leaveType: cat.id }))}
-                                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                                    isSelected
+                                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${isSelected
                                       ? 'border-[#0050CB] bg-[#E5EEFF]/60 dark:bg-blue-950/60 dark:border-blue-500 ring-1 ring-[#0050CB]'
                                       : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                  }`}
+                                    }`}
                                 >
                                   <span className={`font-bold block ${isSelected ? 'text-[#0050CB] dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
                                     {cat.label}
@@ -7228,11 +7291,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                                   type="button"
                                   key={sess.id}
                                   onClick={() => setNewLeaveForm((prev) => ({ ...prev, sessionType: sess.id }))}
-                                  className={`py-2 px-2 rounded-xl border text-center font-bold text-[11px] transition-all cursor-pointer ${
-                                    isSelected
+                                  className={`py-2 px-2 rounded-xl border text-center font-bold text-[11px] transition-all cursor-pointer ${isSelected
                                       ? 'bg-[#0050CB] text-white border-[#0050CB] shadow-xs'
                                       : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                  }`}
+                                    }`}
                                 >
                                   {sess.label}
                                 </button>
@@ -7431,11 +7493,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                     <span>Post Class Notice</span>
                   </button>
 
-                  <span className={`text-xs font-bold px-3 py-1.5 rounded-xl border ${
-                    unreadNotificationsCount > 0
+                  <span className={`text-xs font-bold px-3 py-1.5 rounded-xl border ${unreadNotificationsCount > 0
                       ? 'text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800/60'
                       : 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800/60'
-                  }`}>
+                    }`}>
                     {unreadNotificationsCount > 0 ? `${unreadNotificationsCount} Unread` : 'All Caught Up ✓'}
                   </span>
                 </div>
@@ -7467,66 +7528,60 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 custom-scrollbar text-xs">
                   <button
                     onClick={() => setNotifFilter('ALL')}
-                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                      notifFilter === 'ALL'
+                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${notifFilter === 'ALL'
                         ? 'bg-[#0050CB] text-white shadow-2xs'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                    }`}
+                      }`}
                   >
                     All ({notifications.length})
                   </button>
 
                   <button
                     onClick={() => setNotifFilter('UNREAD')}
-                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                      notifFilter === 'UNREAD'
+                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${notifFilter === 'UNREAD'
                         ? 'bg-[#0050CB] text-white shadow-2xs'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                    }`}
+                      }`}
                   >
                     Unread ({unreadNotificationsCount})
                   </button>
 
                   <button
                     onClick={() => setNotifFilter('Urgent')}
-                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                      notifFilter === 'Urgent'
+                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${notifFilter === 'Urgent'
                         ? 'bg-rose-600 text-white shadow-2xs'
                         : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100'
-                    }`}
+                      }`}
                   >
                     🚨 Urgent
                   </button>
 
                   <button
                     onClick={() => setNotifFilter('Academic')}
-                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                      notifFilter === 'Academic'
+                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${notifFilter === 'Academic'
                         ? 'bg-emerald-600 text-white shadow-2xs'
                         : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
-                    }`}
+                      }`}
                   >
                     📚 Academic
                   </button>
 
                   <button
                     onClick={() => setNotifFilter('Notice')}
-                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                      notifFilter === 'Notice'
+                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${notifFilter === 'Notice'
                         ? 'bg-blue-600 text-white shadow-2xs'
                         : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100'
-                    }`}
+                      }`}
                   >
                     📢 Notices
                   </button>
 
                   <button
                     onClick={() => setNotifFilter('Event')}
-                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                      notifFilter === 'Event'
+                    className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${notifFilter === 'Event'
                         ? 'bg-purple-600 text-white shadow-2xs'
                         : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 hover:bg-purple-100'
-                    }`}
+                      }`}
                   >
                     🎉 Events
                   </button>
@@ -7547,18 +7602,16 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                     return (
                       <div
                         key={notif.id}
-                        className={`p-4 sm:p-5 rounded-3xl transition-all border ${
-                          !notif.isRead
+                        className={`p-4 sm:p-5 rounded-3xl transition-all border ${!notif.isRead
                             ? 'bg-white dark:bg-[#111827] border-blue-200/90 dark:border-blue-800/60 shadow-xs ring-1 ring-blue-500/10'
                             : 'bg-white/80 dark:bg-[#111827]/70 border-slate-200/80 dark:border-slate-800 shadow-2xs opacity-90'
-                        } flex flex-col sm:flex-row items-start justify-between gap-4`}
+                          } flex flex-col sm:flex-row items-start justify-between gap-4`}
                       >
                         <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 shadow-2xs ${
-                            notif.category === 'Urgent'
+                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 shadow-2xs ${notif.category === 'Urgent'
                               ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60'
                               : 'bg-[#E5EEFF] text-[#0050CB] dark:bg-blue-950/50 dark:text-blue-400'
-                          }`}>
+                            }`}>
                             <Bell className="w-5 h-5" />
                           </div>
 
@@ -7681,33 +7734,30 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                 <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 self-start sm:self-auto">
                   <button
                     onClick={() => setAccountSubTab('profile')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      accountSubTab === 'profile'
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${accountSubTab === 'profile'
                         ? 'bg-[#0050CB] text-white shadow-sm'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     <User className="w-3.5 h-3.5" />
                     <span>Profile & Contact</span>
                   </button>
                   <button
                     onClick={() => setAccountSubTab('academic')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      accountSubTab === 'academic'
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${accountSubTab === 'academic'
                         ? 'bg-[#0050CB] text-white shadow-sm'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     <GraduationCap className="w-3.5 h-3.5" />
                     <span>Experience & Academic</span>
                   </button>
                   <button
                     onClick={() => setAccountSubTab('security')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      accountSubTab === 'security'
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${accountSubTab === 'security'
                         ? 'bg-[#0050CB] text-white shadow-sm'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     <Lock className="w-3.5 h-3.5" />
                     <span>Security & Password</span>
@@ -7754,11 +7804,10 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setIsEditingProfile(!isEditingProfile)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                        isEditingProfile
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${isEditingProfile
                           ? 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:border-slate-700'
                           : 'bg-[#0050CB] text-white hover:bg-blue-700 border-transparent shadow-sm'
-                      }`}
+                        }`}
                     >
                       {isEditingProfile ? 'Cancel Edit' : 'Edit Profile & Contact'}
                     </button>
@@ -8278,7 +8327,8 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
       {/* ========================================================================= */}
       {/* 3. MODALS & DRAWERS                                                       */}
       {/* ========================================================================= */}
-      {/* MODAL 1: ADD CHILD ENROLLMENT MODAL (AUTOMATIC ID GENERATION & REGISTRAR AUTHORITY) */}
+
+      {/* MODAL 1: ADD CHILD ENROLLMENT MODAL (AUTOMATIC ID GENERATION & REGISTRAR AUTHORITY) */}
       <EnrollChildModal
         isOpen={addChildModalOpen}
         onClose={() => setAddChildModalOpen(false)}
@@ -8646,15 +8696,14 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                               prev.map((c) => (c.id === child.id ? { ...c, status: st } : c))
                             );
                           }}
-                          className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                            child.status === st
+                          className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${child.status === st
                               ? st === 'Present'
                                 ? 'bg-emerald-500 text-white'
                                 : st === 'Absent'
-                                ? 'bg-rose-500 text-white'
-                                : 'bg-amber-500 text-white'
+                                  ? 'bg-rose-500 text-white'
+                                  : 'bg-amber-500 text-white'
                               : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                          }`}
+                            }`}
                         >
                           {st}
                         </button>

@@ -300,18 +300,6 @@ export default function MyChildrenPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-5">
               {/* Metric 1: Attendance */}
               <div className="relative overflow-hidden rounded-[22px] p-4 bg-gradient-to-br from-white via-white to-[#EBF3FF]/70 border border-blue-100/90 shadow-[0_4px_16px_rgba(0,80,203,0.05)] hover:shadow-md transition-all duration-300 min-h-[128px] flex flex-col justify-between group">
-                <div className="absolute -bottom-1 -right-1 w-20 h-12 pointer-events-none select-none opacity-85">
-                  <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-16 h-8 overflow-visible">
-                    <defs>
-                      <linearGradient id="aaravAttGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#60A5FA" />
-                        <stop offset="100%" stopColor="#0050CB" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#aaravAttGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                    <polygon points="90,2 96,5 91,8" fill="#0050CB" />
-                  </svg>
-                </div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E1EFFF] to-[#C8E0FF] p-[2px] shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <div className="w-full h-full rounded-full bg-gradient-to-b from-[#2563EB] to-[#0050CB] flex items-center justify-center shadow-inner">
@@ -337,18 +325,6 @@ export default function MyChildrenPage() {
 
               {/* Metric 2: Homework */}
               <div className="relative overflow-hidden rounded-[22px] p-4 bg-gradient-to-br from-white via-white to-[#FFF7ED]/70 border border-amber-100/90 shadow-[0_4px_16px_rgba(249,115,22,0.05)] hover:shadow-md transition-all duration-300 min-h-[128px] flex flex-col justify-between group">
-                <div className="absolute -bottom-1 -right-1 w-20 h-12 pointer-events-none select-none opacity-85">
-                  <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-16 h-8 overflow-visible">
-                    <defs>
-                      <linearGradient id="aaravHwGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#FDBA74" />
-                        <stop offset="100%" stopColor="#EA580C" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#aaravHwGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                    <polygon points="90,2 96,5 91,8" fill="#EA580C" />
-                  </svg>
-                </div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#FFEDD5] to-[#FED7AA] p-[2px] shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <div className="w-full h-full rounded-full bg-gradient-to-b from-[#FB923C] to-[#EA580C] flex items-center justify-center shadow-inner">
@@ -374,18 +350,6 @@ export default function MyChildrenPage() {
 
               {/* Metric 3: Overall Progress */}
               <div className="relative overflow-hidden rounded-[22px] p-4 bg-gradient-to-br from-white via-white to-[#F5F3FF]/70 border border-purple-100/90 shadow-[0_4px_16px_rgba(124,58,237,0.05)] hover:shadow-md transition-all duration-300 min-h-[128px] flex flex-col justify-between group">
-                <div className="absolute -bottom-1 -right-1 w-20 h-12 pointer-events-none select-none opacity-85">
-                  <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-16 h-8 overflow-visible">
-                    <defs>
-                      <linearGradient id="aaravProgGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#C084FC" />
-                        <stop offset="100%" stopColor="#7C3AED" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#aaravProgGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                    <polygon points="90,2 96,5 91,8" fill="#7C3AED" />
-                  </svg>
-                </div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#EDE9FE] to-[#DDD6FE] p-[2px] shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <div className="w-full h-full rounded-full bg-gradient-to-b from-[#8B5CF6] to-[#6D28D9] flex items-center justify-center shadow-inner">
@@ -515,18 +479,6 @@ export default function MyChildrenPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-5">
               {/* Metric 1: Attendance */}
               <div className="relative overflow-hidden rounded-[22px] p-4 bg-gradient-to-br from-white via-white to-[#EBF3FF]/70 border border-blue-100/90 shadow-[0_4px_16px_rgba(0,80,203,0.05)] hover:shadow-md transition-all duration-300 min-h-[128px] flex flex-col justify-between group">
-                <div className="absolute -bottom-1 -right-1 w-20 h-12 pointer-events-none select-none opacity-85">
-                  <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-16 h-8 overflow-visible">
-                    <defs>
-                      <linearGradient id="ananyaAttGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#60A5FA" />
-                        <stop offset="100%" stopColor="#0050CB" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#ananyaAttGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                    <polygon points="90,2 96,5 91,8" fill="#0050CB" />
-                  </svg>
-                </div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E1EFFF] to-[#C8E0FF] p-[2px] shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <div className="w-full h-full rounded-full bg-gradient-to-b from-[#2563EB] to-[#0050CB] flex items-center justify-center shadow-inner">
@@ -552,18 +504,6 @@ export default function MyChildrenPage() {
 
               {/* Metric 2: Homework */}
               <div className="relative overflow-hidden rounded-[22px] p-4 bg-gradient-to-br from-white via-white to-[#FFF7ED]/70 border border-amber-100/90 shadow-[0_4px_16px_rgba(249,115,22,0.05)] hover:shadow-md transition-all duration-300 min-h-[128px] flex flex-col justify-between group">
-                <div className="absolute -bottom-1 -right-1 w-20 h-12 pointer-events-none select-none opacity-85">
-                  <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-16 h-8 overflow-visible">
-                    <defs>
-                      <linearGradient id="ananyaHwGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#FDBA74" />
-                        <stop offset="100%" stopColor="#EA580C" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#ananyaHwGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                    <polygon points="90,2 96,5 91,8" fill="#EA580C" />
-                  </svg>
-                </div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#FFEDD5] to-[#FED7AA] p-[2px] shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <div className="w-full h-full rounded-full bg-gradient-to-b from-[#FB923C] to-[#EA580C] flex items-center justify-center shadow-inner">
@@ -589,18 +529,6 @@ export default function MyChildrenPage() {
 
               {/* Metric 3: Overall Progress */}
               <div className="relative overflow-hidden rounded-[22px] p-4 bg-gradient-to-br from-white via-white to-[#F5F3FF]/70 border border-purple-100/90 shadow-[0_4px_16px_rgba(124,58,237,0.05)] hover:shadow-md transition-all duration-300 min-h-[128px] flex flex-col justify-between group">
-                <div className="absolute -bottom-1 -right-1 w-20 h-12 pointer-events-none select-none opacity-85">
-                  <svg viewBox="0 0 100 45" fill="none" className="absolute bottom-1 right-1 w-16 h-8 overflow-visible">
-                    <defs>
-                      <linearGradient id="ananyaProgGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#C084FC" />
-                        <stop offset="100%" stopColor="#7C3AED" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M 5 35 Q 25 30, 42 20 T 75 12 T 92 5" stroke="url(#ananyaProgGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                    <polygon points="90,2 96,5 91,8" fill="#7C3AED" />
-                  </svg>
-                </div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#EDE9FE] to-[#DDD6FE] p-[2px] shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <div className="w-full h-full rounded-full bg-gradient-to-b from-[#8B5CF6] to-[#6D28D9] flex items-center justify-center shadow-inner">

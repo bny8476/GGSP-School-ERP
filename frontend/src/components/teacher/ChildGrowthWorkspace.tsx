@@ -1427,151 +1427,231 @@ export default function ChildGrowthWorkspace({ students = [], onNavigateTab }: C
       {/* ========================================================================= */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-[#000E28] rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[92vh] flex flex-col animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#0050CB] flex items-center justify-center font-bold">
-                  <Plus className="w-4 h-4" />
+                <div className="w-10 h-10 rounded-2xl bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-400 flex items-center justify-center font-bold shadow-xs">
+                  <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">Record Child Observation</h3>
-                  <p className="text-[11px] text-slate-400">Document milestone achievement or note for preschool record</p>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">Record Child Growth Observation</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Preschool milestone evaluation & developmental progress record</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveObservation} className="space-y-4 text-xs">
-              {/* Select Child */}
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Select Child</label>
-                <select
-                  value={formStudentId}
-                  onChange={(e) => setFormStudentId(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white focus:outline-none"
-                >
-                  {profiles.map((p) => (
-                    <option key={p.studentId} value={p.studentId}>
-                      {p.name} (Roll #{p.rollNo})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {/* Modal Body Form */}
+            <form onSubmit={handleSaveObservation} className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 text-xs">
+              {/* Row 1: Select Child & Development Area */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Select Child */}
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <span>Select Child <span className="text-rose-500">*</span></span>
+                    {(() => {
+                      const sel = profiles.find((p) => p.studentId === formStudentId) || profiles[0];
+                      return sel ? (
+                        <span className="text-[10px] font-bold text-[#0050CB] dark:text-blue-400">
+                          Score: {sel.overallScore}%
+                        </span>
+                      ) : null;
+                    })()}
+                  </label>
+                  <select
+                    value={formStudentId}
+                    onChange={(e) => setFormStudentId(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white focus:outline-none focus:border-[#0050CB] transition-colors"
+                  >
+                    {profiles.map((p) => (
+                      <option key={p.studentId} value={p.studentId}>
+                        {p.name} (Roll #{p.rollNo}) • Age {p.age}
+                      </option>
+                    ))}
+                  </select>
 
-              {/* Select Category */}
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Development Area</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {(['Physical', 'Learning', 'Speaking', 'Social', 'Daily Habits'] as const).map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => {
-                        setFormCategory(cat);
-                        setFormSkill(DOMAIN_SKILL_PRESETS[cat][0]);
-                      }}
-                      className={`py-2 px-2.5 rounded-xl border font-bold text-xs transition-all cursor-pointer text-center ${
-                        formCategory === cat
-                          ? 'bg-[#0050CB] text-white border-[#0050CB] shadow-xs'
-                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                  {/* Quick Selected Child Banner */}
+                  {(() => {
+                    const sel = profiles.find((p) => p.studentId === formStudentId) || profiles[0];
+                    if (!sel) return null;
+                    return (
+                      <div className="flex items-center gap-2.5 p-2 rounded-xl bg-[#E5EEFF]/60 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50">
+                        <img src={sel.photo} alt={sel.name} className="w-7 h-7 rounded-full object-cover ring-1 ring-blue-300 dark:ring-blue-800" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-bold text-slate-800 dark:text-white text-[11px] block truncate">{sel.name}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">LKG-A • Roll {sel.rollNo} • {sel.gender}</span>
+                        </div>
+                        {sel.needsAttention && (
+                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300">
+                            Focus Kid
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Development Area Domain Pills */}
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                    Development Domain <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {(
+                      [
+                        { id: 'Physical', label: 'Physical', emoji: '🏃‍♂️' },
+                        { id: 'Learning', label: 'Learning', emoji: '🧠' },
+                        { id: 'Speaking', label: 'Speaking', emoji: '🗣️' },
+                        { id: 'Social', label: 'Social', emoji: '🤝' },
+                        { id: 'Daily Habits', label: 'Daily Habits', emoji: '🧼' },
+                      ] as const
+                    ).map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setFormCategory(cat.id);
+                          setFormSkill(DOMAIN_SKILL_PRESETS[cat.id][0]);
+                        }}
+                        className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          formCategory === cat.id
+                            ? 'bg-[#0050CB] text-white border-[#0050CB] shadow-xs shadow-blue-500/20'
+                            : 'bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        } ${cat.id === 'Daily Habits' ? 'col-span-2 sm:col-span-2' : ''}`}
+                      >
+                        <span>{cat.emoji}</span>
+                        <span>{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Specific Skill */}
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Specific Milestone / Skill</label>
-                <select
-                  value={formSkill}
-                  onChange={(e) => setFormSkill(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white focus:outline-none"
-                >
-                  {(DOMAIN_SKILL_PRESETS[formCategory] || []).map((sk) => (
-                    <option key={sk} value={sk}>
-                      {sk}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Row 2: Specific Milestone / Skill & Current Milestone Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Specific Milestone / Skill */}
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                    Specific Milestone / Skill <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={formSkill}
+                    onChange={(e) => setFormSkill(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white focus:outline-none focus:border-[#0050CB] transition-colors"
+                  >
+                    {(DOMAIN_SKILL_PRESETS[formCategory] || []).map((sk) => (
+                      <option key={sk} value={sk}>
+                        {sk}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-400">Select standard preschool skill for {formCategory} evaluation</p>
+                </div>
 
-              {/* Status Picker */}
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Current Milestone Status</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['Mastered', 'Emerging', 'Needs Help'] as const).map((st) => (
-                    <button
-                      key={st}
-                      type="button"
-                      onClick={() => setFormStatus(st)}
-                      className={`py-2 px-2 rounded-xl border font-bold text-xs cursor-pointer transition-all ${
-                        formStatus === st
-                          ? st === 'Mastered'
-                            ? 'bg-emerald-600 text-white border-emerald-600'
-                            : st === 'Emerging'
-                            ? 'bg-amber-500 text-white border-amber-500'
-                            : 'bg-rose-500 text-white border-rose-500'
-                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                      }`}
-                    >
-                      {st}
-                    </button>
-                  ))}
+                {/* Milestone Status Picker */}
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                    Current Milestone Status <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(
+                      [
+                        { id: 'Mastered', label: 'Mastered', icon: '✓', color: 'bg-emerald-600 border-emerald-600 text-white' },
+                        { id: 'Emerging', label: 'Emerging', icon: '⏳', color: 'bg-amber-500 border-amber-500 text-white' },
+                        { id: 'Needs Help', label: 'Needs Help', icon: '🚩', color: 'bg-rose-500 border-rose-500 text-white' },
+                      ] as const
+                    ).map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setFormStatus(st.id)}
+                        className={`py-2 px-2 rounded-xl border text-[11px] font-bold cursor-pointer transition-all flex flex-col items-center justify-center gap-0.5 ${
+                          formStatus === st.id
+                            ? `${st.color} shadow-xs`
+                            : 'bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        <span className="text-xs">{st.icon}</span>
+                        <span>{st.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    {formStatus === 'Mastered' && '✨ Demonstrates skill independently and with ease'}
+                    {formStatus === 'Emerging' && '🌱 Skill is in progress; requires partial prompting'}
+                    {formStatus === 'Needs Help' && '🚩 Requires 1-on-1 teacher guidance and practice'}
+                  </p>
                 </div>
               </div>
 
-              {/* Quick Note Presets */}
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Quick Suggestions</label>
-                <div className="space-y-1">
+              {/* Row 3: Quick Suggestions */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span className="text-amber-500">💡</span>
+                  <span>Quick Observation Suggestions (Click to insert):</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {(QUICK_NOTE_PRESETS[formCategory] || []).map((preset, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setFormNote(preset)}
-                      className="w-full text-left p-2 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 hover:text-[#0050CB] text-[11px] text-slate-600 dark:text-slate-300 transition-colors cursor-pointer block truncate"
-                      title={preset}
+                      className={`text-left p-2 rounded-xl border text-[11px] leading-snug transition-all cursor-pointer block ${
+                        formNote === preset
+                          ? 'bg-[#E5EEFF] dark:bg-blue-950/60 text-[#0050CB] dark:text-blue-300 border-blue-300 dark:border-blue-700 font-bold'
+                          : 'bg-slate-50 dark:bg-slate-800/60 hover:bg-blue-50/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                      }`}
+                      title="Click to use this note"
                     >
-                      💡 {preset}
+                      &ldquo;{preset}&rdquo;
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Observation Textarea */}
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Observation Remark</label>
+              {/* Row 4: Observation Remark Textarea */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                  Observation Remark & Teacher Notes
+                </label>
                 <textarea
                   value={formNote}
                   onChange={(e) => setFormNote(e.target.value)}
-                  placeholder="Type teacher observation or click a suggestion above..."
-                  rows={2}
-                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-white focus:outline-none"
+                  placeholder="Type specific teacher observation notes, classroom context, or click a suggestion above..."
+                  rows={3}
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-[#0050CB] transition-colors leading-relaxed"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#0050CB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 cursor-pointer transition-all"
-                >
-                  Save Observation
-                </button>
+              {/* Footer CTA & Actions */}
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>Updates milestone progress score on submit</span>
+                </div>
+
+                <div className="flex items-center gap-2.5 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-[#0050CB] hover:bg-[#003da1] text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 cursor-pointer transition-all flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Save Observation</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
