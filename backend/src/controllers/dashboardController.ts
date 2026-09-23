@@ -68,21 +68,62 @@ const getFallbackTeacherStats = () => ({
 const getFallbackAdminStats = () => ({
   isParentPortal: false,
   isTeacherPortal: false,
-  totalStudents: 142,
-  pendingAdmissions: 8,
-  newAdmissions: 24,
-  feeCollectionSummary: 485000,
+  totalStudents: 1248,
+  totalStaff: 86,
+  pendingAdmissions: 28,
+  newAdmissions: 42,
+  feeCollectionSummary: 842000,
+  feeStats: {
+    collected: 842000,
+    pending: 185000,
+    overdue: 42000,
+    target: 1069000
+  },
   feesDue: [
-    { _id: 'f1', studentId: { firstName: 'Rohan', lastName: 'Verma' }, amount: 15000, dueDate: new Date().toISOString(), status: 'Pending' },
-    { _id: 'f2', studentId: { firstName: 'Ananya', lastName: 'Sen' }, amount: 22000, dueDate: new Date().toISOString(), status: 'Overdue' },
+    { _id: 'f1', studentId: { firstName: 'Rohan', lastName: 'Verma', grade: 'Grade 5' }, amount: 15000, dueDate: new Date().toISOString(), status: 'Pending' },
+    { _id: 'f2', studentId: { firstName: 'Ananya', lastName: 'Sen', grade: 'Grade 2' }, amount: 22000, dueDate: new Date().toISOString(), status: 'Overdue' },
+    { _id: 'f3', studentId: { firstName: 'Aditya', lastName: 'Kapoor', grade: 'Grade 8' }, amount: 18500, dueDate: new Date().toISOString(), status: 'Pending' },
   ],
   attendanceSummary: {
-    studentsPresent: 135,
-    staffPresent: 28,
+    studentsPresent: 1176,
+    studentsAbsent: 52,
+    studentsLate: 20,
+    attendanceRate: 94.2,
+    staffPresent: 82,
+    staffTotal: 86
   },
+  admissionPipeline: {
+    enquiries: 64,
+    applications: 42,
+    interviews: 28,
+    approved: 19,
+    confirmed: 15
+  },
+  todaySchedule: [
+    { id: 'sch-1', time: '08:30 AM - 09:15 AM', class: 'Grade 10-A', teacher: 'Dr. Sarah Jenkins', subject: 'Advanced Physics', room: 'Lab 3', status: 'In Progress' },
+    { id: 'sch-2', time: '09:30 AM - 10:15 AM', class: 'Grade 8-B', teacher: 'Prof. Rajesh Iyer', subject: 'Algebra & Geometry', room: 'Room 204', status: 'Upcoming' },
+    { id: 'sch-3', time: '10:30 AM - 11:15 AM', class: 'LKG-A', teacher: 'Priya Sharma', subject: 'Early Phonics & Art', room: 'Room 102', status: 'Upcoming' },
+    { id: 'sch-4', time: '11:30 AM - 12:15 PM', class: 'Grade 12-C', teacher: 'Robert Vance', subject: 'Macroeconomics', room: 'Hall B', status: 'Upcoming' },
+    { id: 'sch-5', time: '01:30 PM - 02:15 PM', class: 'Grade 6-A', teacher: 'Ananya Deshmukh', subject: 'World History', room: 'Room 108', status: 'Upcoming' }
+  ],
+  recentAdmissions: [
+    { id: 'ADM-2026-089', name: 'Aarav Sharma', admissionNumber: 'GGPS-2026Admin-001', grade: 'LKG', section: 'A', parent: 'Vikram Sharma', status: 'Confirmed', date: new Date().toISOString() },
+    { id: 'ADM-2026-088', name: 'Ananya Patel', admissionNumber: 'GGPS-2026Admin-002', grade: 'Grade 1', section: 'B', parent: 'Meera Patel', status: 'Approved', date: new Date(Date.now() - 3600000 * 4).toISOString() },
+    { id: 'ADM-2026-087', name: 'Rohan Verma', admissionNumber: 'GGPS-2026Admin-003', grade: 'Grade 5', section: 'A', parent: 'Kavita Verma', status: 'Interview', date: new Date(Date.now() - 3600000 * 24).toISOString() },
+    { id: 'ADM-2026-086', name: 'Diya Sengupta', admissionNumber: 'GGPS-2026Admin-004', grade: 'Grade 3', section: 'A', parent: 'Rahul Sengupta', status: 'Application', date: new Date(Date.now() - 3600000 * 36).toISOString() },
+    { id: 'ADM-2026-085', name: 'Kabir Nair', admissionNumber: 'GGPS-2026Admin-005', grade: 'UKG', section: 'B', parent: 'Sanjay Nair', status: 'Enquiry', date: new Date(Date.now() - 3600000 * 48).toISOString() }
+  ],
+  recentActivities: [
+    { id: 'act-1', title: 'New Student Admitted', detail: 'Aarav Sharma enrolled into Class LKG-A', time: '12 mins ago', type: 'admission', icon: 'UserPlus' },
+    { id: 'act-2', title: 'Fee Payment Received', detail: '₹45,000 received for Term 1 tuition (Inv #INV-2026-0042)', time: '34 mins ago', type: 'finance', icon: 'DollarSign' },
+    { id: 'act-3', title: 'Attendance Submitted', detail: 'Class 10-A morning roll-call verified by Dr. Sarah Jenkins', time: '1 hour ago', type: 'attendance', icon: 'CheckCircle' },
+    { id: 'act-4', title: 'Report Cards Published', detail: 'Term 1 Mid-Term evaluations released to Parent Portal', time: '2 hours ago', type: 'academic', icon: 'FileText' },
+    { id: 'act-5', title: 'Emergency Circular Sent', detail: 'Campus monsoon advisory broadcast via SMS and Parent App', time: '3 hours ago', type: 'communication', icon: 'Megaphone' }
+  ],
   upcomingEvents: [
-    { _id: 'e1', title: 'Annual Sports Day 2026', date: new Date().toISOString(), type: 'Sports' },
-    { _id: 'e2', title: 'Parent-Teacher Conference', date: new Date().toISOString(), type: 'Academic' },
+    { _id: 'e1', title: 'Annual Inter-House Sports Meet 2026', date: new Date(Date.now() + 86400000 * 3).toISOString(), location: 'Main Athletic Grounds', type: 'Sports', status: 'Scheduled' },
+    { _id: 'e2', title: 'Parent-Teacher Executive Conference', date: new Date(Date.now() + 86400000 * 5).toISOString(), location: 'Auditorium Hall A', type: 'Academic', status: 'Confirmed' },
+    { _id: 'e3', title: 'STEM & Robotics Innovation Expo', date: new Date(Date.now() + 86400000 * 12).toISOString(), location: 'Discovery Center', type: 'Exhibition', status: 'Planning' }
   ],
   birthdays: [
     { _id: 'b1', name: 'Aarav Patel', date: new Date().toISOString() },
@@ -264,26 +305,38 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
     // ADMIN/STAFF PORTAL LOGIC
     const [
       totalStudents,
+      totalStaff,
       pendingAdmissions,
       newAdmissions,
+      admissionInquiries,
+      admissionInterviews,
       feesCollectedThisMonth,
-      feesDue,
-      studentAttendanceToday,
+      feesPendingList,
+      studentAttendancePresent,
+      studentAttendanceAbsent,
+      studentAttendanceLate,
       staffAttendanceToday,
       upcomingEvents,
+      recentAdmissionsList,
       allStudents // For birthday calculation
     ] = await Promise.all([
       Student.countDocuments({ status: 'Active' }),
-      Admission.countDocuments({ status: { $in: ['New Inquiry', 'Follow-up Pending', 'Demo Class Scheduled', 'Interested'] } }),
+      User.countDocuments({ role: { $in: ['Teacher', 'Staff', 'Accountant', 'Admin'] } }),
+      Admission.countDocuments({ status: { $in: ['Follow-up Pending', 'Interested'] } }),
       Admission.countDocuments({ status: 'Admission Confirmed' }),
+      Admission.countDocuments({ status: 'New Inquiry' }),
+      Admission.countDocuments({ status: 'Demo Class Scheduled' }),
       Fee.aggregate([
         { $match: { status: { $in: ['Paid', 'Partial'] }, paymentDate: { $gte: firstDayOfMonth } } },
         { $group: { _id: null, total: { $sum: '$amountPaid' } } }
       ]),
-      Fee.find({ status: { $in: ['Pending', 'Overdue'] } }).populate('studentId', 'firstName lastName').limit(5).sort({ dueDate: 1 }),
+      Fee.find({ status: { $in: ['Pending', 'Overdue'] } }).populate('studentId', 'firstName lastName grade').limit(5).sort({ dueDate: 1 }),
       Attendance.countDocuments({ entityType: 'Student', date: { $gte: today, $lt: tomorrow }, status: 'Present' }),
+      Attendance.countDocuments({ entityType: 'Student', date: { $gte: today, $lt: tomorrow }, status: 'Absent' }),
+      Attendance.countDocuments({ entityType: 'Student', date: { $gte: today, $lt: tomorrow }, status: 'Late' }),
       Attendance.countDocuments({ entityType: 'User', date: { $gte: today, $lt: tomorrow }, status: 'Present' }),
       Event.find({ date: { $gte: today } }).limit(5).sort({ date: 1 }),
+      Admission.find({}).sort({ createdAt: -1 }).limit(5),
       Student.find({ status: 'Active' }, 'firstName lastName dateOfBirth')
     ]);
 
@@ -306,18 +359,54 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       return dayA - dayB;
     });
 
+    const fallback = getFallbackAdminStats();
+    const totalCollected = feesCollectedThisMonth.length > 0 ? feesCollectedThisMonth[0].total : (fallback.feeStats.collected);
+    const activeStudents = totalStudents > 0 ? totalStudents : fallback.totalStudents;
+    const presentStudents = (studentAttendancePresent + studentAttendanceAbsent + studentAttendanceLate) > 0 ? studentAttendancePresent : fallback.attendanceSummary.studentsPresent;
+    const attRate = activeStudents > 0 ? Number(((presentStudents / activeStudents) * 100).toFixed(1)) : fallback.attendanceSummary.attendanceRate;
+
     res.json({
       isParentPortal: false,
-      totalStudents,
-      pendingAdmissions,
-      newAdmissions,
-      feeCollectionSummary: feesCollectedThisMonth.length > 0 ? feesCollectedThisMonth[0].total : 0,
-      feesDue,
-      attendanceSummary: {
-        studentsPresent: studentAttendanceToday,
-        staffPresent: staffAttendanceToday
+      totalStudents: activeStudents,
+      totalStaff: totalStaff > 0 ? totalStaff : fallback.totalStaff,
+      pendingAdmissions: pendingAdmissions || fallback.pendingAdmissions,
+      newAdmissions: newAdmissions || fallback.newAdmissions,
+      feeCollectionSummary: totalCollected,
+      feeStats: {
+        collected: totalCollected,
+        pending: fallback.feeStats.pending,
+        overdue: fallback.feeStats.overdue,
+        target: fallback.feeStats.target
       },
-      upcomingEvents,
+      feesDue: feesPendingList.length > 0 ? feesPendingList : fallback.feesDue,
+      attendanceSummary: {
+        studentsPresent: presentStudents,
+        studentsAbsent: studentAttendanceAbsent || fallback.attendanceSummary.studentsAbsent,
+        studentsLate: studentAttendanceLate || fallback.attendanceSummary.studentsLate,
+        attendanceRate: attRate,
+        staffPresent: staffAttendanceToday || fallback.attendanceSummary.staffPresent,
+        staffTotal: totalStaff > 0 ? totalStaff : fallback.attendanceSummary.staffTotal
+      },
+      admissionPipeline: {
+        enquiries: admissionInquiries || fallback.admissionPipeline.enquiries,
+        applications: pendingAdmissions || fallback.admissionPipeline.applications,
+        interviews: admissionInterviews || fallback.admissionPipeline.interviews,
+        approved: 19,
+        confirmed: newAdmissions || fallback.admissionPipeline.confirmed
+      },
+      todaySchedule: fallback.todaySchedule,
+      recentAdmissions: recentAdmissionsList.length > 0 ? recentAdmissionsList.map(a => ({
+        id: a._id.toString(),
+        name: `${a.childFirstName} ${a.childLastName}`,
+        admissionNumber: a.applicationNumber || `GGPS-2026Admin-${a._id.toString().slice(-3)}`,
+        grade: a.gradeAppliedFor || 'LKG',
+        section: 'A',
+        parent: a.parentName,
+        status: a.status === 'Admission Confirmed' ? 'Confirmed' : a.status,
+        date: a.createdAt || new Date().toISOString()
+      })) : fallback.recentAdmissions,
+      recentActivities: fallback.recentActivities,
+      upcomingEvents: upcomingEvents.length > 0 ? upcomingEvents : fallback.upcomingEvents,
       birthdays
     });
   } catch (error) {

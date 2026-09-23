@@ -1,39 +1,74 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Search, Users, GraduationCap, DollarSign, BookOpen, 
-  Calendar, Settings, FileText, CheckSquare, X, Zap, 
-  PlusCircle, FilePlus, ArrowRight
+  Search, 
+  Users, 
+  GraduationCap, 
+  DollarSign, 
+  BookOpen, 
+  Calendar, 
+  Settings, 
+  FileText, 
+  CheckSquare, 
+  X, 
+  Sparkles, 
+  PlusCircle, 
+  FilePlus, 
+  ArrowRight,
+  Bus,
+  ShieldCheck,
+  Megaphone,
+  BarChart3,
+  Receipt,
+  UserCheck
 } from 'lucide-react';
 
-interface NavigationItem {
+interface SearchItem {
+  id: string;
   title: string;
-  category: 'Quick Actions' | 'People' | 'Academic' | 'Finance' | 'Operations' | 'Admin';
+  subtitle?: string;
+  category: 'Quick Actions' | 'Students' | 'Admissions' | 'Finance' | 'Modules' | 'Operations';
   href: string;
   icon: any;
-  isQuickAction?: boolean;
 }
 
-const NAV_ITEMS: NavigationItem[] = [
+const GLOBAL_SEARCH_ITEMS: SearchItem[] = [
   // Quick Actions
-  { title: 'Add New Student', category: 'Quick Actions', href: '/dashboard/students?action=new', icon: PlusCircle, isQuickAction: true },
-  { title: 'Create School Event', category: 'Quick Actions', href: '/dashboard/events?action=new', icon: Calendar, isQuickAction: true },
-  { title: 'Collect Student Fee', category: 'Quick Actions', href: '/dashboard/fees?action=collect', icon: DollarSign, isQuickAction: true },
-  { title: 'Create Assignment', category: 'Quick Actions', href: '/dashboard/classroom?tab=assignments', icon: FilePlus, isQuickAction: true },
-  
-  // Navigation
-  { title: 'Student 360° Directory', category: 'People', href: '/dashboard/students', icon: GraduationCap },
-  { title: 'Parents & Guardians', category: 'People', href: '/dashboard/parents', icon: Users },
-  { title: 'Teacher Roster', category: 'People', href: '/dashboard/teachers', icon: Users },
-  { title: 'Class & Section Roster', category: 'Academic', href: '/dashboard/classes', icon: BookOpen },
-  { title: 'Academic Calendar & Routines', category: 'Academic', href: '/dashboard/calendar', icon: Calendar },
-  { title: 'Fee Collection & History', category: 'Finance', href: '/dashboard/fees', icon: DollarSign },
-  { title: 'Staff Payroll & Ledger', category: 'Finance', href: '/dashboard/payroll', icon: DollarSign },
-  { title: 'Assessments & Examinations', category: 'Academic', href: '/dashboard/assessments', icon: FileText },
-  { title: 'Attendance Engine & Reports', category: 'Operations', href: '/dashboard/attendance', icon: CheckSquare },
-  { title: 'System Configurations', category: 'Admin', href: '/dashboard/settings', icon: Settings },
+  { id: 'qa-1', title: 'Add New Student', subtitle: 'Enroll a new student record', category: 'Quick Actions', href: '/dashboard/students?action=new', icon: PlusCircle },
+  { id: 'qa-2', title: 'New Admission Inquiry', subtitle: 'Log parent phone/walk-in inquiry', category: 'Quick Actions', href: '/dashboard/admissions?action=new', icon: Sparkles },
+  { id: 'qa-3', title: 'Collect Fee Payment', subtitle: 'Record offline or online receipt', category: 'Quick Actions', href: '/dashboard/fees?action=collect', icon: DollarSign },
+  { id: 'qa-4', title: 'Mark Daily Attendance', subtitle: 'Biometric & manual roll-call', category: 'Quick Actions', href: '/dashboard/attendance', icon: UserCheck },
+  { id: 'qa-5', title: 'Send Emergency Broadcast', subtitle: 'SMS and push notification to all parents', category: 'Quick Actions', href: '/dashboard/emergency-center', icon: Megaphone },
+
+  // Students
+  { id: 'st-1', title: 'Aarav Sharma', subtitle: 'GGPS-2026-LKG-001 • Class LKG-A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'st-2', title: 'Ananya Patel', subtitle: 'GGPS-2026-G1-002 • Grade 1-B', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'st-3', title: 'Rohan Verma', subtitle: 'GGPS-2026-G5-003 • Grade 5-A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'st-4', title: 'Diya Sengupta', subtitle: 'GGPS-2026-G3-004 • Grade 3-A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+
+  // Admissions
+  { id: 'adm-1', title: 'ADM-2026-089: Aarav Sharma', subtitle: 'Status: Admission Confirmed • LKG', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
+  { id: 'adm-2', title: 'ADM-2026-088: Ananya Patel', subtitle: 'Status: Approved • Grade 1', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
+  { id: 'adm-3', title: 'ADM-2026-087: Rohan Verma', subtitle: 'Status: Demo Scheduled • Grade 5', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
+
+  // Finance
+  { id: 'fin-1', title: 'INV-2026-0042', subtitle: '₹45,000 Term 1 Tuition Fee • Paid', category: 'Finance', href: '/dashboard/fees', icon: Receipt },
+  { id: 'fin-2', title: 'INV-2026-0043', subtitle: '₹22,000 Annual Transport Fee • Pending', category: 'Finance', href: '/dashboard/fees', icon: Receipt },
+  { id: 'fin-3', title: 'Staff Payroll Ledger', subtitle: 'Monthly faculty salary distribution', category: 'Finance', href: '/dashboard/payroll', icon: DollarSign },
+
+  // Modules
+  { id: 'mod-1', title: 'Executive Dashboard', subtitle: 'Institutional KPIs & pipeline overview', category: 'Modules', href: '/dashboard', icon: BarChart3 },
+  { id: 'mod-2', title: 'Admissions Command Desk', subtitle: 'Complete applicant lifecycle & pipeline', category: 'Modules', href: '/dashboard/admissions', icon: Sparkles },
+  { id: 'mod-3', title: 'Student 360° Directory', subtitle: 'Enrollment, academics & parent profiles', category: 'Modules', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'mod-4', title: 'Academics & Timetable', subtitle: 'Classes, subjects, curriculum & exams', category: 'Modules', href: '/dashboard/academic', icon: BookOpen },
+  { id: 'mod-5', title: 'Attendance Engine', subtitle: 'Student and staff biometric logs', category: 'Modules', href: '/dashboard/attendance', icon: UserCheck },
+  { id: 'mod-6', title: 'Fee Management', subtitle: 'Billing, receipts & defaulters ledger', category: 'Modules', href: '/dashboard/fees', icon: DollarSign },
+  { id: 'mod-7', title: 'Faculty & HR', subtitle: 'Teacher directory, leave & attendance', category: 'Modules', href: '/dashboard/teachers', icon: Users },
+  { id: 'mod-8', title: 'Transport & Fleet', subtitle: 'Bus tracking, routes & stops', category: 'Operations', href: '/dashboard/transport', icon: Bus },
+  { id: 'mod-9', title: 'Reports & Audits', subtitle: 'Export academic, financial & attendance logs', category: 'Modules', href: '/dashboard/reports', icon: BarChart3 },
+  { id: 'mod-10', title: 'System Settings', subtitle: 'Campuses, security & configuration', category: 'Modules', href: '/dashboard/settings', icon: Settings },
 ];
 
 export default function CommandPalette() {
@@ -42,12 +77,26 @@ export default function CommandPalette() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
 
-  const filtered = query.trim() === ''
-    ? NAV_ITEMS
-    : NAV_ITEMS.filter((item) =>
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.category.toLowerCase().includes(query.toLowerCase())
-      );
+  const filtered = useMemo(() => {
+    if (!query.trim()) return GLOBAL_SEARCH_ITEMS.slice(0, 12);
+    const q = query.toLowerCase();
+    return GLOBAL_SEARCH_ITEMS.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        (item.subtitle && item.subtitle.toLowerCase().includes(q)) ||
+        item.category.toLowerCase().includes(q)
+    );
+  }, [query]);
+
+  // Group filtered by category
+  const grouped = useMemo(() => {
+    const map = new Map<string, SearchItem[]>();
+    filtered.forEach((item) => {
+      if (!map.has(item.category)) map.set(item.category, []);
+      map.get(item.category)!.push(item);
+    });
+    return Array.from(map.entries());
+  }, [filtered]);
 
   useEffect(() => {
     setSelectedIndex(0);
@@ -88,95 +137,107 @@ export default function CommandPalette() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 bg-[#07152F]/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#0B1F3A] border border-slate-200/80 dark:border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
-        
-        {/* Search Header */}
-        <div className="flex items-center px-4 py-3.5 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#07152F]/40">
-          <Search className="h-5 w-5 text-[#0757D5] dark:text-[#2F80ED] mr-3 shrink-0" />
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 bg-[#07152F]/75 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+      <div className="bg-white dark:bg-[#08152F] border border-[#E6EAF2] dark:border-slate-800 w-full max-w-2xl rounded-[24px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[80vh]">
+        {/* Search Input Bar */}
+        <div className="flex items-center px-4 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0B1735]/60 shrink-0">
+          <Search className="h-5 w-5 text-[#0050CB] dark:text-[#E5EEFF] mr-3 shrink-0" />
           <input
             type="text"
-            placeholder="Search students, pages, quick actions... (Ctrl + K)"
+            placeholder="Search students, admissions, invoices, modules... (⌘ K)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-sm sm:text-base font-medium"
             autoFocus
+            className="w-full bg-transparent text-sm font-semibold text-[#000E28] dark:text-white placeholder:text-slate-400 focus:outline-none"
           />
           <button
+            type="button"
             onClick={() => setIsOpen(false)}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Command Items List */}
-        <div className="max-h-96 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+        {/* Results List */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
           {filtered.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 font-medium">
-              <Zap className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-              No matching modules or quick actions found for "{query}".
+            <div className="py-12 text-center text-slate-400 text-xs">
+              No results found for &ldquo;<span className="text-slate-600 dark:text-slate-200">{query}</span>&rdquo;
             </div>
           ) : (
-            filtered.map((item, idx) => {
-              const Icon = item.icon;
-              const isSelected = idx === selectedIndex;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleSelect(item.href)}
-                  onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-all group text-left cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#0757D5] text-white shadow-md'
-                      : 'hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-100'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3 truncate">
-                    <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                      isSelected 
-                        ? 'bg-white/20 text-white' 
-                        : item.isQuickAction 
-                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' 
-                          : 'bg-[#0757D5]/10 text-[#0757D5] dark:text-[#2F80ED]'
-                    }`}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="truncate">
-                      <div className={`font-bold text-sm truncate ${isSelected ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
-                        {item.title}
-                      </div>
-                      <div className={`text-xs ${isSelected ? 'text-blue-100' : 'text-slate-400 dark:text-slate-400'}`}>
-                        {item.category}
-                      </div>
-                    </div>
-                  </div>
+            grouped.map(([category, items]) => (
+              <div key={category} className="space-y-1">
+                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                  {category}
+                </div>
+                {items.map((item) => {
+                  const Icon = item.icon;
+                  const itemIndex = filtered.indexOf(item);
+                  const isSelected = itemIndex === selectedIndex;
 
-                  <div className="flex items-center gap-1.5 shrink-0 ml-3">
-                    {item.isQuickAction && !isSelected && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">
-                        Action
-                      </span>
-                    )}
-                    <span className={`text-xs font-semibold flex items-center gap-1 ${
-                      isSelected ? 'text-white' : 'text-slate-400 dark:text-slate-500'
-                    }`}>
-                      Open <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </button>
-              );
-            })
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => handleSelect(item.href)}
+                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-[#0050CB] text-white shadow-md'
+                          : 'hover:bg-slate-50 dark:hover:bg-[#0B1F3A] text-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            isSelected
+                              ? 'bg-white/20 text-white'
+                              : 'bg-slate-100 dark:bg-slate-800 text-[#0050CB] dark:text-[#E5EEFF]'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-[#000E28] dark:text-white'}`}>
+                            {item.title}
+                          </p>
+                          {item.subtitle && (
+                            <p className={`text-[11px] ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
+                              {item.subtitle}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
+                    </div>
+                  );
+                })}
+              </div>
+            ))
           )}
         </div>
 
-        {/* Footer shortcuts helper */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-[#07152F]/60 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-3">
-            <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-[10px] font-mono shadow-2xs">↑↓</kbd> Navigate</span>
-            <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-[10px] font-mono shadow-2xs">↵</kbd> Select</span>
+        {/* Footer Shortcut Bar */}
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-[#0B1735] border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
+          <div className="flex items-center gap-2">
+            <span>Navigate:</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[10px]">
+              ↑
+            </kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[10px]">
+              ↓
+            </kbd>
+            <span className="ml-2">Select:</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[10px]">
+              ↵
+            </kbd>
           </div>
-          <span>Press <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-[10px] font-mono shadow-2xs">ESC</kbd> to exit</span>
+          <div>
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[10px]">
+              ESC
+            </kbd>{' '}
+            to close
+          </div>
         </div>
       </div>
     </div>
