@@ -20,20 +20,6 @@ export default function CommunicationPage() {
     classId: ''
   });
 
-  useEffect(() => {
-    // Get user role from local storage
-    const ustr = localStorage.getItem('user');
-    if (ustr) {
-      try {
-        const u = JSON.parse(ustr);
-        setUserRole(typeof u.role === 'string' ? u.role : (u.role?.name || ''));
-      } catch (e) {}
-    }
-    fetchData();
-  }, []);
-
-  const isAdmin = userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'superadmin';
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -54,6 +40,20 @@ export default function CommunicationPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Get user role from local storage
+    const ustr = localStorage.getItem('user');
+    if (ustr) {
+      try {
+        const u = JSON.parse(ustr);
+        setUserRole(typeof u.role === 'string' ? u.role : (u.role?.name || ''));
+      } catch (e) {}
+    }
+    fetchData();
+  }, []);
+
+  const isAdmin = userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'superadmin';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

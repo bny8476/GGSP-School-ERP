@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
 interface CharacterRevealProps {
   text: string;
   className?: string;
@@ -20,21 +22,12 @@ export function CharacterReveal({
   once = true,
 }: CharacterRevealProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const ref = useRef<any>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener('change', handleChange);
-
-    if (mediaQuery.matches) {
-      setIsVisible(true);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+    if (prefersReducedMotion) {
+      return;
     }
 
     const observer = new IntersectionObserver(
@@ -53,11 +46,10 @@ export function CharacterReveal({
 
     return () => {
       observer.disconnect();
-      mediaQuery.removeEventListener('change', handleChange);
     };
-  }, [once]);
+  }, [once, prefersReducedMotion]);
 
-  const Tag = Component as any;
+  const Tag = Component as React.ElementType;
 
   // Reduced motion: instantaneous plain text
   if (prefersReducedMotion) {

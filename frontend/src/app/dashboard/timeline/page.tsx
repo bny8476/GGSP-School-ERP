@@ -27,10 +27,6 @@ export default function GlobalActivityTimeline() {
   const [loading, setLoading] = useState(true);
   const [moduleFilter, setModuleFilter] = useState('');
 
-  useEffect(() => {
-    fetchLogs();
-  }, [moduleFilter]);
-
   const fetchLogs = async () => {
     try {
       setLoading(true);
@@ -51,6 +47,10 @@ export default function GlobalActivityTimeline() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [moduleFilter]);
 
   return (
     <div className="space-y-6">

@@ -27,15 +27,10 @@ export default function AnimatedNumber({
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-20px" });
   const prefersReduced = useReducedMotion();
-  const [current, setCurrent] = useState(from);
+  const [current, setCurrent] = useState(() => prefersReduced ? to : from);
 
   useEffect(() => {
-    if (prefersReduced) {
-      setCurrent(to);
-      return;
-    }
-
-    if (!isInView) return;
+    if (prefersReduced || !isInView) return;
 
     let startTimestamp: number | null = null;
     let animationFrameId: number;

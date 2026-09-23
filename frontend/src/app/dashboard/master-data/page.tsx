@@ -16,10 +16,6 @@ export default function MasterDataPage() {
     "ExpenseCategory", "DocumentType", "BloodGroup", "Religion", "Category"
   ];
 
-  useEffect(() => {
-    fetchData();
-  }, [category]);
-
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -44,6 +40,10 @@ export default function MasterDataPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [category]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

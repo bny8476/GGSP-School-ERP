@@ -11,10 +11,6 @@ export default function AssetQRPage() {
   const [category, setCategory] = useState("Computers");
   const [assignedLocation, setAssignedLocation] = useState("Computer Lab 1");
 
-  useEffect(() => {
-    fetchAssets();
-  }, []);
-
   const fetchAssets = async () => {
     setLoading(true);
     try {
@@ -56,6 +52,10 @@ export default function AssetQRPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAssets();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

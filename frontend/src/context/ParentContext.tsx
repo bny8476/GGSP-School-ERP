@@ -302,8 +302,32 @@ const DEFAULT_HOMEWORK: HomeworkItem[] = [
 const ParentContext = createContext<ParentContextType | undefined>(undefined);
 
 export function ParentProvider({ children: reactChildren }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any>(null);
-  const [parentProfile, setParentProfile] = useState<ParentProfile | null>(DEFAULT_PARENT_PROFILE);
+  const [user, setUser] = useState<any>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [parentProfile, setParentProfile] = useState<ParentProfile | null>(() => {
+    if (typeof window === 'undefined') return DEFAULT_PARENT_PROFILE;
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        if (parsed.firstName) {
+          return {
+            ...DEFAULT_PARENT_PROFILE,
+            motherName: `${parsed.firstName} ${parsed.lastName || ''}`.trim() || DEFAULT_PARENT_PROFILE.motherName,
+            primaryEmail: parsed.email || DEFAULT_PARENT_PROFILE.primaryEmail,
+          };
+        }
+      }
+    } catch {}
+    return DEFAULT_PARENT_PROFILE;
+  });
   const [childrenList, setChildrenList] = useState<Child[]>(DEFAULT_CHILDREN);
   const [selectedChildId, setSelectedChildId] = useState<string>(DEFAULT_CHILDREN[0]._id);
   const [isLoadingChildren, setIsLoadingChildren] = useState<boolean>(false);
@@ -569,24 +593,8 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
     };
   }, [selectedChildId]);
 
-  // Sync user credentials from localStorage
+  // Initial portal data refresh
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const parsed = JSON.parse(userStr);
-          setUser(parsed);
-          if (parsed.firstName) {
-            setParentProfile(prev => ({
-              ...prev!,
-              motherName: `${parsed.firstName} ${parsed.lastName || ''}`.trim() || prev!.motherName,
-              primaryEmail: parsed.email || prev!.primaryEmail,
-            }));
-          }
-        } catch (e) {}
-      }
-    }
     refreshPortalData();
   }, [refreshPortalData]);
 

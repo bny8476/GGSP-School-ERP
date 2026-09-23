@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuthStore } from "@/stores/authStore";
 import {
   Lock,
   Mail,
@@ -141,6 +142,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
+        useAuthStore.getState().setAuth(data);
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data));
 

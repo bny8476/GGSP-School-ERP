@@ -36,6 +36,9 @@ interface CalendarEvent {
   iconBg: string;
 }
 
+let eventCodeCounter = 500;
+const getNextEventCode = (year: number) => `EV-${year}-${++eventCodeCounter}`;
+
 export default function CalendarPage() {
   // Real-time anchor: current system date
   const today = useMemo(() => new Date(), []);
@@ -51,7 +54,7 @@ export default function CalendarPage() {
 
   // Detailed Event Form State
   const [eventTitle, setEventTitle] = useState("");
-  const [eventCode, setEventCode] = useState(() => `EV-${today.getFullYear()}-${Math.floor(100 + Math.random() * 900)}`);
+  const [eventCode, setEventCode] = useState(() => getNextEventCode(today.getFullYear()));
   const [eventType, setEventType] = useState<CalendarEvent["type"]>("Event");
   const [eventPriority, setEventPriority] = useState<CalendarEvent["priority"]>("Normal");
   const [eventDate, setEventDate] = useState(today.toISOString().split("T")[0]);
@@ -289,7 +292,7 @@ export default function CalendarPage() {
       return;
     }
     setEventDate(cell.dateStr);
-    setEventCode(`EV-${today.getFullYear()}-${Math.floor(100 + Math.random() * 900)}`);
+    setEventCode(getNextEventCode(today.getFullYear()));
     setShowAddModal(true);
   };
 

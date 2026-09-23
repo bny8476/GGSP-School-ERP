@@ -3,6 +3,13 @@
 import React, { useState } from "react";
 import { Bot, Send, X, Sparkles, UserCheck, HelpCircle } from "lucide-react";
 
+let widgetMsgCounter = 100;
+const getWidgetMsgId = () => ++widgetMsgCounter;
+const getWidgetFormattedTime = () => {
+  const d = new Date();
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
 export default function GlobalAIAssistantWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -30,7 +37,7 @@ export default function GlobalAIAssistantWidget() {
     if (!qText.trim()) return;
 
     // Append user query
-    const userMsg = { id: Date.now(), sender: "You", text: qText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+    const userMsg = { id: getWidgetMsgId(), sender: "You", text: qText, time: getWidgetFormattedTime() };
     setChatLog((prev) => [...prev, userMsg]);
     setQuery("");
     setLoading(true);
@@ -53,20 +60,20 @@ export default function GlobalAIAssistantWidget() {
       setChatLog((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: getWidgetMsgId(),
           sender: "Global AI Assistant",
           text: aiResponse,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: getWidgetFormattedTime(),
         },
       ]);
     } catch (err) {
       setChatLog((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: getWidgetMsgId(),
           sender: "Global AI Assistant",
           text: "Based on current active ERP records, attendance is averaging 94.8% and all critical services are operational.",
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: getWidgetFormattedTime(),
         },
       ]);
     } finally {

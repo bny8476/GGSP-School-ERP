@@ -16,10 +16,6 @@ export function EmergencyBanner() {
   const [broadcasts, setBroadcasts] = useState<IBroadcast[]>([]);
   const [dismissed, setDismissed] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    fetchActiveBroadcasts();
-  }, []);
-
   const fetchActiveBroadcasts = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -36,6 +32,10 @@ export function EmergencyBanner() {
       console.error('Failed to fetch emergency broadcasts', err);
     }
   };
+
+  useEffect(() => {
+    fetchActiveBroadcasts();
+  }, []);
 
   const activeBroadcasts = broadcasts.filter((b) => !dismissed[b._id]);
 

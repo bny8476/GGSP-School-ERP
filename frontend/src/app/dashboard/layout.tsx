@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAuthStore } from "@/stores/authStore";
 import { 
   LayoutDashboard, 
   GraduationCap, 
@@ -116,9 +117,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("Logout request failed:", e);
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      router.push('/login');
+      useAuthStore.getState().logout();
     }
   };
 

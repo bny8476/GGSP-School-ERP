@@ -12,10 +12,6 @@ export default function ProcurementPage() {
   const [quantity, setQuantity] = useState(10);
   const [unitPrice, setUnitPrice] = useState(50);
 
-  useEffect(() => {
-    fetchPOs();
-  }, []);
-
   const fetchPOs = async () => {
     setLoading(true);
     try {
@@ -55,6 +51,10 @@ export default function ProcurementPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPOs();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

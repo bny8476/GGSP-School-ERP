@@ -48,10 +48,6 @@ export default function DigitalClassroomPage() {
     correctAnswer: '',
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [activeTab]);
-
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
   const fetchData = async () => {
@@ -85,6 +81,10 @@ export default function DigitalClassroomPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
 
   const handleCreateMaterial = async (e: React.FormEvent) => {
     e.preventDefault();

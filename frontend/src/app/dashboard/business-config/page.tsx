@@ -12,10 +12,6 @@ export default function BusinessConfigPage() {
   const [savedNotice, setSavedNotice] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchConfig();
-  }, []);
-
   const fetchConfig = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -36,6 +32,10 @@ export default function BusinessConfigPage() {
       console.error(e);
     }
   };
+
+  useEffect(() => {
+    fetchConfig();
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

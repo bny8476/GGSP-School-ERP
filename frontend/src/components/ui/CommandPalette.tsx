@@ -98,9 +98,17 @@ export default function CommandPalette() {
     return Array.from(map.entries());
   }, [filtered]);
 
-  useEffect(() => {
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
     setSelectedIndex(0);
-  }, [query]);
+  }
+
+  const handleSelect = (href: string) => {
+    setIsOpen(false);
+    setQuery('');
+    router.push(href);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -129,12 +137,6 @@ export default function CommandPalette() {
   }, [isOpen, filtered, selectedIndex]);
 
   if (!isOpen) return null;
-
-  const handleSelect = (href: string) => {
-    setIsOpen(false);
-    setQuery('');
-    router.push(href);
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 bg-[#07152F]/75 backdrop-blur-xs p-4 animate-in fade-in duration-150">

@@ -2170,7 +2170,7 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
   const handleSendQuickCanned = (cannedText: string) => {
     if (!selectedParentForChat) return;
     const newMessage: ParentMessageItem = {
-      id: `msg-${Date.now()}`,
+      id: `msg-${selectedParentForChat.id}-${selectedParentForChat.messages.length + 1}`,
       sender: 'Teacher',
       text: cannedText,
       timestamp: 'Just now',
@@ -2514,21 +2514,21 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
   };
 
   // Sync profile when user prop updates
-  useEffect(() => {
-    if (user) {
-      setTeacherProfile((prev) => ({
-        ...prev,
-        firstName: user.firstName || prev.firstName,
-        lastName: user.lastName || prev.lastName,
-        email: user.email || prev.email,
-        phoneNumber: user.phoneNumber || prev.phoneNumber,
-        qualification: user.qualification || prev.qualification,
-        experienceYears: user.experienceYears !== undefined ? user.experienceYears : prev.experienceYears,
-        designation: user.designation || prev.designation,
-      }));
-      setForgotEmail(user.email || 'priya.sharma@schoolerp.com');
-    }
-  }, [user]);
+  const [prevUser, setPrevUser] = useState(user);
+  if (user && user !== prevUser) {
+    setPrevUser(user);
+    setTeacherProfile((prev) => ({
+      ...prev,
+      firstName: user.firstName || prev.firstName,
+      lastName: user.lastName || prev.lastName,
+      email: user.email || prev.email,
+      phoneNumber: user.phoneNumber || prev.phoneNumber,
+      qualification: user.qualification || prev.qualification,
+      experienceYears: user.experienceYears !== undefined ? user.experienceYears : prev.experienceYears,
+      designation: user.designation || prev.designation,
+    }));
+    setForgotEmail(user.email || 'priya.sharma@schoolerp.com');
+  }
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();

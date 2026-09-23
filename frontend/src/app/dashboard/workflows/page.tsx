@@ -10,10 +10,6 @@ export default function WorkflowsPage() {
   const [trigger, setTrigger] = useState("Fee Overdue > 5 Days");
   const [action, setAction] = useState("Send SMS & WhatsApp Alert to Parent");
 
-  useEffect(() => {
-    fetchWorkflows();
-  }, []);
-
   const fetchWorkflows = async () => {
     setLoading(true);
     try {
@@ -62,6 +58,10 @@ export default function WorkflowsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchWorkflows();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

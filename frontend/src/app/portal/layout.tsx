@@ -13,31 +13,35 @@ import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import NotificationDrawer from '@/components/ui/NotificationDrawer';
 import AcademyLogo from '@/components/AcademyLogo';
 
+import { useAuthStore } from '@/stores/authStore';
+
 function PortalLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
+  const [user] = useState<any>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme, direction, setDirection } = useTheme();
   const { t } = useLanguage();
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const parsed = JSON.parse(userStr);
-        setUser(parsed);
-        const role = (parsed.role || '').toLowerCase();
-        if (role !== 'parent') {
-          // Staff and Admin users belong in /dashboard, not Parent Portal
-          router.push('/dashboard');
-        }
-      } catch (e) {}
-    } else {
+    if (!user) {
       router.push('/login');
+    } else {
+      const role = (user.role || '').toLowerCase();
+      if (role !== 'parent') {
+        router.push('/dashboard');
+      }
     }
-  }, [router]);
+  }, [router, user]);
 
   // Close mobile drawer on route navigation
   useEffect(() => {
@@ -54,9 +58,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("Logout request failed:", e);
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      router.push('/login');
+      useAuthStore.getState().logout();
     }
   };
 

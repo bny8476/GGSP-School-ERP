@@ -27,10 +27,6 @@ export default function ParentsPage() {
     whatsappNumber: ''
   });
 
-  useEffect(() => {
-    fetchParents();
-  }, []);
-
   const fetchParents = async () => {
     setIsLoading(true);
     try {
@@ -47,6 +43,10 @@ export default function ParentsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchParents();
+  }, []);
 
   const resetForm = () => {
     setFormData({

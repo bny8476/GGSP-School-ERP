@@ -21,10 +21,6 @@ export default function GalleryPage() {
     mediaUrls: '' // Using comma-separated strings for MVP
   });
 
-  useEffect(() => {
-    fetchAlbums();
-  }, []);
-
   const fetchAlbums = async () => {
     setIsLoading(true);
     try {
@@ -42,6 +38,10 @@ export default function GalleryPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAlbums();
+  }, []);
 
   const resetForm = () => {
     setFormData({

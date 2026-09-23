@@ -416,7 +416,7 @@ export default function HomeworkWorkspace({ students = [], onNavigateTab }: Home
   // Handler: Convert Classwork Queue Item into Homework
   const handleConvertClassworkToHomework = (queueItem: typeof initialClassWorkQueue[0]) => {
     const newHw: HomeworkAssignment = {
-      id: `hw-cw-${Date.now()}`,
+      id: `hw-cw-${queueItem.id}-${assignments.length + 1}`,
       title: queueItem.title,
       subject: queueItem.subject,
       instructions: `Complete remaining practice started in class. ${queueItem.reason}`,

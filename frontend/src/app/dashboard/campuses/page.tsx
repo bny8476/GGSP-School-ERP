@@ -11,10 +11,6 @@ export default function CampusesPage() {
   const [code, setCode] = useState("");
   const [address, setAddress] = useState("");
 
-  useEffect(() => {
-    fetchCampuses();
-  }, []);
-
   const fetchCampuses = async () => {
     setLoading(true);
     try {
@@ -58,6 +54,10 @@ export default function CampusesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCampuses();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

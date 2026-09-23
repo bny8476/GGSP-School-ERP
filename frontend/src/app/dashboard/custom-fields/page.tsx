@@ -12,10 +12,6 @@ export default function CustomFieldsPage() {
   const [fieldType, setFieldType] = useState("Text");
   const [isRequired, setIsRequired] = useState(false);
 
-  useEffect(() => {
-    fetchCustomFields();
-  }, [entityType]);
-
   const fetchCustomFields = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -37,6 +33,10 @@ export default function CustomFieldsPage() {
       console.error(e);
     }
   };
+
+  useEffect(() => {
+    fetchCustomFields();
+  }, [entityType]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -29,10 +29,6 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  useEffect(() => {
-    fetchReportData(activeReport);
-  }, [activeReport]);
-
   const fetchReportData = async (type: string) => {
     setIsLoading(true);
     try {
@@ -56,6 +52,10 @@ export default function ReportsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchReportData(activeReport);
+  }, [activeReport]);
 
   const handleExportCSV = async () => {
     if (activeReport === 'fees') {

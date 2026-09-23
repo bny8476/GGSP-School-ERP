@@ -29,10 +29,6 @@ export default function AssessmentsPage() {
   const [teacherComments, setTeacherComments] = useState('');
   const [rubricScores, setRubricScores] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -53,6 +49,10 @@ export default function AssessmentsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleScoreChange = (skill: string, score: string) => {
     setRubricScores(prev => ({ ...prev, [skill]: score }));

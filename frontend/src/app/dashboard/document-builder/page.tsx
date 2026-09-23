@@ -11,10 +11,6 @@ export default function DocumentBuilderPage() {
   const [category, setCategory] = useState("Certificate");
   const [templateBody, setTemplateBody] = useState("This is to certify that {{student.name}} of Class {{student.class}} has successfully completed course.");
 
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
   const fetchTemplates = async () => {
     setLoading(true);
     try {
@@ -52,6 +48,10 @@ export default function DocumentBuilderPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

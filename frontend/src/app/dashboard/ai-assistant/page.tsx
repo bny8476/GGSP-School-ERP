@@ -11,6 +11,13 @@ interface ChatMessage {
   recommendations?: string[];
 }
 
+let msgCounter = 1000;
+const getNextMessageId = () => ++msgCounter;
+const getCurrentFormattedTime = () => {
+  const d = new Date();
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
 export default function AIAssistantPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,10 +35,6 @@ export default function AIAssistantPage() {
       ],
     },
   ]);
-
-  useEffect(() => {
-    fetchInsights();
-  }, []);
 
   const fetchInsights = async () => {
     try {
@@ -70,15 +73,19 @@ export default function AIAssistantPage() {
     }
   };
 
+  useEffect(() => {
+    fetchInsights();
+  }, []);
+
   const handleSend = async (customText?: string) => {
     const textToSend = customText || query;
     if (!textToSend.trim()) return;
 
     const userMsg = {
-      id: Date.now(),
+      id: getNextMessageId(),
       sender: "User",
       text: textToSend,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: getCurrentFormattedTime(),
     };
 
     setChatLog((prev) => [...prev, userMsg]);
@@ -99,10 +106,10 @@ export default function AIAssistantPage() {
       if (res.ok) {
         const data = await res.json();
         const aiMsg = {
-          id: Date.now() + 1,
+          id: getNextMessageId(),
           sender: "AI Assistant",
           text: data.answer || "Query processed successfully.",
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: getCurrentFormattedTime(),
           recommendations: data.suggestions || ["Export report as PDF", "Notify class teacher", "Schedule parent call"],
         };
         setChatLog((prev) => [...prev, aiMsg]);
@@ -111,10 +118,10 @@ export default function AIAssistantPage() {
       }
     } catch (err) {
       const fallbackMsg = {
-        id: Date.now() + 1,
+        id: getNextMessageId(),
         sender: "AI Assistant",
         text: `Analysis complete for "${textToSend}": All relevant administrative & academic metrics checked. No critical system anomalies found beyond flagged early warning items.`,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: getCurrentFormattedTime(),
         recommendations: ["Generate detailed summary", "Schedule follow-up review"],
       };
       setChatLog((prev) => [...prev, fallbackMsg]);

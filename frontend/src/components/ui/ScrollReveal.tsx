@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 type RevealDirection = 'up' | 'down' | 'left' | 'right' | 'scale' | 'none';
 
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
 interface ScrollRevealProps {
   children: React.ReactNode;
   direction?: RevealDirection;
@@ -26,21 +28,12 @@ export function ScrollReveal({
   once = true,
 }: ScrollRevealProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const ref = useRef<any>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener('change', handleChange);
-
-    if (mediaQuery.matches) {
-      setIsVisible(true);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+    if (prefersReducedMotion) {
+      return;
     }
 
     const observer = new IntersectionObserver(
@@ -59,11 +52,10 @@ export function ScrollReveal({
 
     return () => {
       observer.disconnect();
-      mediaQuery.removeEventListener('change', handleChange);
     };
-  }, [once]);
+  }, [once, prefersReducedMotion]);
 
-  const Tag = Component as any;
+  const Tag = Component as React.ElementType;
 
   if (prefersReducedMotion) {
     return <Tag className={className}>{children}</Tag>;

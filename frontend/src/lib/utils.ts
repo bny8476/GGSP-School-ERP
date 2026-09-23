@@ -1,5 +1,4 @@
-// Lightweight utility function to conditionally join classNames without external dependencies
-export type ClassValue = string | number | boolean | undefined | null | { [key: string]: any } | ClassValue[];
+export type ClassValue = string | number | boolean | undefined | null | { [key: string]: unknown } | ClassValue[];
 
 export function cn(...inputs: ClassValue[]): string {
   const classes: string[] = [];
@@ -40,7 +39,7 @@ export const getApiBaseUrl = (): string => {
 
 export const API_BASE_URL = getApiBaseUrl();
 
-export async function safeFetchJson<T = any>(url: string, options?: RequestInit): Promise<T> {
+export async function safeFetchJson<T = unknown>(url: string, options?: RequestInit): Promise<T> {
   const headers = new Headers(options?.headers);
   if (!headers.has("Content-Type") && options?.body && typeof options.body === "string") {
     headers.set("Content-Type", "application/json");

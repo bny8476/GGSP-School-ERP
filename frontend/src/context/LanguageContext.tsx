@@ -801,19 +801,16 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<LanguageCode>("en");
-
-  useEffect(() => {
+  const [language, setLanguageState] = useState<LanguageCode>(() => {
+    if (typeof window === "undefined") return "en";
     try {
       const stored = localStorage.getItem("language") as LanguageCode | null;
-      if (stored && TRANSLATIONS[stored]) {
-        setLanguageState(stored);
-        applyLanguageToDOM(stored);
-      }
-    } catch (_) {
-      // Ignore localStorage exceptions
+      if (stored && TRANSLATIONS[stored]) return stored;
+    } catch {
+      // Ignore
     }
-  }, []);
+    return "en";
+  });
 
   const applyLanguageToDOM = (code: LanguageCode) => {
     const langObj = LANGUAGES.find((l) => l.code === code) || LANGUAGES[0];
@@ -821,12 +818,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dir = langObj.dir;
   };
 
+  useEffect(() => {
+    applyLanguageToDOM(language);
+  }, [language]);
+
   const setLanguage = (code: LanguageCode) => {
     if (!TRANSLATIONS[code]) return;
     setLanguageState(code);
     try {
       localStorage.setItem("language", code);
-    } catch (_) {}
+    } catch {
+      // Ignore
+    }
     applyLanguageToDOM(code);
   };
 

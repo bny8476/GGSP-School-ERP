@@ -45,10 +45,6 @@ export default function PayrollPage() {
     status: 'Pending'
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -73,6 +69,10 @@ export default function PayrollPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const getStaffName = (id: string) => {
     const s = staffList.find(s => s._id === id);

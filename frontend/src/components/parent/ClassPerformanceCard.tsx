@@ -64,10 +64,7 @@ function AnimatedPercentage({ value, delay }: { value: number; delay: number }) 
   const [displayValue, setDisplayValue] = useState(prefersReducedMotion ? value : 0);
 
   useEffect(() => {
-    if (prefersReducedMotion) {
-      setDisplayValue(value);
-      return;
-    }
+    if (prefersReducedMotion) return;
 
     const timer = setTimeout(() => {
       let current = 0;

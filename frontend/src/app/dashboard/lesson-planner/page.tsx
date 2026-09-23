@@ -10,10 +10,6 @@ export default function LessonPlannerPage() {
   const [loading, setLoading] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchPlans();
-  }, []);
-
   const fetchPlans = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -59,6 +55,10 @@ export default function LessonPlannerPage() {
       console.error("Error loading lesson plans:", e);
     }
   };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();

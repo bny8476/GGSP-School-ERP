@@ -42,10 +42,6 @@ export default function StudentsDirectoryPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
@@ -87,6 +83,10 @@ export default function StudentsDirectoryPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete the student record for "${name}"?`)) return;

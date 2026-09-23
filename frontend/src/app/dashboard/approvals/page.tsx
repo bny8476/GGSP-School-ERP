@@ -11,10 +11,6 @@ export default function CentralApprovalCenter() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'leaves' | 'admissions' | 'payroll'>('leaves');
 
-  useEffect(() => {
-    fetchPendingApprovals();
-  }, []);
-
   const fetchPendingApprovals = async () => {
     try {
       setLoading(true);
@@ -36,6 +32,10 @@ export default function CentralApprovalCenter() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPendingApprovals();
+  }, []);
 
   const handleApproveLeave = async (id: string, status: 'Approved' | 'Rejected') => {
     try {

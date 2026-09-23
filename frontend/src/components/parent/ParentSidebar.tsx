@@ -9,6 +9,7 @@ import {
   LogOut, ChevronRight, ChevronLeft, X
 } from "lucide-react";
 import GGPSLogo from "@/components/parent/GGPSLogo";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ParentSidebarProps {
   isCollapsed: boolean;
@@ -173,9 +174,7 @@ export default function ParentSidebar({
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.clear();
-    router.push("/login");
+    useAuthStore.getState().logout();
   };
 
   const isItemActive = (href: string) => {

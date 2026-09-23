@@ -62,7 +62,7 @@ export default function AddStudentModal({
 
   // Auto-calculated preview IDs
   const previewStudentId = `GGPS-2026-${formData.grade.replace(/\s+/g, '')}-001`;
-  const previewAdmissionNo = `GGPS-2026Admin-${Math.floor(100 + Math.random() * 900)}`;
+  const previewAdmissionNo = `GGPS-2026Admin-${(formData.firstName.length * 37 + 101) % 900 + 100}`;
 
   const handleChange = (field: string, val: any) => {
     setFormData((prev) => ({ ...prev, [field]: val }));

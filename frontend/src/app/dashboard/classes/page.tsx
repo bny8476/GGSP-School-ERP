@@ -9,10 +9,6 @@ export default function ClassesPage() {
   const [showModal, setShowModal] = useState(false);
   const [newClassName, setNewClassName] = useState('');
 
-  useEffect(() => {
-    fetchClasses();
-  }, []);
-
   const fetchClasses = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/classes`, {
@@ -28,6 +24,10 @@ export default function ClassesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

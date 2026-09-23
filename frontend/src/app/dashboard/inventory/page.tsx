@@ -30,10 +30,6 @@ export default function InventoryPage() {
     estimatedPrice: 20,
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [activeTab]);
-
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
   const fetchData = async () => {
@@ -61,6 +57,10 @@ export default function InventoryPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();

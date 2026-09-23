@@ -332,9 +332,11 @@ export default function TeacherCommandPalette({
     );
   }, [items, query]);
 
-  useEffect(() => {
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
     setSelectedIndex(0);
-  }, [query]);
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -56,7 +56,7 @@ export default function TodayDiaryRemarkCard({
 }: TodayDiaryRemarkCardProps) {
   const { replyTeacherRemark, selectedChild, todayDiary, teacherRemarks } = useParent();
   const diary = propDiary !== undefined ? propDiary : todayDiary;
-  const remarks = propRemarks !== undefined ? propRemarks : teacherRemarks;
+  const remarks: TeacherRemarkItem[] = (propRemarks !== undefined ? propRemarks : teacherRemarks) || [];
 
   const [activeTab, setActiveTab] = useState<"remarks" | "diary">("remarks");
   const [replyModalRemark, setReplyModalRemark] = useState<TeacherRemarkItem | null>(null);
@@ -158,7 +158,7 @@ export default function TodayDiaryRemarkCard({
                   </p>
                 </div>
               ) : (
-                remarks.map((item) => {
+                remarks.map((item: TeacherRemarkItem) => {
                   const catConfig = CATEGORY_COLORS[item.category] || CATEGORY_COLORS["Appreciation"];
                   const IconComp = catConfig.icon;
 

@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+let formIdCounter = 100;
+const getFormId = () => ++formIdCounter;
+
 export default function FormBuilderPage() {
   const [forms, setForms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,35 +25,6 @@ export default function FormBuilderPage() {
   const [description, setDescription] = useState("");
 
   const [aiPrompt, setAiPrompt] = useState("");
-
-  useEffect(() => {
-    fetchForms();
-  }, []);
-
-  const fetchForms = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/enterprise/forms", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.forms && data.forms.length > 0) {
-          setForms(data.forms);
-        } else {
-          setDefaultForms();
-        }
-      } else {
-        setDefaultForms();
-      }
-    } catch (e) {
-      console.error(e);
-      setDefaultForms();
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const setDefaultForms = () => {
     setForms([
@@ -84,12 +58,41 @@ export default function FormBuilderPage() {
     ]);
   };
 
+  const fetchForms = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/enterprise/forms", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.forms && data.forms.length > 0) {
+          setForms(data.forms);
+        } else {
+          setDefaultForms();
+        }
+      } else {
+        setDefaultForms();
+      }
+    } catch (e) {
+      console.error(e);
+      setDefaultForms();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchForms();
+  }, []);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     const newFormObj = {
-      _id: `FB-${Date.now()}`,
+      _id: `FB-${getFormId()}`,
       title,
       category,
       description: description || "Custom interactive school ERP form template",

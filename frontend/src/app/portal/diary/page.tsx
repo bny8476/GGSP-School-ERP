@@ -7,10 +7,6 @@ export default function PortalDiaryPage() {
   const [diaries, setDiaries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDiaries();
-  }, []);
-
   const fetchDiaries = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -27,6 +23,10 @@ export default function PortalDiaryPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDiaries();
+  }, []);
 
   if (isLoading) {
     return (
@@ -86,7 +86,7 @@ export default function PortalDiaryPage() {
 
                 {diary.notes && (
                   <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                    <p className="text-sm font-medium text-amber-900 italic">"{diary.notes}"</p>
+                    <p className="text-sm font-medium text-amber-900 italic">&ldquo;{diary.notes}&rdquo;</p>
                   </div>
                 )}
               </div>

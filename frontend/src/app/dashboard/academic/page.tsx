@@ -25,16 +25,6 @@ export default function AcademicPage() {
   // Timetable builder state
   const [periods, setPeriods] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (selectedClass) {
-      fetchTimetable();
-    }
-  }, [selectedClass, selectedDay]);
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -86,6 +76,16 @@ export default function AcademicPage() {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (selectedClass) {
+      fetchTimetable();
+    }
+  }, [selectedClass, selectedDay]);
 
   // --- SUBJECTS ---
   const handleSaveSubject = async (e: React.FormEvent) => {

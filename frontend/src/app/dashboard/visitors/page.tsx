@@ -17,10 +17,6 @@ export default function VisitorsPage() {
     idProofNumber: '',
   });
 
-  useEffect(() => {
-    fetchVisitors();
-  }, []);
-
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
   const fetchVisitors = async () => {
@@ -40,6 +36,10 @@ export default function VisitorsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchVisitors();
+  }, []);
 
   const handleCreatePass = async (e: React.FormEvent) => {
     e.preventDefault();

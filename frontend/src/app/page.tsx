@@ -54,17 +54,13 @@ function AnimatedCount({
   prefix?: string;
   duration?: number;
 }) {
-  const [val, setVal] = useState(from);
+  const prefersReduced = useReducedMotion();
+  const [val, setVal] = useState(() => prefersReduced ? to : from);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-40px" });
-  const prefersReduced = useReducedMotion();
 
   useEffect(() => {
-    if (prefersReduced) {
-      setVal(to);
-      return;
-    }
-    if (!isInView) return;
+    if (prefersReduced || !isInView) return;
 
     let start: number | null = null;
     let animId: number;

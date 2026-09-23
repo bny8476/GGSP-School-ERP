@@ -562,7 +562,7 @@ export default function LessonPlanWorkspace({ onNavigateTab }: LessonPlanWorkspa
   const handleDuplicateLesson = (item: LessonPlanItem) => {
     const duplicated: LessonPlanItem = {
       ...item,
-      id: `lp-copy-${Date.now()}`,
+      id: `lp-copy-${item.id}-${lessons.length + 1}`,
       title: `${item.title} (Revisit / Practice)`,
       status: 'PLANNED'
     };

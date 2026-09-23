@@ -24,10 +24,6 @@ export default function HealthPage() {
     notes: ''
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -46,6 +42,10 @@ export default function HealthPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const getStudentName = (id: string) => {
     const s = students.find(s => s._id === id);

@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
 interface HighlightTextProps {
   children: React.ReactNode;
   className?: string;
@@ -18,16 +20,11 @@ export function HighlightText({
   delay = 200,
 }: HighlightTextProps) {
   const [isActive, setIsActive] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const ref = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    if (mediaQuery.matches || trigger === 'hover') return;
+    if (prefersReducedMotion || trigger === 'hover') return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {

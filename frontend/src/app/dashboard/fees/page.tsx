@@ -65,10 +65,6 @@ export default function FinancePage() {
     date: new Date().toISOString().split('T')[0]
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -122,6 +118,10 @@ export default function FinancePage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleCreateFee = async (e: React.FormEvent) => {
     e.preventDefault();

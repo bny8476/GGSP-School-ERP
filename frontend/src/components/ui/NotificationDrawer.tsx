@@ -115,32 +115,6 @@ export default function NotificationDrawer({ onNavigateTab }: NotificationDrawer
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'ALL' | 'URGENT' | 'PARENT' | 'ACADEMIC' | 'SCHOOL'>('ALL');
 
-  useEffect(() => {
-    setMounted(true);
-
-    try {
-      const cached = localStorage.getItem('ggps_cached_notifications');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setNotifications(parsed);
-          setUnreadCount(parsed.filter((n: NotificationItem) => !n.read).length);
-        } else {
-          setNotifications(fallbackNotifications);
-          setUnreadCount(fallbackNotifications.filter((n) => !n.read).length);
-        }
-      } else {
-        setNotifications(fallbackNotifications);
-        setUnreadCount(fallbackNotifications.filter((n) => !n.read).length);
-      }
-    } catch (e) {
-      setNotifications(fallbackNotifications);
-      setUnreadCount(fallbackNotifications.filter((n) => !n.read).length);
-    }
-
-    fetchNotifications();
-  }, []);
-
   const fetchNotifications = async () => {
     try {
       setLoading(true);
@@ -181,6 +155,32 @@ export default function NotificationDrawer({ onNavigateTab }: NotificationDrawer
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setMounted(true);
+
+    try {
+      const cached = localStorage.getItem('ggps_cached_notifications');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setNotifications(parsed);
+          setUnreadCount(parsed.filter((n: NotificationItem) => !n.read).length);
+        } else {
+          setNotifications(fallbackNotifications);
+          setUnreadCount(fallbackNotifications.filter((n) => !n.read).length);
+        }
+      } else {
+        setNotifications(fallbackNotifications);
+        setUnreadCount(fallbackNotifications.filter((n) => !n.read).length);
+      }
+    } catch (e) {
+      setNotifications(fallbackNotifications);
+      setUnreadCount(fallbackNotifications.filter((n) => !n.read).length);
+    }
+
+    fetchNotifications();
+  }, []);
 
   const handleMarkAsRead = (id: string) => {
     setNotifications((prev) => {

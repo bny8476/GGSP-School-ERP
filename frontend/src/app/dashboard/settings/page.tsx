@@ -17,10 +17,6 @@ export default function SettingsPage() {
     phoneNumber: '',
   });
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -43,6 +39,10 @@ export default function SettingsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -22,10 +22,6 @@ export default function EventsPage() {
     description: ''
   });
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
   const fetchEvents = async () => {
     setIsLoading(true);
     try {
@@ -43,6 +39,10 @@ export default function EventsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const resetForm = () => {
     setFormData({

@@ -40,39 +40,6 @@ export default function TeachersPage() {
     teachingAssignments: [] as { classId: string, subjectId: string }[]
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const headers = { 'Authorization': `Bearer ${token}` };
-      
-      const [usersRes, classesRes, subjectsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/classes`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/academic/subjects`, { headers })
-      ]);
-
-      if (usersRes.ok) {
-        const allUsers = await usersRes.json();
-        const staff = allUsers.filter((u: any) => u.role?.name === 'Teacher' || u.role?.name === 'Principal' || u.role?.name === 'Staff');
-        setTeachers(staff.length > 0 ? staff : getSampleTeachers());
-      } else {
-        setTeachers(getSampleTeachers());
-      }
-      if (classesRes.ok) setClasses(await classesRes.json());
-      if (subjectsRes.ok) setSubjects(await subjectsRes.json());
-    } catch (error) {
-      console.error(error);
-      setTeachers(getSampleTeachers());
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const getSampleTeachers = () => [
     {
       _id: "t1",
@@ -145,6 +112,39 @@ export default function TeachersPage() {
       rating: "4.7 ★"
     }
   ];
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+      
+      const [usersRes, classesRes, subjectsRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/classes`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/academic/subjects`, { headers })
+      ]);
+
+      if (usersRes.ok) {
+        const allUsers = await usersRes.json();
+        const staff = allUsers.filter((u: any) => u.role?.name === 'Teacher' || u.role?.name === 'Principal' || u.role?.name === 'Staff');
+        setTeachers(staff.length > 0 ? staff : getSampleTeachers());
+      } else {
+        setTeachers(getSampleTeachers());
+      }
+      if (classesRes.ok) setClasses(await classesRes.json());
+      if (subjectsRes.ok) setSubjects(await subjectsRes.json());
+    } catch (error) {
+      console.error(error);
+      setTeachers(getSampleTeachers());
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const resetForm = () => {
     setFormData({

@@ -36,6 +36,20 @@ interface AdminExecutiveDashboardProps {
   onRefresh: () => void;
 }
 
+const FALLBACK_RECENT_ADMISSIONS = [
+  { id: 'ADM-2026-089', name: 'Aarav Sharma', admissionNumber: 'GGPS-2026Admin-001', grade: 'LKG', section: 'A', parent: 'Vikram Sharma', status: 'Confirmed', date: '2026-09-23T08:00:00.000Z' },
+  { id: 'ADM-2026-088', name: 'Ananya Patel', admissionNumber: 'GGPS-2026Admin-002', grade: 'Grade 1', section: 'B', parent: 'Meera Patel', status: 'Approved', date: '2026-09-23T04:00:00.000Z' },
+  { id: 'ADM-2026-087', name: 'Rohan Verma', admissionNumber: 'GGPS-2026Admin-003', grade: 'Grade 5', section: 'A', parent: 'Kavita Verma', status: 'Interview', date: '2026-09-22T08:00:00.000Z' },
+  { id: 'ADM-2026-086', name: 'Diya Sengupta', admissionNumber: 'GGPS-2026Admin-004', grade: 'Grade 3', section: 'A', parent: 'Rahul Sengupta', status: 'Application', date: '2026-09-21T20:00:00.000Z' },
+  { id: 'ADM-2026-085', name: 'Kabir Nair', admissionNumber: 'GGPS-2026Admin-005', grade: 'UKG', section: 'B', parent: 'Sanjay Nair', status: 'Enquiry', date: '2026-09-21T08:00:00.000Z' },
+];
+
+const FALLBACK_UPCOMING_EVENTS = [
+  { _id: 'e1', title: 'Annual Inter-House Sports Meet 2026', date: '2026-09-26T09:00:00.000Z', location: 'Main Athletic Grounds', type: 'Sports', status: 'Scheduled' },
+  { _id: 'e2', title: 'Parent-Teacher Executive Conference', date: '2026-09-28T10:00:00.000Z', location: 'Auditorium Hall A', type: 'Academic', status: 'Confirmed' },
+  { _id: 'e3', title: 'STEM & Robotics Innovation Expo', date: '2026-10-05T09:30:00.000Z', location: 'Discovery Center', type: 'Exhibition', status: 'Planning' },
+];
+
 export default function AdminExecutiveDashboard({
   stats,
   userName,
@@ -76,13 +90,7 @@ export default function AdminExecutiveDashboard({
     { id: 'sch-5', time: '01:30 PM - 02:15 PM', class: 'Grade 6-A', teacher: 'Ananya Deshmukh', subject: 'World History', room: 'Room 108', status: 'Upcoming' },
   ];
 
-  const recentAdmissions = stats?.recentAdmissions || [
-    { id: 'ADM-2026-089', name: 'Aarav Sharma', admissionNumber: 'GGPS-2026Admin-001', grade: 'LKG', section: 'A', parent: 'Vikram Sharma', status: 'Confirmed', date: new Date().toISOString() },
-    { id: 'ADM-2026-088', name: 'Ananya Patel', admissionNumber: 'GGPS-2026Admin-002', grade: 'Grade 1', section: 'B', parent: 'Meera Patel', status: 'Approved', date: new Date(Date.now() - 3600000 * 4).toISOString() },
-    { id: 'ADM-2026-087', name: 'Rohan Verma', admissionNumber: 'GGPS-2026Admin-003', grade: 'Grade 5', section: 'A', parent: 'Kavita Verma', status: 'Interview', date: new Date(Date.now() - 3600000 * 24).toISOString() },
-    { id: 'ADM-2026-086', name: 'Diya Sengupta', admissionNumber: 'GGPS-2026Admin-004', grade: 'Grade 3', section: 'A', parent: 'Rahul Sengupta', status: 'Application', date: new Date(Date.now() - 3600000 * 36).toISOString() },
-    { id: 'ADM-2026-085', name: 'Kabir Nair', admissionNumber: 'GGPS-2026Admin-005', grade: 'UKG', section: 'B', parent: 'Sanjay Nair', status: 'Enquiry', date: new Date(Date.now() - 3600000 * 48).toISOString() },
-  ];
+  const recentAdmissions = stats?.recentAdmissions || FALLBACK_RECENT_ADMISSIONS;
 
   const recentActivities = stats?.recentActivities || [
     { id: 'act-1', title: 'New Student Admitted', detail: 'Aarav Sharma enrolled into Class LKG-A', time: '12 mins ago', type: 'admission' },
@@ -92,11 +100,7 @@ export default function AdminExecutiveDashboard({
     { id: 'act-5', title: 'Emergency Circular Sent', detail: 'Campus monsoon advisory broadcast via SMS and Parent App', time: '3 hours ago', type: 'communication' },
   ];
 
-  const upcomingEvents = stats?.upcomingEvents || [
-    { _id: 'e1', title: 'Annual Inter-House Sports Meet 2026', date: new Date(Date.now() + 86400000 * 3).toISOString(), location: 'Main Athletic Grounds', type: 'Sports', status: 'Scheduled' },
-    { _id: 'e2', title: 'Parent-Teacher Executive Conference', date: new Date(Date.now() + 86400000 * 5).toISOString(), location: 'Auditorium Hall A', type: 'Academic', status: 'Confirmed' },
-    { _id: 'e3', title: 'STEM & Robotics Innovation Expo', date: new Date(Date.now() + 86400000 * 12).toISOString(), location: 'Discovery Center', type: 'Exhibition', status: 'Planning' },
-  ];
+  const upcomingEvents = stats?.upcomingEvents || FALLBACK_UPCOMING_EVENTS;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">

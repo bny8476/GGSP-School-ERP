@@ -26,10 +26,6 @@ export default function EarlyWarningPage() {
   const [loading, setLoading] = useState(true);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchEarlyWarningData();
-  }, []);
-
   const fetchEarlyWarningData = async () => {
     setLoading(true);
     try {
@@ -108,6 +104,10 @@ export default function EarlyWarningPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchEarlyWarningData();
+  }, []);
 
   const handleTriggerIntervention = (studentName: string, actionType: string) => {
     setActionNotice(`Intervention triggered for ${studentName}: ${actionType}. SMS & email notification sent to parent.`);

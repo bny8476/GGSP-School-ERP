@@ -14,12 +14,13 @@ export default function ParentSearchModal() {
   const [query, setQuery] = useState("");
   const router = useRouter();
 
-  // Reset query when opening
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isSearchOpen);
+  if (isSearchOpen !== prevIsOpen) {
+    setPrevIsOpen(isSearchOpen);
     if (isSearchOpen) {
       setQuery("");
     }
-  }, [isSearchOpen]);
+  }
 
   const searchItems = useMemo(() => [
     {
