@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Users, Plus, Search, Filter, Download, MoreVertical, 
-  Eye, Edit3, Trash2, Shield, HeartPulse, Bus, Phone,
+  Eye, Edit3, Trash2, Shield, HeartPulse, Phone,
   FileSpreadsheet, CreditCard, CheckCircle2, AlertCircle,
   GraduationCap, LayoutGrid, Table as TableIcon, Sparkles
 } from 'lucide-react';
@@ -180,7 +180,7 @@ export default function StudentsDirectoryPage() {
             {row.grade || 'Pre-KG'} {row.section ? `- ${row.section}` : ''}
           </span>
           <span className="block text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            {row.busRoute || 'Self Transport'}
+            Section {row.section || 'A'} • Regular
           </span>
         </div>
       )
@@ -346,10 +346,10 @@ export default function StudentsDirectoryPage() {
           trend={{ value: "-2.1%", isPositive: false, period: "vs last month" }}
         />
         <AdminStatCard
-          label="Transport Commuters"
+          label="Active Co-Curricular"
           value={842}
-          supportingText="Assigned to 8 bus routes"
-          icon={Bus}
+          supportingText="Clubs & sports enrolled"
+          icon={Sparkles}
           variant="orange"
           progress={68}
         />

@@ -4,7 +4,7 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { 
   GraduationCap, UserCheck, DollarSign, Calendar, HeartPulse, 
-  Bus, FileText, ArrowLeft, Download, ShieldCheck, Mail, Phone, 
+  FileText, ArrowLeft, Download, ShieldCheck, Mail, Phone, 
   MapPin, Clock, AlertTriangle, CheckCircle2, ChevronRight,
   Printer, Send, Edit3, Award, Sparkles, Activity, FileCheck
 } from 'lucide-react';
@@ -21,7 +21,7 @@ export default function Student360Profile({ params }: { params: Promise<{ id: st
   const [attendance, setAttendance] = useState<any[]>([]);
   const [fees, setFees] = useState<any[]>([]);
   const [assessments, setAssessments] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'academic' | 'attendance' | 'fees' | 'transport' | 'health' | 'timeline'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'academic' | 'attendance' | 'fees' | 'health' | 'timeline'>('overview');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function Student360Profile({ params }: { params: Promise<{ id: st
           setFees([
             { _id: 'fee_1', feeType: 'Term 1 Tuition & Facility Fee', dueDate: '2026-06-15', totalAmount: 32000, amountPaid: 32000, status: 'Paid', receiptNo: 'GGPS-REC-2026-0421' },
             { _id: 'fee_2', feeType: 'Term 2 Tuition & Activity Fee', dueDate: '2026-10-15', totalAmount: 32000, amountPaid: 15000, status: 'Partial', receiptNo: 'GGPS-REC-2026-0899' },
-            { _id: 'fee_3', feeType: 'Annual Transport Pass (Route 4)', dueDate: '2026-07-01', totalAmount: 18000, amountPaid: 18000, status: 'Paid', receiptNo: 'GGPS-REC-2026-0512' },
+            { _id: 'fee_3', feeType: 'Annual Lab & Technology Access Fee', dueDate: '2026-07-01', totalAmount: 18000, amountPaid: 18000, status: 'Paid', receiptNo: 'GGPS-REC-2026-0512' },
           ]);
         }
 
@@ -284,7 +284,6 @@ export default function Student360Profile({ params }: { params: Promise<{ id: st
           { id: 'academic', label: `Academic & Exams (${assessments.length})`, icon: Award },
           { id: 'attendance', label: 'Attendance Roll', icon: Calendar },
           { id: 'fees', label: `Fee Ledger (${fees.length})`, icon: DollarSign },
-          { id: 'transport', label: 'Bus & Transport', icon: Bus },
           { id: 'health', label: 'Health & Dietary', icon: HeartPulse },
           { id: 'timeline', label: 'Audit Timeline', icon: Clock },
         ].map((tab) => {
@@ -522,55 +521,6 @@ export default function Student360Profile({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {activeTab === 'transport' && (
-        <div className="bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md rounded-[28px] p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-5">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="w-1.5 h-5 rounded-full bg-[#FF690C]" />
-            <h3 className="font-black text-base text-[#000E28] dark:text-white">
-              Fleet & Bus Transport Assignment
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#000E28]/60 border border-slate-100 dark:border-slate-800 space-y-3">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Assigned Route</span>
-                <span className="font-bold text-[#000E28] dark:text-white">{student.busRoute || 'Route 4'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Pickup / Drop Point</span>
-                <span className="font-bold text-[#000E28] dark:text-white">{student.busStop || 'Sector 14 Main Gate'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Morning Pickup Time</span>
-                <span className="font-bold text-emerald-600">07:45 AM</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Afternoon Drop Time</span>
-                <span className="font-bold text-blue-600">01:30 PM</span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#000E28]/60 border border-slate-100 dark:border-slate-800 space-y-3">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Bus Vehicle Number</span>
-                <span className="font-bold font-mono text-[#000E28] dark:text-white">DL-01-AB-4492</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Driver In-Charge</span>
-                <span className="font-bold text-[#000E28] dark:text-white">Mr. Ram Singh (+91 98111 55667)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Live GPS Tracker</span>
-                <span className="font-bold text-emerald-600 flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Active on Route
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {activeTab === 'health' && (
         <div className="bg-white/95 dark:bg-[#001438]/95 backdrop-blur-md rounded-[28px] p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">

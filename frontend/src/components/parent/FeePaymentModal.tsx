@@ -53,8 +53,8 @@ export default function FeePaymentModal({
     },
     {
       id: "inv-3",
-      title: "School Transport Fee (Q2)",
-      category: "Transport",
+      title: "Sports & Physical Education Development Fee",
+      category: "Sports",
       dueDate: "10 Oct 2026",
       amount: 1500,
     },

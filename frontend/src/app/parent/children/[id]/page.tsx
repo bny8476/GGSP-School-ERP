@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   UserCheck, CalendarHeart, BookOpen, Sparkles, Award, 
-  Clock, WalletCards, Bus, FileText, ArrowLeft, Download, 
+  Clock, WalletCards, FileText, ArrowLeft, Download, 
   Phone, ShieldCheck, HeartPulse, CheckCircle2
 } from "lucide-react";
 import SpotlightCard from "@/components/teacher/SpotlightCard";
@@ -18,7 +18,7 @@ export default function ChildProfilePage() {
   const childId = params?.id as string;
   const { children } = useParent();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "attendance" | "diary" | "homework" | "progress" | "assessments" | "timetable" | "fees" | "transport" | "documents"
+    "overview" | "attendance" | "diary" | "homework" | "progress" | "assessments" | "timetable" | "fees" | "documents"
   >("overview");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
@@ -33,7 +33,6 @@ export default function ChildProfilePage() {
     { id: "assessments", label: "Assessments", icon: Award },
     { id: "timetable", label: "Timetable", icon: Clock },
     { id: "fees", label: "Fees", icon: WalletCards },
-    { id: "transport", label: "Transport", icon: Bus },
     { id: "documents", label: "Documents", icon: FileText },
   ];
 

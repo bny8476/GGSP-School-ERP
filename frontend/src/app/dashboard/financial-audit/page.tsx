@@ -13,7 +13,7 @@ export default function FinancialAuditPage() {
 
   const refunds = [
     { id: "RF-901", student: "Alexander Wright", amount: 450.0, reason: "Duplicate Admission Payment", status: "Approved & Settled" },
-    { id: "RF-902", student: "Sophia Martinez", amount: 200.0, reason: "Transport Fee Adjustment", status: "Pending Provider Confirmation" },
+    { id: "RF-902", student: "Sophia Martinez", amount: 200.0, reason: "Activity Fee Adjustment", status: "Pending Provider Confirmation" },
   ];
 
   const handleProcessRefund = (id: string) => {

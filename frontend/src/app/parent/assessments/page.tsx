@@ -72,10 +72,10 @@ export default function ParentAssessmentsPage() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[22px] bg-white dark:bg-[#07142F] border border-[#E7EAF0] dark:border-white/10 shadow-sm">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#3157D5]">
+          <span className="text-[10px] font-black uppercase tracking-wider text-[#0050CB]">
             Formative & Summative Evaluations
           </span>
-          <h1 className="text-xl sm:text-2xl font-black text-[#07142F] dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white">
             Assessments & Report Card: {child.firstName} {child.lastName}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -85,7 +85,7 @@ export default function ParentAssessmentsPage() {
 
         <button
           onClick={() => setIsReportModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-[#3157D5] hover:bg-[#2444B5] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md shrink-0"
+          className="px-4 py-2.5 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md shrink-0 cursor-pointer"
         >
           <FileText className="w-4 h-4" />
           View Report Card

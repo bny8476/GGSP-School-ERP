@@ -10,7 +10,7 @@ import {
   User, 
   Users, 
   GraduationCap, 
-  Bus, 
+  HeartPulse, 
   FileCheck,
   Sparkles,
   AlertCircle
@@ -27,7 +27,7 @@ const STEPS = [
   { id: 1, label: 'Identity', icon: User, desc: 'Personal details' },
   { id: 2, label: 'Parent/Guardian', icon: Users, desc: 'Contact details' },
   { id: 3, label: 'Enrollment', icon: GraduationCap, desc: 'Class & section' },
-  { id: 4, label: 'Health & Logistics', icon: Bus, desc: 'Medical & transport' },
+  { id: 4, label: 'Health & Well-being', icon: HeartPulse, desc: 'Medical declaration' },
   { id: 5, label: 'Review', icon: FileCheck, desc: 'Verification' },
 ];
 
@@ -55,8 +55,6 @@ export default function AddStudentModal({
     rollNumber: '',
     academicYear: '2025-2026',
     medicalNotes: '',
-    transportRequired: 'No',
-    transportRoute: '',
     status: 'Active',
   });
 
@@ -106,7 +104,6 @@ export default function AddStudentModal({
         bloodGroup: formData.bloodGroup,
         medicalNotes: formData.medicalNotes,
         emergencyContact: formData.emergencyContact,
-        transportDetails: formData.transportRequired === 'Yes' ? formData.transportRoute || 'Bus Route Assigned' : 'Self',
         status: formData.status,
       };
 
@@ -476,35 +473,7 @@ export default function AddStudentModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#000E28] dark:text-slate-300 mb-1.5">
-                      School Bus Transport
-                    </label>
-                    <select
-                      value={formData.transportRequired}
-                      onChange={(e) => handleChange('transportRequired', e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-[#000E28] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0050CB]/30"
-                    >
-                      <option value="No">No - Parent Drop/Self</option>
-                      <option value="Yes">Yes - Bus Transport Required</option>
-                    </select>
-                  </div>
-                  {formData.transportRequired === 'Yes' && (
-                    <div>
-                      <label className="block text-xs font-bold text-[#000E28] dark:text-slate-300 mb-1.5">
-                        Route / Stop
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Route 4 (Green Park Stop)"
-                        value={formData.transportRoute}
-                        onChange={(e) => handleChange('transportRoute', e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-[#000E28] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0050CB]/30"
-                      />
-                    </div>
-                  )}
-                </div>
+
               </motion.div>
             )}
 
@@ -550,12 +519,6 @@ export default function AddStudentModal({
                       <span className="text-slate-400 block">Parent Phone:</span>
                       <span className="font-bold text-[#000E28] dark:text-white">
                         {formData.emergencyContact || '—'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">Transport Mode:</span>
-                      <span className="font-bold text-[#000E28] dark:text-white">
-                        {formData.transportRequired === 'Yes' ? 'Bus Transport' : 'Self Drop'}
                       </span>
                     </div>
                   </div>

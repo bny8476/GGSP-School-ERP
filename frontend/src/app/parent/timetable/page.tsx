@@ -28,7 +28,7 @@ export default function TimetablePage() {
       { time: "11:00 AM – 11:45 AM", subject: "Story & Rhymes", room: "Interactive Library", teacher: "Ms. Pooja Mehra", activity: "Puppet theatre storytelling & rhyme recitation" },
       { time: "12:00 PM – 12:45 PM", subject: "Nutritious Lunch Break", room: "Dining Hall", teacher: "Class Care Team", activity: "Healthy meals & table etiquette practice" },
       { time: "01:00 PM – 02:00 PM", subject: "Physical Play & Motor Gym", room: "Outdoor Turf", teacher: "Coach Vikram", activity: "Beam balance, parachute play & obstacle relay" },
-      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Bus Boarding", room: "Bus Bay 4", teacher: "Transport Team", activity: "Orderly bus dispatch with RFID security check" },
+      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Parent Pickup", room: "Main Gate", teacher: "Class Care Team", activity: "Orderly afternoon student dispersal with security check" },
     ],
     Monday: [
       { time: "08:30 AM – 09:00 AM", subject: "Morning Assembly & Circle Time", room: "Auditorium", teacher: "Ms. Ananya Roy", activity: "National anthem, prayer & week kick-off" },
@@ -37,7 +37,7 @@ export default function TimetablePage() {
       { time: "11:00 AM – 11:45 AM", subject: "Sensory Nature Play", room: "Courtyard Garden", teacher: "Ms. Ananya Roy", activity: "Plant inspection, tactile soil & leaf grouping" },
       { time: "12:00 PM – 12:45 PM", subject: "Nutritious Lunch Break", room: "Dining Hall", teacher: "Class Care Team", activity: "Hand washing routines and balanced lunch" },
       { time: "01:00 PM – 02:00 PM", subject: "Quiet Story Hour & Free Play", room: "Classroom 102", teacher: "Ms. Ananya Roy", activity: "Picture book reading & soft block construction" },
-      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Bus Boarding", room: "Bus Bay 4", teacher: "Transport Team", activity: "Orderly bus dispatch with RFID security check" },
+      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Parent Pickup", room: "Main Gate", teacher: "Class Care Team", activity: "Orderly afternoon student dispersal with security check" },
     ],
     Tuesday: [
       { time: "08:30 AM – 09:00 AM", subject: "Morning Circle & News Share", room: "Classroom 102", teacher: "Ms. Ananya Roy", activity: "Show & Tell with classroom objects" },
@@ -46,7 +46,7 @@ export default function TimetablePage() {
       { time: "11:00 AM – 11:45 AM", subject: "Water & Sand Sensory Play", room: "Sensory Hub", teacher: "Ms. Ananya Roy", activity: "Measuring cups, funnels & tactile damp sand" },
       { time: "12:00 PM – 12:45 PM", subject: "Lunch Break", room: "Dining Hall", teacher: "Class Care Team", activity: "Snack & warm meal time" },
       { time: "01:00 PM – 02:00 PM", subject: "Colouring & Free Expression", room: "Classroom 102", teacher: "Mr. Deepak Sen", activity: "Big crayon drawing on butcher paper" },
-      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Bus Boarding", room: "Bus Bay 4", teacher: "Transport Team", activity: "Orderly bus dispatch" },
+      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Parent Pickup", room: "Main Gate", teacher: "Class Care Team", activity: "Orderly afternoon student dispersal" },
     ],
     Wednesday: [
       { time: "08:30 AM – 09:00 AM", subject: "Circle Time & Finger Plays", room: "Classroom 102", teacher: "Ms. Ananya Roy", activity: "Nursery rhymes with hand gestures" },
@@ -55,7 +55,7 @@ export default function TimetablePage() {
       { time: "11:00 AM – 11:45 AM", subject: "Little Scientists Observation", room: "Science Lab", teacher: "Mr. Rajesh Kumar", activity: "Sink or float experiment with water tubs" },
       { time: "12:00 PM – 12:45 PM", subject: "Lunch & Social Time", room: "Dining Hall", teacher: "Class Care Team", activity: "Lunch sharing and conversation" },
       { time: "01:00 PM – 02:00 PM", subject: "Building Blocks & Puzzles", room: "Activity Wing", teacher: "Ms. Ananya Roy", activity: "Magnetic tiles and Mega Bloks building" },
-      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Bus Boarding", room: "Bus Bay 4", teacher: "Transport Team", activity: "Orderly bus dispatch" },
+      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Parent Pickup", room: "Main Gate", teacher: "Class Care Team", activity: "Orderly afternoon student dispersal" },
     ],
     Thursday: [
       { time: "08:30 AM – 09:00 AM", subject: "Circle Time & Calendar Talk", room: "Classroom 102", teacher: "Ms. Ananya Roy", activity: "Days of the week & season wheel" },
@@ -64,7 +64,7 @@ export default function TimetablePage() {
       { time: "11:00 AM – 11:45 AM", subject: "Fine Motor Scissors & Pasting", room: "Art Studio", teacher: "Mr. Deepak Sen", activity: "Safety scissor snipping & sticker collage" },
       { time: "12:00 PM – 12:45 PM", subject: "Lunch & Free Play", room: "Dining Hall", teacher: "Class Care Team", activity: "Healthy nutrition check" },
       { time: "01:00 PM – 02:00 PM", subject: "Outdoor Tricycle Track", room: "Campus Quad", teacher: "Coach Vikram", activity: "Riding safety and pedal motor skills" },
-      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Bus Boarding", room: "Bus Bay 4", teacher: "Transport Team", activity: "Orderly bus dispatch" },
+      { time: "02:15 PM – 02:30 PM", subject: "Dismissal & Parent Pickup", room: "Main Gate", teacher: "Class Care Team", activity: "Orderly afternoon student dispersal" },
     ],
   };
 

@@ -1,7 +1,14 @@
 "use client";
 
-import ParentFeesPage from "../fees/page";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PaymentsPage() {
-  return <ParentFeesPage />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/parent/fees");
+  }, [router]);
+
+  return null;
 }

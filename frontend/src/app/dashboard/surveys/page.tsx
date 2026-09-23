@@ -67,7 +67,7 @@ export default function SurveysPage() {
       },
       {
         id: "SRV-104",
-        title: "Campus Cafeteria & Transport Service Survey",
+        title: "Campus Cafeteria & Nutrition Service Survey",
         category: "Facilities",
         audience: "Parents & Students",
         status: "Completed",
@@ -323,7 +323,7 @@ export default function SurveysPage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Term 1 Parent Feedback & Campus Transport Poll"
+                  placeholder="e.g. Term 1 Parent Feedback & Campus Nutrition Poll"
                   required
                   className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-[#0050CB]"
                 />
@@ -339,7 +339,7 @@ export default function SurveysPage() {
                   <option value="Parent Satisfaction">Parent Satisfaction</option>
                   <option value="Staff Feedback">Staff Feedback</option>
                   <option value="Student Wellness">Student Wellness</option>
-                  <option value="Facilities">Facilities & Transport</option>
+                  <option value="Facilities">Campus Facilities & Grounds</option>
                 </select>
               </div>
 

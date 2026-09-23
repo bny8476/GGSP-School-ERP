@@ -182,7 +182,7 @@ export default function AssetQRPage() {
                   <option value="Computers">Computers & Workstations</option>
                   <option value="Projectors">Projectors & Smart Boards</option>
                   <option value="LabEquipment">Lab & Physics Equipment</option>
-                  <option value="Vehicles">Transport Vehicles</option>
+                  <option value="Vehicles">Campus Utility Equipment</option>
                 </select>
               </div>
 

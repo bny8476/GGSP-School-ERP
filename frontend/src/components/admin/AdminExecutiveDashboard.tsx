@@ -117,10 +117,6 @@ export default function AdminExecutiveDashboard({
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-blue-200 text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-[#12B76A] shadow-[0_0_8px_#12B76A] animate-pulse" />
-                <span>Live Admin Command</span>
-              </span>
               <span className="text-xs text-blue-200/80 font-medium">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
               </span>
@@ -258,59 +254,67 @@ export default function AdminExecutiveDashboard({
         {/* SECTION 2: ATTENDANCE OVERVIEW */}
         <div className="bg-white dark:bg-[#07152F] rounded-[24px] p-6 border border-[#E6EAF2] dark:border-slate-800 shadow-[0_4px_24px_rgba(0,14,40,0.03)] flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#E5EEFF] flex items-center justify-center">
+            <div className="flex items-center justify-between mb-3.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#E5EEFF] flex items-center justify-center shrink-0">
                   <UserCheck className="w-5 h-5" />
                 </div>
-                <div>
-                  <h3 className="text-sm font-black text-[#000E28] dark:text-white uppercase tracking-wider">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-black text-[#000E28] dark:text-white uppercase tracking-wider leading-tight">
                     Attendance Overview
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">
                     Live campus roll-call telemetry
                   </p>
                 </div>
               </div>
+              <span className="text-xs font-bold text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full shrink-0">
+                Biometrics Live
+              </span>
+            </div>
 
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                {(['today', 'weekly', 'monthly'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setAttendanceViewTab(tab)}
-                    className={`px-2.5 py-1 rounded-lg capitalize transition-colors cursor-pointer ${
-                      attendanceViewTab === tab
-                        ? 'bg-white dark:bg-[#0050CB] text-[#000E28] dark:text-white shadow-2xs font-extrabold'
-                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
+            {/* Full-Width Segmented Tab Control (Crisp, High-Contrast Visibility) */}
+            <div className="grid grid-cols-3 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold mb-4 border border-slate-200/60 dark:border-slate-700/60">
+              {(['today', 'weekly', 'monthly'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setAttendanceViewTab(tab)}
+                  className={`py-1.5 rounded-lg capitalize transition-all duration-200 text-center cursor-pointer ${
+                    attendanceViewTab === tab
+                      ? 'bg-white dark:bg-[#0050CB] text-[#0050CB] dark:text-white shadow-xs font-black'
+                      : 'text-slate-700 dark:text-slate-200 font-bold hover:text-[#0050CB] dark:hover:text-white'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0B1F3A]/60 border border-slate-100 dark:border-slate-800/80 mb-4">
               <div className="flex items-baseline justify-between mb-2">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Overall Rate</span>
-                <span className="text-2xl font-black text-[#000E28] dark:text-white font-saas">{attendanceRate}%</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 capitalize">
+                  {attendanceViewTab === 'today' ? 'Overall Rate' : `${attendanceViewTab} Average`}
+                </span>
+                <span className="text-2xl font-black text-[#000E28] dark:text-white font-saas">
+                  {attendanceViewTab === 'weekly' ? '95.1%' : attendanceViewTab === 'monthly' ? '93.8%' : `${attendanceRate}%`}
+                </span>
               </div>
               <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex">
                 <div
                   className="bg-emerald-500 transition-all duration-700"
-                  style={{ width: `${(studentsPresent / totalStudents) * 100}%` }}
-                  title={`Present: ${studentsPresent}`}
+                  style={{ width: `${((attendanceViewTab === 'weekly' ? 1187 : attendanceViewTab === 'monthly' ? 1171 : studentsPresent) / totalStudents) * 100}%` }}
+                  title="Present"
                 />
                 <div
                   className="bg-amber-400 transition-all duration-700"
                   style={{ width: `${(studentsLate / totalStudents) * 100}%` }}
-                  title={`Late: ${studentsLate}`}
+                  title="Late"
                 />
                 <div
                   className="bg-rose-500 transition-all duration-700"
-                  style={{ width: `${(studentsAbsent / totalStudents) * 100}%` }}
-                  title={`Absent: ${studentsAbsent}`}
+                  style={{ width: `${((attendanceViewTab === 'weekly' ? 41 : attendanceViewTab === 'monthly' ? 57 : studentsAbsent) / totalStudents) * 100}%` }}
+                  title="Absent"
                 />
               </div>
             </div>
@@ -318,14 +322,22 @@ export default function AdminExecutiveDashboard({
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40">
                 <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase">Present</p>
-                <p className="text-lg font-black text-emerald-800 dark:text-emerald-200 mt-0.5">{studentsPresent}</p>
-                <p className="text-[10px] text-emerald-600/80">{Math.round((studentsPresent / totalStudents) * 100)}%</p>
+                <p className="text-lg font-black text-emerald-800 dark:text-emerald-200 mt-0.5">
+                  {attendanceViewTab === 'weekly' ? 1187 : attendanceViewTab === 'monthly' ? 1171 : studentsPresent}
+                </p>
+                <p className="text-[10px] text-emerald-600/80">
+                  {Math.round(((attendanceViewTab === 'weekly' ? 1187 : attendanceViewTab === 'monthly' ? 1171 : studentsPresent) / totalStudents) * 100)}%
+                </p>
               </div>
 
               <div className="p-3 rounded-2xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/40">
                 <p className="text-[11px] font-bold text-rose-700 dark:text-rose-300 uppercase">Absent</p>
-                <p className="text-lg font-black text-rose-800 dark:text-rose-200 mt-0.5">{studentsAbsent}</p>
-                <p className="text-[10px] text-rose-600/80">{Math.round((studentsAbsent / totalStudents) * 100)}%</p>
+                <p className="text-lg font-black text-rose-800 dark:text-rose-200 mt-0.5">
+                  {attendanceViewTab === 'weekly' ? 41 : attendanceViewTab === 'monthly' ? 57 : studentsAbsent}
+                </p>
+                <p className="text-[10px] text-rose-600/80">
+                  {Math.round(((attendanceViewTab === 'weekly' ? 41 : attendanceViewTab === 'monthly' ? 57 : studentsAbsent) / totalStudents) * 100)}%
+                </p>
               </div>
 
               <div className="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40">

@@ -3,14 +3,17 @@
 import React, { useState } from "react";
 import { 
   Sparkles, CheckCircle2, Award, TrendingUp, MessageSquare, 
-  Smile, ShieldCheck, HeartPulse, Palette, BookOpen, Brain, Zap 
+  Smile, ShieldCheck, HeartPulse, Palette, BookOpen, Brain, Zap,
+  FileText, Download
 } from "lucide-react";
 import SpotlightCard from "@/components/teacher/SpotlightCard";
+import ReportCardModal from "@/components/parent/ReportCardModal";
 import { useParent } from "@/context/ParentContext";
 
 export default function HolisticProgressPage() {
   const { selectedChild } = useParent();
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const child = selectedChild || {
     firstName: "Aarav",
@@ -127,9 +130,19 @@ export default function HolisticProgressPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-3.5 py-2 rounded-xl">
-          <Sparkles className="w-4 h-4 text-[#0050CB]" />
-          <span>Overall Development: <strong>On Track & Thriving</strong></span>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() => setIsReportOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer"
+          >
+            <FileText className="w-4 h-4" />
+            <span>Official Report Card</span>
+          </button>
+
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-3.5 py-2 rounded-xl">
+            <Sparkles className="w-4 h-4 text-[#0050CB]" />
+            <span>Development: <strong>Thriving (92%)</strong></span>
+          </div>
         </div>
       </div>
 
@@ -206,6 +219,18 @@ export default function HolisticProgressPage() {
           );
         })}
       </div>
+
+      {/* Report Card Modal */}
+      <ReportCardModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        child={{
+          _id: (child as any)._id || "c-01",
+          firstName: child.firstName,
+          lastName: child.lastName,
+          grade: child.grade,
+        }}
+      />
     </div>
   );
 }

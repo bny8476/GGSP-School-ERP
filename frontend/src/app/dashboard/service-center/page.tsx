@@ -68,7 +68,7 @@ export default function ServiceCenterPage() {
             Universal Internal Service Request Center
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Submit IT support tickets, facility maintenance requests, HR inquiries, finance document requests, and transport logistics.
+            Submit IT support tickets, facility maintenance requests, HR inquiries, finance document requests, and campus operations.
           </p>
         </div>
         <button
@@ -151,7 +151,7 @@ export default function ServiceCenterPage() {
                   <option value="Maintenance">Facility Maintenance</option>
                   <option value="HR Request">HR & Payroll</option>
                   <option value="Finance Request">Finance & Billing</option>
-                  <option value="Transport Request">Transport Logistics</option>
+                  <option value="Operations Request">Campus Operations</option>
                 </select>
               </div>
 

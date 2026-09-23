@@ -183,15 +183,11 @@ export default function TeacherHomeWorkspace({
           </div>
         </div>
 
-        <div className="hidden xl:flex flex-col items-center justify-center text-center px-4 relative z-10">
+        <div className="hidden sm:flex flex-col items-end justify-center text-right px-4 relative z-10 shrink-0">
           <span className="text-sm font-serif italic text-blue-100 leading-snug">
             “Small steps today,<br />big dreams tomorrow.”
           </span>
           <span className="text-xs mt-1">✨ 💜</span>
-        </div>
-
-        <div className="relative shrink-0 w-full sm:w-72 h-32 rounded-2xl overflow-hidden shadow-lg border border-white/20 z-10">
-          <img src="/teacher-hero-desk.jpg" alt="Classroom Desk" className="w-full h-full object-cover" />
         </div>
       </div>
 

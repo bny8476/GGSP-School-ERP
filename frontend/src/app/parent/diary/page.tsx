@@ -6,6 +6,8 @@ import {
   CalendarHeart, Calendar, Clock, Smile, Utensils, Moon, 
   Paperclip, ChevronRight, BookOpen, Sparkles, CheckCircle2 
 } from "lucide-react";
+import Link from "next/link";
+import toast from "react-hot-toast";
 import SpotlightCard from "@/components/teacher/SpotlightCard";
 import { useParent } from "@/context/ParentContext";
 
@@ -80,10 +82,24 @@ export default function DailyDiaryPage() {
     }
   ];
 
+  const [acknowledgedMap, setAcknowledgedMap] = useState<Record<string, boolean>>({
+    d1: true,
+  });
+
+  const handleAcknowledge = (id: string) => {
+    setAcknowledgedMap((prev) => {
+      const isNowAck = !prev[id];
+      if (isNowAck) {
+        toast.success("Daily diary signed & acknowledged for class mentor!");
+      }
+      return { ...prev, [id]: isNowAck };
+    });
+  };
+
   return (
     <div className="space-y-6 pb-16">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[22px] bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-7 rounded-[26px] bg-gradient-to-r from-white via-[#F8FBFF] to-[#EFF6FF] dark:from-[#07142F] dark:via-[#091D45] dark:to-[#07142F] border border-blue-100/90 dark:border-white/10 shadow-xs">
         <div>
           <span className="text-[10px] font-black uppercase tracking-wider text-rose-500">
             Digital Daily Diary
@@ -96,13 +112,30 @@ export default function DailyDiaryPage() {
           </p>
         </div>
 
-        {/* Date Selector */}
-        <div className="flex items-center gap-2">
+        {/* Quick Date Filters + Custom Picker */}
+        <div className="flex flex-wrap items-center gap-2">
+          {[
+            { label: "Today", value: "2026-09-18" },
+            { label: "Yesterday", value: "2026-09-17" },
+            { label: "Past 7 Days", value: "2026-09-14" },
+          ].map((pill) => (
+            <button
+              key={pill.label}
+              onClick={() => setSelectedDate(pill.value)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                selectedDate === pill.value
+                  ? "bg-[#0050CB] text-white shadow-xs"
+                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-300"
+              }`}
+            >
+              {pill.label}
+            </button>
+          ))}
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-[#000E28] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
+            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-[#000E28] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
           />
         </div>
       </div>
@@ -210,6 +243,34 @@ export default function DailyDiaryPage() {
                 </div>
               </div>
             )}
+
+            {/* Parent Acknowledgement & Message Action Footer */}
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleAcknowledge(entry.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                  acknowledgedMap[entry.id]
+                    ? "bg-[#E8FAF0] text-[#027A48] border border-emerald-200"
+                    : "bg-[#0050CB] text-white hover:bg-[#0040A8] shadow-xs"
+                }`}
+              >
+                <CheckCircle2 className={`w-4 h-4 ${acknowledgedMap[entry.id] ? "text-[#027A48]" : "text-white"}`} />
+                <span>
+                  {acknowledgedMap[entry.id]
+                    ? "Signed & Acknowledged by Guardian"
+                    : "Sign & Acknowledge Entry"}
+                </span>
+              </button>
+
+              <Link
+                href="/parent/messages"
+                className="text-xs font-bold text-[#0050CB] hover:underline flex items-center gap-1.5"
+              >
+                <span>Message {entry.teacher}</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </SpotlightCard>
         ))}
       </div>

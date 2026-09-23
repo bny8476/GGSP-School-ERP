@@ -120,7 +120,7 @@ export default function ModernAcademicExcellence() {
                   {t("features.c1_title", "Intelligent Operations")}
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-[15px] leading-relaxed font-normal">
-                  {t("features.c1_desc", "Automate class scheduling, admissions workflows, transport management, and staff payroll with zero paperwork.")}
+                  {t("features.c1_desc", "Automate class scheduling, admissions workflows, facility management, and staff payroll with zero paperwork.")}
                 </p>
               </div>
 

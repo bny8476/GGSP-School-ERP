@@ -939,7 +939,7 @@ export default function Home() {
                       Intelligent Operations
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4">
-                      Automate class scheduling, admissions workflows, transport management, and staff payroll with zero paperwork.
+                      Automate class scheduling, admissions workflows, facility management, and staff payroll with zero paperwork.
                     </p>
                   </div>
 

@@ -89,31 +89,19 @@ export default function AdminStatCard({
   const theme = getTheme();
 
   return (
-    <div className="group relative bg-white dark:bg-[#07152F] rounded-[22px] p-5 sm:p-6 border border-[#E6EAF2] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,14,40,0.03)] hover:shadow-[0_12px_32px_rgba(0,80,203,0.08)] hover:-translate-y-1 hover:border-[#0050CB]/30 dark:hover:border-[#0050CB]/50 transition-all duration-300 flex flex-col justify-between h-full">
+    <div className="group relative bg-white dark:bg-[#07152F] rounded-[22px] p-4 sm:p-5 border border-[#E6EAF2] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,14,40,0.03)] hover:shadow-[0_12px_32px_rgba(0,80,203,0.12)] hover:border-[#0050CB]/40 dark:hover:border-[#0050CB]/50 transition-all duration-200 flex flex-col justify-between h-full">
       <div>
-        {/* Top Header Row: Icon + Label */}
-        <div className="flex items-center justify-between gap-3 mb-3.5">
-          <div className="flex items-center gap-2.5">
-            <div
-              className={`w-11 h-11 rounded-2xl ${theme.iconBg} border flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200`}
-            >
-              <Icon className="w-5 h-5" strokeWidth={2.2} />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wide uppercase">
-                {label}
-              </p>
-              {supportingText && (
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                  {supportingText}
-                </p>
-              )}
-            </div>
+        {/* Row 1: Icon (Left) + Trend Badge (Right) */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div
+            className={`w-10 h-10 rounded-2xl ${theme.iconBg} border flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200`}
+          >
+            <Icon className="w-5 h-5" strokeWidth={2.2} />
           </div>
 
           {trend && (
             <div
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black tracking-tight ${
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black tracking-tight shrink-0 ${
                 trend.isNeutral
                   ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                   : trend.isPositive !== false
@@ -133,9 +121,21 @@ export default function AdminStatCard({
           )}
         </div>
 
-        {/* Large Number & Trend */}
-        <div className="flex items-baseline justify-between mt-2">
-          <h3 className="text-3xl sm:text-4xl font-black text-[#000E28] dark:text-white tracking-tight font-saas">
+        {/* Row 2: Full-Width Title & Subtitle (100% Fully Visible, High Contrast) */}
+        <div className="min-h-[44px] flex flex-col justify-start">
+          <p className="text-xs font-extrabold text-[#000E28] dark:text-white tracking-wide uppercase leading-tight">
+            {label}
+          </p>
+          {supportingText && (
+            <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mt-1 leading-snug">
+              {supportingText}
+            </p>
+          )}
+        </div>
+
+        {/* Large Number & Trend - Locked Height Baseline */}
+        <div className="flex items-baseline justify-between mt-2 min-h-[38px]">
+          <h3 className="text-3xl sm:text-[34px] font-black text-[#000E28] dark:text-white tracking-tight font-saas leading-none">
             {prefix}
             <AnimatedNumber to={value} decimals={decimals} />
             {suffix}
@@ -157,9 +157,9 @@ export default function AdminStatCard({
 
       {/* Footer Meta Row */}
       {(footerLabel || footerValue || trend?.period) && (
-        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-          <span>{footerLabel || trend?.period || 'Updated just now'}</span>
-          <span className="font-bold text-[#000E28] dark:text-slate-200">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300">
+          <span className="font-medium pr-1">{footerLabel || trend?.period || 'Updated just now'}</span>
+          <span className="font-extrabold text-[#000E28] dark:text-white shrink-0 ml-1">
             {footerValue || 'Live Sync'}
           </span>
         </div>

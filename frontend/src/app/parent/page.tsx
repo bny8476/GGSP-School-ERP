@@ -14,7 +14,9 @@ import {
   Sparkles,
   Phone,
   Bookmark,
-  Bus,
+  BookOpen,
+  CreditCard,
+  MessageSquare,
   Trophy,
   Camera,
   User,
@@ -131,14 +133,7 @@ export default function ParentDashboard() {
               </div>
             </div>
 
-            {/* Right Bubble Overlay */}
-            <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-5 z-10 pointer-events-none">
-              <div className="bg-white/95 dark:bg-[#07142F]/95 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border-2 border-sky-200/80 shadow-md shadow-blue-500/10 text-center">
-                <p className="text-[10.5px] sm:text-[11px] font-black text-[#0050CB] leading-tight flex items-center gap-1">
-                  Live Classroom Sync <span className="text-emerald-500">●</span>
-                </p>
-              </div>
-            </div>
+
           </motion.div>
 
           {/* MY CHILDREN SELECTOR BAR */}
@@ -203,6 +198,61 @@ export default function ParentDashboard() {
                 All Children →
               </Link>
             </div>
+          </div>
+
+          {/* QUICK DAILY ACTIONS BAR */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {[
+              {
+                label: "Sign Daily Diary",
+                sub: "Today's class note",
+                href: "/parent/diary",
+                icon: BookOpen,
+                color: "text-[#0050CB] bg-blue-50 dark:bg-blue-950/50 border-blue-200/60",
+              },
+              {
+                label: "Apply for Leave",
+                sub: "Report absence",
+                href: "/parent/attendance",
+                icon: Calendar,
+                color: "text-amber-600 bg-amber-50 dark:bg-amber-950/50 border-amber-200/60",
+              },
+              {
+                label: "Pay School Dues",
+                sub: "Instant receipt sync",
+                href: "/parent/fees",
+                icon: CreditCard,
+                color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200/60",
+              },
+              {
+                label: "Chat with Teacher",
+                sub: "Direct messaging",
+                href: "/parent/messages",
+                icon: MessageSquare,
+                color: "text-purple-600 bg-purple-50 dark:bg-purple-950/50 border-purple-200/60",
+              },
+            ].map((action) => {
+              const ActionIcon = action.icon;
+              return (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/95 dark:bg-[#07142F]/95 border border-blue-100/90 dark:border-white/10 hover:border-[#0050CB] dark:hover:border-blue-500 shadow-xs hover:shadow-md transition-all group cursor-pointer"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${action.color}`}>
+                    <ActionIcon className="w-4.5 h-4.5 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-[#000E28] dark:text-white group-hover:text-[#0050CB] transition-colors truncate">
+                      {action.label}
+                    </p>
+                    <p className="text-[10.5px] text-slate-400 dark:text-slate-500 truncate">
+                      {action.sub}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
 
@@ -383,15 +433,15 @@ export default function ParentDashboard() {
           </div>
         </div>
 
-        {/* School Bus Banner */}
+        {/* Inspiring Academic Excellence Banner */}
         <motion.div
           whileHover={{ scale: 1.015 }}
           transition={{ duration: 0.3 }}
           className="bg-white dark:bg-[#07142F] rounded-[24px] overflow-hidden border border-blue-100/80 dark:border-white/10 shadow-[0_8px_30px_rgba(0,80,203,0.04)] relative min-h-[190px] h-full group"
         >
           <Image
-            src="/little-steps-bus.png"
-            alt="GGPS School Safe Transport Bus"
+            src="/children-hero-books.jpg"
+            alt="GGPS School Inspiring Academic Learning"
             fill
             priority
             sizes="(max-width: 768px) 100vw, 500px"

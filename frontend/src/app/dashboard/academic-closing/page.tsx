@@ -12,7 +12,7 @@ export default function AcademicClosingPage() {
     { title: "Pending Fee Ledger Cleared", status: "Validated", desc: "98.4% fee collection target achieved.", ok: true },
     { title: "Final Exam Marks & Transcripts Published", status: "Validated", desc: "All 10th & 12th grade report cards signed.", ok: true },
     { title: "Library Resource Returns Completed", status: "Validated", desc: "Zero outstanding unreturned books.", ok: true },
-    { title: "Hostel & Transport De-allocation", status: "Validated", desc: "All room allocations ready for rollover.", ok: true },
+    { title: "Hostel & Campus Facility De-allocation", status: "Validated", desc: "All room allocations ready for rollover.", ok: true },
     { title: "Student Batch Promotion Prepared", status: "Ready", desc: "Grade 9 -> Grade 10 promotion rules active.", ok: true },
   ];
 

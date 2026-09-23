@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, X, CalendarHeart, BookOpen, UserCheck, WalletCards, 
-  FileText, ArrowRight, Sparkles, Bus, Award, Bell
+  FileText, ArrowRight, Sparkles, Award, Bell
 } from "lucide-react";
 import { useParent } from "@/context/ParentContext";
 
@@ -85,14 +85,6 @@ export default function ParentSearchModal() {
       description: `Pending fee dues: ₹${(selectedChild?.feesDue || 8500).toLocaleString()}`,
       icon: WalletCards,
       href: "/parent/fees",
-    },
-    {
-      id: "trans-bus",
-      category: "Transport",
-      title: "School Bus Route & Timing",
-      description: "Route #4, Bus GGPS-08, Driver Mr. Ramesh (+91 98450 11223)",
-      icon: Bus,
-      href: "/parent/transport",
     },
     {
       id: "doc-receipt",

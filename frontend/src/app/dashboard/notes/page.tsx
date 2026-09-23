@@ -120,7 +120,7 @@ Coordination memo regarding curriculum alignment between Cambridge IGCSE and pre
     title: "Campus Safety & Fire Evacuation Protocols: 2026 Audit Standard",
     content: `## Official Institutional Safety Directive
 
-Notice to all teaching faculty, transport drivers, and administrative personnel regarding emergency preparedness.
+Notice to all teaching faculty, facility staff, and administrative personnel regarding emergency preparedness.
 
 ### Assembly Stations:
 1. **Primary Wing**: North Courtyard (Station Alpha)

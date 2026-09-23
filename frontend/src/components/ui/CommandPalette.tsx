@@ -17,7 +17,7 @@ import {
   PlusCircle, 
   FilePlus, 
   ArrowRight,
-  Bus,
+  Package,
   ShieldCheck,
   Megaphone,
   BarChart3,
@@ -55,7 +55,7 @@ const GLOBAL_SEARCH_ITEMS: SearchItem[] = [
 
   // Finance
   { id: 'fin-1', title: 'INV-2026-0042', subtitle: '₹45,000 Term 1 Tuition Fee • Paid', category: 'Finance', href: '/dashboard/fees', icon: Receipt },
-  { id: 'fin-2', title: 'INV-2026-0043', subtitle: '₹22,000 Annual Transport Fee • Pending', category: 'Finance', href: '/dashboard/fees', icon: Receipt },
+  { id: 'fin-2', title: 'INV-2026-0043', subtitle: '₹22,000 Annual Lab & Activity Fee • Pending', category: 'Finance', href: '/dashboard/fees', icon: Receipt },
   { id: 'fin-3', title: 'Staff Payroll Ledger', subtitle: 'Monthly faculty salary distribution', category: 'Finance', href: '/dashboard/payroll', icon: DollarSign },
 
   // Modules
@@ -66,7 +66,7 @@ const GLOBAL_SEARCH_ITEMS: SearchItem[] = [
   { id: 'mod-5', title: 'Attendance Engine', subtitle: 'Student and staff biometric logs', category: 'Modules', href: '/dashboard/attendance', icon: UserCheck },
   { id: 'mod-6', title: 'Fee Management', subtitle: 'Billing, receipts & defaulters ledger', category: 'Modules', href: '/dashboard/fees', icon: DollarSign },
   { id: 'mod-7', title: 'Faculty & HR', subtitle: 'Teacher directory, leave & attendance', category: 'Modules', href: '/dashboard/teachers', icon: Users },
-  { id: 'mod-8', title: 'Transport & Fleet', subtitle: 'Bus tracking, routes & stops', category: 'Operations', href: '/dashboard/transport', icon: Bus },
+  { id: 'mod-8', title: 'Supplies & Inventory', subtitle: 'Stock tracking, assets & logistics', category: 'Operations', href: '/dashboard/inventory', icon: Package },
   { id: 'mod-9', title: 'Reports & Audits', subtitle: 'Export academic, financial & attendance logs', category: 'Modules', href: '/dashboard/reports', icon: BarChart3 },
   { id: 'mod-10', title: 'System Settings', subtitle: 'Campuses, security & configuration', category: 'Modules', href: '/dashboard/settings', icon: Settings },
 ];

@@ -50,7 +50,7 @@ const FALLBACK_STAFF: StaffMember[] = [
   { id: "u3", name: "David Chen", role: "Physics Faculty - Grade 10", department: "Academics", email: "d.chen@globalinternationalschool.edu" },
   { id: "u4", name: "Robert Taylor", role: "Chief Finance Officer", department: "Finance", email: "bursar@globalinternationalschool.edu" },
   { id: "u5", name: "Elena Rostova", role: "Dean of Students & Discipline", department: "Student Welfare", email: "e.rostova@globalinternationalschool.edu" },
-  { id: "u6", name: "Ahmed Al-Mansoor", role: "Transport Operations Manager", department: "Transport", email: "transport@globalinternationalschool.edu" },
+  { id: "u6", name: "Ahmed Al-Mansoor", role: "Facility Operations Manager", department: "Facilities", email: "facilities@globalinternationalschool.edu" },
   { id: "u7", name: "Michael Chang", role: "Head of Campus Safety & Maintenance", department: "Operations", email: "safety@globalinternationalschool.edu" },
   { id: "u8", name: "Claire Bennett", role: "Chief Examination Controller", department: "Assessments", email: "exams@globalinternationalschool.edu" },
 ];
@@ -512,7 +512,7 @@ export default function TodoPage() {
                 <option value="All Categories">All Categories</option>
                 <option value="Academic">Academic</option>
                 <option value="Administration">Administration</option>
-                <option value="Transport">Transport</option>
+                <option value="Facilities">Facilities</option>
                 <option value="Finance">Finance</option>
                 <option value="Events">Events</option>
                 <option value="Library">Library</option>
@@ -990,7 +990,7 @@ export default function TodoPage() {
                   >
                     <option value="Academic">Academic</option>
                     <option value="Administration">Administration</option>
-                    <option value="Transport">Transport</option>
+                    <option value="Facilities">Facilities</option>
                     <option value="Finance">Finance</option>
                     <option value="Events">Events</option>
                     <option value="Library">Library</option>

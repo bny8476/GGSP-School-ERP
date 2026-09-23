@@ -80,14 +80,6 @@ const FeesIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   </svg>
 );
 
-const TransportIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <rect x="4" y="4" width="16" height="14" rx="3" />
-    <path d="M4 10h16M4 14h16" />
-    <circle cx="7.5" cy="18.5" r="1.5" />
-    <circle cx="16.5" cy="18.5" r="1.5" />
-  </svg>
-);
 
 const ActivitiesIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -129,26 +121,55 @@ export default function ParentSidebar({
   const pathname = usePathname();
   const router = useRouter();
 
+  interface NavSection {
+    title: string;
+    items: {
+      label: string;
+      href: string;
+      icon: React.ComponentType<{ className?: string }>;
+      badge?: string;
+    }[];
+  }
+
   /* ========================================================
-     EXACT NAVIGATION ITEMS LIST FROM USER'S SCREENSHOT
+     CLUSTERED NAVIGATION DOMAINS FOR INTUITIVE PARENT UX
   ======================================================== */
-  const navItems = [
-    { label: "Home", href: "/parent", icon: Home },
-    { label: "My Children", href: "/parent/children", icon: Users, badge: "2" },
-    { label: "Attendance", href: "/parent/attendance", icon: AttendanceBagIcon },
-    { label: "Daily Diary", href: "/parent/diary", icon: DailyDiaryIcon },
-    { label: "Homework", href: "/parent/homework", icon: HomeworkIcon, badge: "3" },
-    { label: "Academic Progress", href: "/parent/progress", icon: AcademicProgressIcon },
-    { label: "Assessments", href: "/parent/assessments", icon: AssessmentsIcon },
-    { label: "Timetable", href: "/parent/timetable", icon: TimetableIcon },
-    { label: "Fees & Payments", href: "/parent/fees", icon: FeesIcon, badge: "1" },
-    { label: "Transport", href: "/parent/transport", icon: TransportIcon },
-    { label: "Activities", href: "/parent/activities", icon: ActivitiesIcon },
-    { label: "School Events", href: "/parent/events", icon: SchoolEventsIcon, badge: "4" },
-    { label: "Communication", href: "/parent/messages", icon: CommunicationIcon, badge: "5" },
-    { label: "Notifications", href: "/parent/notifications", icon: Bell, badge: "5" },
-    { label: "Documents", href: "/parent/documents", icon: DocumentsIcon },
-    { label: "My Account", href: "/parent/account", icon: User },
+  const navSections: NavSection[] = [
+    {
+      title: "Daily Essentials",
+      items: [
+        { label: "Home", href: "/parent", icon: Home },
+        { label: "My Children", href: "/parent/children", icon: Users, badge: "2" },
+        { label: "Daily Diary", href: "/parent/diary", icon: DailyDiaryIcon },
+        { label: "Attendance", href: "/parent/attendance", icon: AttendanceBagIcon },
+        { label: "Homework", href: "/parent/homework", icon: HomeworkIcon, badge: "3" },
+        { label: "Timetable", href: "/parent/timetable", icon: TimetableIcon },
+      ],
+    },
+    {
+      title: "Academics & Growth",
+      items: [
+        { label: "Academic Progress", href: "/parent/progress", icon: AcademicProgressIcon },
+        { label: "Assessments", href: "/parent/assessments", icon: AssessmentsIcon },
+        { label: "Activities", href: "/parent/activities", icon: ActivitiesIcon },
+      ],
+    },
+    {
+      title: "School Life & Connect",
+      items: [
+        { label: "Communication", href: "/parent/messages", icon: CommunicationIcon, badge: "5" },
+        { label: "School Events", href: "/parent/events", icon: SchoolEventsIcon, badge: "4" },
+        { label: "Notifications", href: "/parent/notifications", icon: Bell, badge: "5" },
+      ],
+    },
+    {
+      title: "Finance & Records",
+      items: [
+        { label: "Fees & Payments", href: "/parent/fees", icon: FeesIcon, badge: "1" },
+        { label: "Documents", href: "/parent/documents", icon: DocumentsIcon },
+        { label: "My Account", href: "/parent/account", icon: User },
+      ],
+    },
   ];
 
   const handleLogout = () => {
@@ -184,7 +205,7 @@ export default function ParentSidebar({
         {/* Desktop Collapse Toggle */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-[#1A68E5] hover:bg-[#EAF4FF] dark:hover:bg-white/10 transition-colors"
+          className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-[#1A68E5] hover:bg-[#EAF4FF] dark:hover:bg-white/10 transition-colors cursor-pointer"
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -193,51 +214,66 @@ export default function ParentSidebar({
         {/* Mobile Close Button */}
         <button
           onClick={() => setIsMobileOpen(false)}
-          className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white"
+          className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* 2. Main Continuous Navigation List (Exact to reference screenshot) */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin scrollbar-thumb-blue-100/60 dark:scrollbar-thumb-slate-800">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = isItemActive(item.href);
+      {/* 2. Clustered Navigation List */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-3 scrollbar-thin scrollbar-thumb-blue-100/60 dark:scrollbar-thumb-slate-800">
+        {navSections.map((section, sIdx) => (
+          <div key={section.title || sIdx} className="space-y-1">
+            {/* Section Header */}
+            {!isCollapsed ? (
+              <div className="px-3 pt-1.5 pb-0.5">
+                <p className="text-[10px] font-extrabold tracking-wider uppercase text-slate-400 dark:text-blue-300/60">
+                  {section.title}
+                </p>
+              </div>
+            ) : (
+              sIdx > 0 && <div className="border-t border-blue-100/60 dark:border-white/10 my-2 mx-1" />
+            )}
 
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={() => setIsMobileOpen(false)}
-              className={`relative flex items-center gap-3.5 px-4 py-2.5 rounded-[18px] transition-all duration-200 group ${
-                active
-                  ? "bg-gradient-to-r from-[#1C64F2] via-[#2B7FFF] to-[#3B82F6] text-white font-bold shadow-[0_8px_20px_rgba(28,100,242,0.32)] scale-[1.01]"
-                  : "text-[#1E3A8A] dark:text-blue-100 hover:text-[#0050CB] hover:bg-blue-50/80 dark:hover:bg-white/5 font-bold text-[14px]"
-              } ${isCollapsed ? "justify-center px-2 py-3" : ""}`}
-              title={isCollapsed ? item.label : undefined}
-            >
-              <Icon
-                className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                  active ? "text-white" : "text-[#1A56DB] dark:text-blue-400"
-                }`}
-              />
+            {section.items.map((item) => {
+              const Icon = item.icon;
+              const active = isItemActive(item.href);
 
-              {!isCollapsed && (
-                <span className={`truncate flex-1 tracking-tight text-[14px] ${active ? "font-bold text-white" : "font-semibold"}`}>
-                  {item.label}
-                </span>
-              )}
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setIsMobileOpen(false)}
+                  className={`relative flex items-center gap-3 px-3.5 py-2 rounded-[14px] transition-all duration-200 group ${
+                    active
+                      ? "bg-gradient-to-r from-[#1C64F2] via-[#2B7FFF] to-[#3B82F6] text-white font-bold shadow-[0_6px_16px_rgba(28,100,242,0.30)] scale-[1.01]"
+                      : "text-[#1E3A8A] dark:text-blue-100 hover:text-[#0050CB] hover:bg-blue-50/80 dark:hover:bg-white/5 font-semibold text-[13.5px]"
+                  } ${isCollapsed ? "justify-center px-2 py-2.5" : ""}`}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <Icon
+                    className={`w-4.5 h-4.5 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                      active ? "text-white" : "text-[#1A56DB] dark:text-blue-400"
+                    }`}
+                  />
 
-              {/* Red / Coral Circular Notification Badge (Exact to reference screenshot) */}
-              {!isCollapsed && item.badge && !active && (
-                <span className="w-5 h-5 rounded-full bg-[#F43F5E] text-white text-[11px] font-black flex items-center justify-center shrink-0 shadow-xs ml-auto">
-                  {item.badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+                  {!isCollapsed && (
+                    <span className={`truncate flex-1 tracking-tight text-[13.5px] ${active ? "font-bold text-white" : "font-medium text-slate-700 dark:text-slate-200 group-hover:text-[#0050CB]"}`}>
+                      {item.label}
+                    </span>
+                  )}
+
+                  {/* Notification Badge */}
+                  {!isCollapsed && item.badge && !active && (
+                    <span className="w-5 h-5 rounded-full bg-[#F43F5E] text-white text-[10.5px] font-black flex items-center justify-center shrink-0 shadow-xs ml-auto">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* 3. Bottom Decorative Card & Links (Exact to Reference Screenshot) */}

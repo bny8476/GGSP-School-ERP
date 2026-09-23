@@ -93,7 +93,7 @@ export default function FinancePage() {
       if (!loadedFees || loadedFees.length === 0) {
         loadedFees = [
           { _id: 'f_01', studentId: { firstName: 'Aarav', lastName: 'Sharma' }, grade: 'LKG', feeType: 'Term 1 Tuition', totalAmount: 32000, amountPaid: 32000, status: 'Paid', dueDate: '2026-06-15' },
-          { _id: 'f_02', studentId: { firstName: 'Diya', lastName: 'Patel' }, grade: 'UKG', feeType: 'Term 1 Tuition & Transport', totalAmount: 42000, amountPaid: 42000, status: 'Paid', dueDate: '2026-06-15' },
+          { _id: 'f_02', studentId: { firstName: 'Diya', lastName: 'Patel' }, grade: 'UKG', feeType: 'Term 1 Tuition & Activities', totalAmount: 42000, amountPaid: 42000, status: 'Paid', dueDate: '2026-06-15' },
           { _id: 'f_03', studentId: { firstName: 'Vihaan', lastName: 'Verma' }, grade: 'Grade 5', feeType: 'Term 1 Tuition', totalAmount: 36000, amountPaid: 18000, status: 'Partial', dueDate: '2026-07-01' },
           { _id: 'f_04', studentId: { firstName: 'Ishaan', lastName: 'Gupta' }, grade: 'Grade 9', feeType: 'Annual Lab & Tuition', totalAmount: 54000, amountPaid: 0, status: 'Overdue', dueDate: '2026-05-30' },
           { _id: 'f_05', studentId: { firstName: 'Ananya', lastName: 'Iyer' }, grade: 'Pre-KG', feeType: 'Term 1 Daycare & Tuition', totalAmount: 28000, amountPaid: 28000, status: 'Paid', dueDate: '2026-06-15' },
@@ -106,7 +106,7 @@ export default function FinancePage() {
         loadedExpenses = [
           { _id: 'e_01', description: 'Classroom Smartboard Upgrades & Hardware', category: 'Infrastructure', amount: 185000, date: '2026-09-15' },
           { _id: 'e_02', description: 'September Faculty & Teaching Staff Payroll', category: 'Salaries', amount: 840000, date: '2026-09-01' },
-          { _id: 'e_03', description: 'Campus Bus Fleet Diesel & Maintenance', category: 'Transport', amount: 92000, date: '2026-09-18' },
+          { _id: 'e_03', description: 'Campus Facilities Maintenance & Upkeep', category: 'Maintenance', amount: 92000, date: '2026-09-18' },
           { _id: 'e_04', description: 'Montessori Play Equipment & Art Supplies', category: 'Supplies', amount: 48000, date: '2026-09-12' },
           { _id: 'e_05', description: 'High-speed Fiber Internet & Cloud ERP Servers', category: 'Utilities', amount: 35000, date: '2026-09-05' },
         ];
@@ -674,7 +674,7 @@ export default function FinancePage() {
                   <option>Supplies</option>
                   <option>Salaries</option>
                   <option>Infrastructure</option>
-                  <option>Transport</option>
+                  <option>Maintenance</option>
                   <option>Utilities</option>
                   <option>Events</option>
                 </select>

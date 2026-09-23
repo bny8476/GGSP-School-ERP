@@ -9,7 +9,6 @@ import {
   Users, 
   BookOpen, 
   DollarSign, 
-  Bus, 
   UserCheck, 
   Megaphone, 
   BarChart3, 
@@ -226,12 +225,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       category: '6. OPERATIONS & LOGISTICS',
       items: [
         { 
-          href: '/dashboard/transport', 
-          label: 'Operations & Fleet', 
-          icon: Bus, 
+          href: '/dashboard/inventory', 
+          label: 'Operations & Logistics', 
+          icon: Package, 
           show: isSuperAdmin || isPrincipal,
           subItems: [
-            { href: '/dashboard/transport', label: 'Transport & Fleet' },
             { href: '/dashboard/inventory', label: 'Supplies & Inventory' },
             { href: '/dashboard/asset-qr', label: 'Asset QR Codes' },
             { href: '/dashboard/visitors', label: 'Campus Visitor Logs' },

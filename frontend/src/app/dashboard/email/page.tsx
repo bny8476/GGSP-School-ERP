@@ -99,7 +99,7 @@ const FALLBACK_TEMPLATES: EmailTemplate[] = [
 
 We hope this message finds you well.
 
-This is a formal notification from the Bursar's Office regarding the pending school tuition and transport fees for your child, [Student Name] (Grade: [Grade], Admission No: [Admission No]).
+This is a formal notification from the Bursar's Office regarding the pending school tuition and activity fees for your child, [Student Name] (Grade: [Grade], Admission No: [Admission No]).
 
 Fee Breakdown Summary:
 • Outstanding Tuition Fee: $[Amount Due]
@@ -212,7 +212,7 @@ Please take note of the upcoming schedule and administrative updates for the upc
 Key Announcements:
 1. Mid-Term Recess dates and campus facility maintenance hours.
 2. Annual Science & Technology Exhibition submission deadline: [Due Date].
-3. Transportation route updates for North Campus buses.
+3. Campus facility and schedule updates for North Campus.
 
 Thank you for your continuous partnership in fostering excellence.
 
