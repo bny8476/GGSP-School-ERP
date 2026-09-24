@@ -572,6 +572,25 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
         }
       });
 
+      socket.on('attendance:updated', (data: any) => {
+        if (!data) return;
+        if (!data.studentId || String(data.studentId) === String(selectedChildId)) {
+          setTodayAttendance((prev) => ({
+            ...prev,
+            recorded: true,
+            status: data.status || prev.status,
+            date: data.date || new Date(),
+            absenceReason: data.absenceReason || prev.absenceReason,
+            teacherRemark: data.teacherRemark || prev.teacherRemark,
+          }));
+          refreshChildData(selectedChildId);
+          toast.success(`Attendance updated: ${data.status || 'Updated'}`, {
+            icon: data.status === 'Present' ? '✓' : data.status === 'Absent' ? '⚠' : '🕒',
+            style: { borderRadius: '16px', background: '#000E28', color: '#fff', fontSize: '13px', fontWeight: 'bold' },
+          });
+        }
+      });
+
       // 2. Class Work Real-Time Event
       socket.on('classwork:published', (newWork: any) => {
         setTodayClassWork(prev => [newWork, ...prev.filter(w => w._id !== newWork._id)]);

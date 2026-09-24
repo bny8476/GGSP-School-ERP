@@ -308,7 +308,15 @@ export const markAttendance = async (req: Request, res: Response) => {
 
           emitToUser(parentUserId.toString(), 'notification:new', notif);
           emitToUser(parentUserId.toString(), 'attendance:updated', { studentId, status: 'Late', date: recordDate });
+        } else if (status === 'Present') {
+          emitToUser(parentUserId.toString(), 'attendance:updated', { studentId, status: 'Present', date: recordDate, checkInTime });
         }
+        emitToUser(parentUserId.toString(), 'attendance:marked', {
+          records: [studentAttendanceDoc],
+          studentId,
+          status,
+          date: recordDate,
+        });
       }
 
       // 4. Legacy Attendance Upsert for backwards compatibility

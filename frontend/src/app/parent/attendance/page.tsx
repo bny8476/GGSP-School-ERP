@@ -174,18 +174,6 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          {/* Center-Right Illustration Composition */}
-          <div className="hidden lg:block absolute left-[52%] -bottom-1 -translate-x-1/2 pointer-events-none select-none z-10">
-            <div className="relative w-72 h-32">
-              <Image
-                src="/attendance-banner-illustration.jpg"
-                alt="Student Attendance Illustration"
-                fill
-                priority
-                className="object-contain object-bottom drop-shadow-sm"
-              />
-            </div>
-          </div>
 
           {/* Right: Child Selector Dropdown Pill */}
           <div className="relative z-30 self-start md:self-auto shrink-0">

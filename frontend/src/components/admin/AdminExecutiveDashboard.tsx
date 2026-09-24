@@ -113,67 +113,67 @@ export default function AdminExecutiveDashboard({
       {/* ========================================================
           HERO EXECUTIVE BANNER
       ======================================================== */}
-      <div className="relative overflow-hidden rounded-[30px] sm:rounded-[36px] bg-gradient-to-r from-[#08152F] via-[#0B1735] to-[#0050CB] p-7 sm:p-9 border border-white/10 shadow-[0_20px_50px_rgba(0,14,40,0.18)] text-white">
+      <div className="relative overflow-hidden rounded-[24px] sm:rounded-[28px] bg-gradient-to-r from-[#08152F] via-[#0B1735] to-[#0050CB] py-4 px-5 sm:py-5 sm:px-7 border border-white/10 shadow-[0_12px_36px_rgba(0,14,40,0.14)] text-white">
         <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-blue-400/40 to-transparent pointer-events-none" />
         <div className="absolute -top-24 -right-20 w-80 h-80 bg-[#0050CB]/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-16 w-60 h-60 bg-blue-600/25 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-2xl">
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6">
+          <div className="space-y-1.5 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-blue-200/80 font-medium">
+              <span className="text-[11px] text-blue-200/80 font-medium">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
               </span>
               <span className="text-xs text-blue-300/60 hidden sm:inline">•</span>
-              <span className="text-xs font-bold text-blue-200 hidden sm:inline">
+              <span className="text-[11px] font-bold text-blue-200 hidden sm:inline">
                 AY 2025 - 2026
               </span>
               <span className="text-xs text-blue-300/60 hidden sm:inline">•</span>
-              <span className="text-xs font-bold text-[#FF690C] bg-[#FF690C]/15 px-2 py-0.5 rounded-full border border-[#FF690C]/30 hidden sm:inline">
+              <span className="text-[10px] font-bold text-[#FF690C] bg-[#FF690C]/15 px-2 py-0.5 rounded-full border border-[#FF690C]/30 hidden sm:inline">
                 Main Campus
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight font-saas">
+            <h1 className="text-xl sm:text-2xl lg:text-[26px] font-extrabold tracking-tight text-white leading-tight font-saas">
               Good Morning, <span className="text-[#E5EEFF] bg-clip-text text-transparent bg-gradient-to-r from-[#E5EEFF] via-blue-200 to-white">{userName}</span> 👋
             </h1>
 
-            <p className="text-blue-100/85 text-xs sm:text-sm font-normal leading-relaxed">
+            <p className="text-blue-100/80 text-xs font-normal leading-snug line-clamp-2 max-w-xl">
               Here&apos;s what&apos;s happening across GGPS today. Monitor student enrollments, faculty attendance, fee inflows, and campus operations in real-time.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsAddStudentOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-blue-50 text-[#0050CB] font-bold text-xs sm:text-sm shadow-md transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-white hover:bg-blue-50 text-[#0050CB] font-bold text-xs shadow-md transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
             >
-              <PlusCircle className="w-4 h-4 text-[#0050CB]" />
+              <PlusCircle className="w-3.5 h-3.5 text-[#0050CB]" />
               <span>+ Add Student</span>
             </button>
 
             <Link
               href="/dashboard/admissions"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0050CB] hover:bg-[#1469E8] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#0050CB]/30 border border-white/20 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-[#0050CB] hover:bg-[#1469E8] text-white font-bold text-xs shadow-md shadow-[#0050CB]/30 border border-white/20 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
             >
-              <Sparkles className="w-4 h-4 text-[#FF690C]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#FF690C]" />
               <span>Admissions</span>
             </Link>
 
             <Link
               href="/dashboard/fees"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs sm:text-sm transition-all duration-200"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs transition-all duration-200"
             >
-              <Wallet className="w-4 h-4 text-emerald-400" />
+              <Wallet className="w-3.5 h-3.5 text-emerald-400" />
               <span>Collect Fee</span>
             </Link>
 
             <Link
               href="/dashboard/attendance"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs sm:text-sm transition-all duration-200"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-bold text-xs transition-all duration-200"
             >
-              <UserCheck className="w-4 h-4 text-blue-300" />
+              <UserCheck className="w-3.5 h-3.5 text-blue-300" />
               <span>Attendance</span>
             </Link>
           </div>

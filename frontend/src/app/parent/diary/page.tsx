@@ -1,279 +1,571 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import { 
-  CalendarHeart, Calendar, Clock, Smile, Utensils, Moon, 
-  Paperclip, ChevronRight, BookOpen, Sparkles, CheckCircle2 
-} from "lucide-react";
 import Link from "next/link";
+import {
+  BookOpen,
+  Utensils,
+  Moon,
+  Palette,
+  Home,
+  Calendar,
+  Clock,
+  User,
+  Eye,
+  ChevronRight,
+  ChevronDown,
+  Search,
+  X,
+  CheckCircle2,
+  Bookmark,
+  Sparkles,
+} from "lucide-react";
 import toast from "react-hot-toast";
-import SpotlightCard from "@/components/teacher/SpotlightCard";
 import { useParent } from "@/context/ParentContext";
 
+interface DiaryEntry {
+  id: string;
+  category: "Academic" | "Meals & Nutrition" | "Rest & Nap Time" | "Creative Activity" | "Homework";
+  shortCategory: "Academic" | "Meals" | "Rest" | "Activity" | "Homework";
+  title: string;
+  description: string;
+  dateTime: string;
+  dateTag: "Today" | "Yesterday" | "Last 7 Days" | "Last 30 Days";
+  subjectOrTag: string;
+  tagIconType: "subject" | "meal" | "duration" | "craft";
+  teacher: string;
+  image: string;
+  categoryBg: string;
+  categoryText: string;
+  iconBg: string;
+  iconColor: string;
+  detailedNotes?: string;
+  feedback?: string;
+}
+
+const DIARY_ENTRIES: DiaryEntry[] = [
+  {
+    id: "diary-1",
+    category: "Academic",
+    shortCategory: "Academic",
+    title: "Chapter 5 – Fractions (Worksheet)",
+    description: "Aarav completed the worksheet on fractions. He was able to identify and color the correct shapes. Well done!",
+    dateTime: "18 Sep 2026, 10:15 AM",
+    dateTag: "Today",
+    subjectOrTag: "Maths",
+    tagIconType: "subject",
+    teacher: "Ms. Ananya Roy",
+    image: "/diary-fractions-worksheet.jpg",
+    categoryBg: "bg-[#E5EEFF] dark:bg-blue-950/50",
+    categoryText: "text-[#0050CB] dark:text-blue-400",
+    iconBg: "bg-[#2563EB]",
+    iconColor: "text-white",
+    detailedNotes: "Topic covered: Equal parts, halves, thirds, and quarters using pictorial models. Aarav demonstrated 100% accuracy in coloring shaded fractions.",
+    feedback: "High spatial grasp and rapid calculation speed. Recommended home practice: fractions cutting game.",
+  },
+  {
+    id: "diary-2",
+    category: "Meals & Nutrition",
+    shortCategory: "Meals",
+    title: "Lunch",
+    description: "Aarav had vegetable rice, dal, and curd. Finished all the food.",
+    dateTime: "18 Sep 2026, 12:30 PM",
+    dateTag: "Today",
+    subjectOrTag: "Lunch",
+    tagIconType: "meal",
+    teacher: "Class Teacher",
+    image: "/diary-lunch-tray.jpg",
+    categoryBg: "bg-[#DCFCE7] dark:bg-emerald-950/50",
+    categoryText: "text-[#16A34A] dark:text-emerald-400",
+    iconBg: "bg-[#16A34A]",
+    iconColor: "text-white",
+    detailedNotes: "Menu: Steamed jeera rice, yellow toor dal, mixed cauliflower & paneer vegetable curry, home-set curd, and wheat roti.",
+    feedback: "Ate independently without spilling. Drank 300ml of clean drinking water post lunch.",
+  },
+  {
+    id: "diary-3",
+    category: "Rest & Nap Time",
+    shortCategory: "Rest",
+    title: "Rest Time",
+    description: "Aarav took a 45-minute rest after lunch. He was calm and relaxed.",
+    dateTime: "18 Sep 2026, 01:30 PM",
+    dateTag: "Today",
+    subjectOrTag: "45 minutes",
+    tagIconType: "duration",
+    teacher: "Class Teacher",
+    image: "/diary-rest-time.jpg",
+    categoryBg: "bg-[#F3E8FF] dark:bg-purple-950/50",
+    categoryText: "text-[#9333EA] dark:text-purple-400",
+    iconBg: "bg-[#9333EA]",
+    iconColor: "text-white",
+    detailedNotes: "Post-lunch quiet period from 1:30 PM to 2:15 PM in the kindergarten relaxation room with gentle ambient music.",
+    feedback: "Fell asleep smoothly and woke up refreshed, energetic, and cheerful for afternoon creative workshops.",
+  },
+  {
+    id: "diary-4",
+    category: "Creative Activity",
+    shortCategory: "Activity",
+    title: "Art & Craft",
+    description: "Aarav made a beautiful paper craft using colored paper. He was very creative and participated enthusiastically.",
+    dateTime: "18 Sep 2026, 03:00 PM",
+    dateTag: "Today",
+    subjectOrTag: "Art & Craft",
+    tagIconType: "craft",
+    teacher: "Ms. Neha Kapoor",
+    image: "/diary-art-craft.jpg",
+    categoryBg: "bg-[#FFE4E6] dark:bg-rose-950/50",
+    categoryText: "text-[#E11D48] dark:text-rose-400",
+    iconBg: "bg-[#F43F5E]",
+    iconColor: "text-white",
+    detailedNotes: "Project: Accordion folding and concentric rainbow paper fan rosette. Practiced fine motor dexterity, symmetric folding, and color wheel arrangements.",
+    feedback: "Selected color contrasts thoughtfully. Shared safety scissors politely with bench partner.",
+  },
+  {
+    id: "diary-5",
+    category: "Homework",
+    shortCategory: "Homework",
+    title: "Maths Practice",
+    description: "Complete 10 sums from page 48 in the workbook.",
+    dateTime: "17 Sep 2026, 05:00 PM",
+    dateTag: "Yesterday",
+    subjectOrTag: "Maths",
+    tagIconType: "subject",
+    teacher: "Ms. Ananya Roy",
+    image: "/diary-maths-practice.jpg",
+    categoryBg: "bg-[#E0F2FE] dark:bg-sky-950/50",
+    categoryText: "text-[#0284C7] dark:text-sky-400",
+    iconBg: "bg-[#0284C7]",
+    iconColor: "text-white",
+    detailedNotes: "Homework Task: Simple double-digit additions and carryover exercises (Numbers 1-100). Due tomorrow before 9:00 AM assembly.",
+    feedback: "Ensure writing numbers clearly in designated squared grids.",
+  },
+];
+
 export default function DailyDiaryPage() {
-  const { selectedChild } = useParent();
-  const [selectedDate, setSelectedDate] = useState("2026-09-18");
-  const [diaries, setDiaries] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const child = selectedChild || {
-    firstName: "Aarav",
-    lastName: "Sharma",
-    grade: "LKG",
-  };
-
-  useEffect(() => {
-    async function fetchDiaries() {
-      setIsLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-        const res = await fetch(`${apiBase}/api/v1/daily-diary?date=${selectedDate}`, {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setDiaries(data);
-          }
-        }
-      } catch (_) {
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchDiaries();
-  }, [selectedDate, child]);
-
-  const sampleEntries = [
-    {
-      id: "d1",
-      date: "Friday, 18 September 2026",
-      teacher: "Ms. Ananya Roy",
-      role: "Class Mentor (LKG)",
-      topic: "Numbers & Counting 1 to 10 with Wooden Blocks",
-      description: "Children practiced counting and grouping tactile wooden beads and coloured blocks into sets of 5 and 10. Aarav engaged energetically, demonstrated great number recognition, and assisted classmates during table cleanup.",
-      meals: "Finished complete vegetable poha snack box & water bottle",
-      napTime: "45 minutes rest during post-lunch quiet time",
-      mood: "Happy & highly inquisitive",
-      activities: ["Counting 1-10", "Number Rhyme Time", "Clay Number Shapes"],
-      images: [
-        "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&auto=format&fit=crop&q=80"
-      ]
-    },
-    {
-      id: "d2",
-      date: "Thursday, 17 September 2026",
-      teacher: "Ms. Ananya Roy",
-      role: "Class Mentor (LKG)",
-      topic: "Sensory Nature Exploration & Leaf Rubbing",
-      description: "Students collected fallen leaves of varying shapes and textures from the school garden, followed by wax crayon texture rubbing on art sheets.",
-      meals: "Ate fruit salad and sandwiches completely",
-      napTime: "30 minutes rest",
-      mood: "Curious and creative",
-      activities: ["Nature Walk", "Texture Rubbing Art", "Botanical Vocabulary"],
-      images: [
-        "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&auto=format&fit=crop&q=80"
-      ]
-    }
-  ];
-
-  const [acknowledgedMap, setAcknowledgedMap] = useState<Record<string, boolean>>({
-    d1: true,
+  const { children, selectedChild, selectChild } = useParent();
+  const [activeFilter, setActiveFilter] = useState<"Today" | "Yesterday" | "Last 7 Days" | "Last 30 Days">("Today");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
+  const [isChildDropdownOpen, setIsChildDropdownOpen] = useState(false);
+  const [acknowledgedIds, setAcknowledgedIds] = useState<Record<string, boolean>>({
+    "diary-1": true,
+    "diary-2": true,
   });
 
-  const handleAcknowledge = (id: string) => {
-    setAcknowledgedMap((prev) => {
-      const isNowAck = !prev[id];
-      if (isNowAck) {
-        toast.success("Daily diary signed & acknowledged for class mentor!");
+  const activeChild = selectedChild || {
+    _id: "child-default",
+    firstName: "Aarav",
+    lastName: "Sharma",
+    grade: "Grade 4",
+    section: "Section A",
+    studentPhoto: "/aarav-profile-avatar.png",
+  };
+
+  const filteredEntries = useMemo(() => {
+    return DIARY_ENTRIES.filter((entry) => {
+      // 1. Time Filter
+      if (activeFilter === "Today" && entry.dateTag !== "Today") return false;
+      if (activeFilter === "Yesterday" && entry.dateTag !== "Yesterday") return false;
+
+      // 2. Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = entry.title.toLowerCase().includes(q);
+        const matchesDesc = entry.description.toLowerCase().includes(q);
+        const matchesCat = entry.category.toLowerCase().includes(q);
+        const matchesTeacher = entry.teacher.toLowerCase().includes(q);
+        const matchesTag = entry.subjectOrTag.toLowerCase().includes(q);
+        return matchesTitle || matchesDesc || matchesCat || matchesTeacher || matchesTag;
       }
-      return { ...prev, [id]: isNowAck };
+      return true;
+    });
+  }, [activeFilter, searchQuery]);
+
+  const handleAcknowledge = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setAcknowledgedIds((prev) => {
+      const nextState = !prev[id];
+      if (nextState) {
+        toast.success("Diary entry signed & acknowledged!", {
+          icon: "✓",
+          style: { borderRadius: "16px", background: "#0050CB", color: "#fff", fontSize: "13px", fontWeight: "bold" },
+        });
+      }
+      return { ...prev, [id]: nextState };
     });
   };
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-7 rounded-[26px] bg-gradient-to-r from-white via-[#F8FBFF] to-[#EFF6FF] dark:from-[#07142F] dark:via-[#091D45] dark:to-[#07142F] border border-blue-100/90 dark:border-white/10 shadow-xs">
-        <div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-rose-500">
-            Digital Daily Diary
-          </span>
-          <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white">
-            Classroom Log: {child.firstName} {child.lastName}
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Real-time daily learning updates, educator observations, meals, and nap logs.
-          </p>
+    <div className="space-y-5 pb-16 font-sans">
+      {/* Breadcrumb Navigation */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+        <Link href="/parent" className="hover:text-[#0050CB] transition-colors">
+          Home
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+        <span className="text-slate-800 dark:text-slate-200 font-semibold">Daily Diary</span>
+      </nav>
+
+      {/* Top Header Card */}
+      <header className="rounded-[26px] bg-white dark:bg-[#07142F] border border-slate-200/80 dark:border-white/10 p-6 shadow-[0_4px_24px_rgba(0,14,40,0.02)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Left Side: Icon & Title */}
+        <div className="flex items-center gap-4">
+          <div className="w-13 h-13 rounded-2xl bg-[#EDE9FE] dark:bg-purple-950/40 flex items-center justify-center shrink-0 shadow-2xs">
+            <BookOpen className="w-6 h-6 text-[#7C3AED] dark:text-purple-400 stroke-[2.2]" />
+          </div>
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#7C3AED] dark:text-purple-400">
+              DAILY DIARY
+            </span>
+            <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white leading-tight">
+              My Child&apos;s Daily Diary
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+              Stay updated with your child&apos;s daily activities, learning, and school life.
+            </p>
+          </div>
         </div>
 
-        {/* Quick Date Filters + Custom Picker */}
-        <div className="flex flex-wrap items-center gap-2">
-          {[
-            { label: "Today", value: "2026-09-18" },
-            { label: "Yesterday", value: "2026-09-17" },
-            { label: "Past 7 Days", value: "2026-09-14" },
-          ].map((pill) => (
+        {/* Right Side: Child Profile Pill Selector */}
+        <div className="relative self-start md:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsChildDropdownOpen(!isChildDropdownOpen)}
+            className="bg-white dark:bg-[#0B1E47] border border-slate-200 dark:border-white/10 rounded-full py-1.5 px-3.5 flex items-center gap-2.5 shadow-2xs hover:border-[#0050CB]/40 transition-all cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 relative">
+              <Image
+                src={activeChild.studentPhoto || "/aarav-profile-avatar.png"}
+                alt={activeChild.firstName}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-[#000E28] dark:text-white leading-tight">
+                {activeChild.firstName} {activeChild.lastName}
+              </p>
+              <p className="text-[10px] font-medium text-slate-400 leading-tight">
+                {activeChild.grade} - {activeChild.section || "Section A"}
+              </p>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-1 transition-transform ${isChildDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {/* Child Dropdown Menu */}
+          {isChildDropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white dark:bg-[#07142F] border border-slate-200 dark:border-white/10 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <p className="px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Switch Student Profile
+              </p>
+              {(children && children.length > 0 ? children : [activeChild]).map((c: any) => (
+                <button
+                  key={c._id}
+                  onClick={() => {
+                    if (selectChild) selectChild(c._id);
+                    setIsChildDropdownOpen(false);
+                    toast.success(`Viewing diary for ${c.firstName}`);
+                  }}
+                  className={`w-full px-3.5 py-2 flex items-center gap-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer ${
+                    c._id === activeChild._id ? "bg-blue-50/70 dark:bg-blue-950/40" : ""
+                  }`}
+                >
+                  <div className="w-7 h-7 rounded-full overflow-hidden relative shrink-0 border border-slate-200 dark:border-slate-700">
+                    <Image
+                      src={c.studentPhoto || "/aarav-profile-avatar.png"}
+                      alt={c.firstName}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#000E28] dark:text-white leading-tight">
+                      {c.firstName} {c.lastName}
+                    </p>
+                    <p className="text-[10px] text-slate-400">{c.grade} - {c.section}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Filter and Search Bar */}
+      <section className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        {/* Left: Pill Date Filter Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+          {(["Today", "Yesterday", "Last 7 Days", "Last 30 Days"] as const).map((filter) => {
+            const isActive = activeFilter === filter;
+            return (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setActiveFilter(filter)}
+                className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-[#0050CB] text-white shadow-md shadow-blue-600/20"
+                    : "bg-white dark:bg-[#07142F] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+                }`}
+              >
+                {filter}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right: Date Picker Box & Search Input */}
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+          {/* Date Indicator Box */}
+          <div className="bg-white dark:bg-[#07142F] border border-slate-200/80 dark:border-white/10 px-4 py-2 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-[#000E28] dark:text-white shadow-2xs select-none">
+            <Calendar className="w-4 h-4 text-[#0050CB]" />
+            <span>18 Sep 2026</span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 ml-1" />
+          </div>
+
+          {/* Search Input Box */}
+          <div className="relative flex-1 sm:w-64">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search diary entries..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9.5 pr-4 py-2 bg-white dark:bg-[#07142F] border border-slate-200/80 dark:border-white/10 rounded-2xl text-xs placeholder:text-slate-400 text-[#000E28] dark:text-white outline-none focus:border-[#0050CB] transition-all shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Diary Entry Cards List */}
+      <main className="space-y-3.5">
+        {filteredEntries.length === 0 ? (
+          <div className="p-12 text-center rounded-[26px] bg-white dark:bg-[#07142F] border border-slate-200/80 dark:border-white/10 shadow-xs space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#0050CB] flex items-center justify-center mx-auto">
+              <Search className="w-6 h-6" />
+            </div>
+            <p className="text-sm font-bold text-[#000E28] dark:text-white">No diary entries found</p>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              No daily entries matched your search &quot;{searchQuery}&quot; or date filter. Try clearing your filters.
+            </p>
             <button
-              key={pill.label}
-              onClick={() => setSelectedDate(pill.value)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                selectedDate === pill.value
-                  ? "bg-[#0050CB] text-white shadow-xs"
-                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-300"
-              }`}
+              onClick={() => {
+                setActiveFilter("Today");
+                setSearchQuery("");
+              }}
+              className="px-4 py-2 bg-[#0050CB] text-white text-xs font-bold rounded-xl hover:bg-[#003da1] transition-all cursor-pointer"
             >
-              {pill.label}
+              Reset Filters
             </button>
-          ))}
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-[#000E28] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
-          />
-        </div>
-      </div>
+          </div>
+        ) : (
+          filteredEntries.map((entry) => {
+            return (
+              <article
+                key={entry.id}
+                onClick={() => setSelectedEntry(entry)}
+                className="group rounded-[24px] bg-white dark:bg-[#07142F] border border-slate-200/80 dark:border-white/10 p-4.5 sm:p-5 shadow-[0_3px_16px_rgba(0,14,40,0.02)] hover:border-[#0050CB]/40 hover:shadow-[0_6px_24px_rgba(0,80,203,0.06)] transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer"
+              >
+                {/* Left Side: Category Icon + Content */}
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  {/* Category Rounded Icon Squircle */}
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs ${entry.iconBg}`}
+                  >
+                    {entry.category === "Academic" && (
+                      <BookOpen className={`w-5 h-5 ${entry.iconColor} stroke-[2.2]`} />
+                    )}
+                    {entry.category === "Meals & Nutrition" && (
+                      <Utensils className={`w-5 h-5 ${entry.iconColor} stroke-[2.2]`} />
+                    )}
+                    {entry.category === "Rest & Nap Time" && (
+                      <Moon className={`w-5 h-5 ${entry.iconColor} stroke-[2.2]`} />
+                    )}
+                    {entry.category === "Creative Activity" && (
+                      <Palette className={`w-5 h-5 ${entry.iconColor} stroke-[2.2]`} />
+                    )}
+                    {entry.category === "Homework" && (
+                      <Home className={`w-5 h-5 ${entry.iconColor} stroke-[2.2]`} />
+                    )}
+                  </div>
 
-      {/* Diary Entries List */}
-      <div className="space-y-6">
-        {sampleEntries.map((entry) => (
-          <SpotlightCard key={entry.id} className="p-6 sm:p-8 space-y-6">
-            {/* Entry Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 gap-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center shrink-0">
-                  <CalendarHeart className="w-5 h-5" />
+                  {/* Text Details Column */}
+                  <div className="space-y-1 min-w-0 flex-1">
+                    {/* Category Pill Tag */}
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-block ${entry.categoryBg} ${entry.categoryText}`}
+                      >
+                        {entry.category}
+                      </span>
+                    </div>
+
+                    {/* Entry Title */}
+                    <h2 className="text-sm sm:text-base font-black text-[#000E28] dark:text-white leading-snug">
+                      {entry.title}
+                    </h2>
+
+                    {/* Entry Description */}
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      {entry.description}
+                    </p>
+
+                    {/* Metadata Row: Date/Time • Subject/Type • Teacher */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span>{entry.dateTime}</span>
+                      </span>
+
+                      <span className="inline-flex items-center gap-1.5">
+                        {entry.tagIconType === "subject" && <Bookmark className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                        {entry.tagIconType === "meal" && <Utensils className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                        {entry.tagIconType === "duration" && <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                        {entry.tagIconType === "craft" && <Sparkles className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                        <span>{entry.subjectOrTag}</span>
+                      </span>
+
+                      <span className="inline-flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span>{entry.teacher}</span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-[#000E28] dark:text-white">
-                    {entry.topic}
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Recorded by {entry.teacher} • {entry.role}
-                  </p>
+
+                {/* Right Side: Photo Thumbnail + Short Tag Pill + View Details Action */}
+                <div className="flex items-center justify-between w-full md:w-auto md:justify-end gap-3.5 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+                  {/* Photo Thumbnail */}
+                  <div className="relative w-28 h-18 sm:w-32 sm:h-20 rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-2xs shrink-0 group-hover:scale-[1.02] transition-transform">
+                    <Image
+                      src={entry.image}
+                      alt={entry.title}
+                      fill
+                      sizes="(max-width: 768px) 120px, 140px"
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* Short Pill Badge */}
+                  <div className="hidden sm:block">
+                    <span
+                      className={`text-[11px] font-bold px-3 py-1 rounded-full ${entry.categoryBg} ${entry.categoryText}`}
+                    >
+                      {entry.shortCategory}
+                    </span>
+                  </div>
+
+                  {/* View Details Action Link */}
+                  <div className="inline-flex items-center gap-1 text-xs font-bold text-[#0050CB] dark:text-blue-400 group-hover:text-[#003da1] dark:group-hover:text-blue-300 transition-colors">
+                    <Eye className="w-4 h-4 text-[#0050CB] dark:text-blue-400" />
+                    <span>View Details</span>
+                    <ChevronRight className="w-4 h-4 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
                 </div>
-              </div>
-              <span className="text-xs font-extrabold text-[#0050CB] dark:text-blue-400 font-mono">
-                {entry.date}
+              </article>
+            );
+          })
+        )}
+      </main>
+
+      {/* Detail Modal / Drawer Dialog */}
+      {selectedEntry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-xl rounded-[28px] bg-white dark:bg-[#07142F] border border-slate-200 dark:border-white/10 shadow-2xl p-6 sm:p-7 space-y-5 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setSelectedEntry(null)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3">
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${selectedEntry.categoryBg} ${selectedEntry.categoryText}`}>
+                {selectedEntry.category}
               </span>
+              <span className="text-xs text-slate-400">•</span>
+              <span className="text-xs text-slate-400">{selectedEntry.dateTime}</span>
             </div>
 
-            {/* Educator Observation */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                Educator Observations
-              </span>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                &ldquo;{entry.description}&rdquo;
+            <div>
+              <h3 className="text-lg sm:text-xl font-black text-[#000E28] dark:text-white">
+                {selectedEntry.title}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                {selectedEntry.description}
               </p>
             </div>
 
-            {/* Daily Routine Telemetry Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-[#F6F8FC] dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 flex items-start gap-2.5">
-                <Utensils className="w-4 h-4 text-[#FF690C] shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Meals & Nutrition</span>
-                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">{entry.meals}</p>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#F6F8FC] dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 flex items-start gap-2.5">
-                <Moon className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Rest & Nap Time</span>
-                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">{entry.napTime}</p>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#F6F8FC] dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 flex items-start gap-2.5">
-                <Smile className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Classroom Mood</span>
-                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">{entry.mood}</p>
-                </div>
-              </div>
+            {/* High-Resolution Media Preview */}
+            <div className="relative w-full h-56 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-xs">
+              <Image
+                src={selectedEntry.image}
+                alt={selectedEntry.title}
+                fill
+                className="object-cover"
+              />
             </div>
 
-            {/* Learning Activities Chips */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                Core Activities Covered
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {entry.activities.map((act, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0050CB]" />
-                    {act}
-                  </span>
-                ))}
-              </div>
+            {/* Educator Remarks / Detailed Observations */}
+            <div className="rounded-2xl bg-slate-50 dark:bg-[#091D45]/60 p-4 border border-slate-200/60 dark:border-white/5 space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                Educator Observations &amp; Insights
+              </p>
+              <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+                {selectedEntry.detailedNotes}
+              </p>
+              {selectedEntry.feedback && (
+                <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+                  <span className="font-bold text-[#0050CB] shrink-0">Teacher Tip:</span>
+                  <span>{selectedEntry.feedback}</span>
+                </div>
+              )}
             </div>
 
-            {/* Photo Gallery Attachments */}
-            {entry.images && entry.images.length > 0 && (
-              <div className="space-y-2 pt-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Paperclip className="w-3 h-3" /> Classroom Activity Photos ({entry.images.length})
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {entry.images.map((imgUrl, i) => (
-                    <div
-                      key={i}
-                      className="relative h-44 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 group cursor-pointer"
-                    >
-                      <Image
-                        src={imgUrl}
-                        alt="Activity photograph"
-                        fill
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  ))}
+            {/* Educator & Signature Footer */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <div className="flex items-center gap-2.5 self-start sm:self-auto">
+                <div className="w-8 h-8 rounded-full bg-[#E5EEFF] dark:bg-blue-950 flex items-center justify-center text-[#0050CB] font-bold text-xs">
+                  AR
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#000E28] dark:text-white leading-tight">
+                    {selectedEntry.teacher}
+                  </p>
+                  <p className="text-[10px] text-slate-400">Class Mentor • LKG Section A</p>
                 </div>
               </div>
-            )}
 
-            {/* Parent Acknowledgement & Message Action Footer */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              {/* Parent Acknowledge Button */}
               <button
                 type="button"
-                onClick={() => handleAcknowledge(entry.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                  acknowledgedMap[entry.id]
-                    ? "bg-[#E8FAF0] text-[#027A48] border border-emerald-200"
-                    : "bg-[#0050CB] text-white hover:bg-[#0040A8] shadow-xs"
+                onClick={() => handleAcknowledge(selectedEntry.id)}
+                className={`w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  acknowledgedIds[selectedEntry.id]
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                    : "bg-[#0050CB] hover:bg-[#003da1] text-white shadow-md shadow-blue-500/20"
                 }`}
               >
-                <CheckCircle2 className={`w-4 h-4 ${acknowledgedMap[entry.id] ? "text-[#027A48]" : "text-white"}`} />
-                <span>
-                  {acknowledgedMap[entry.id]
-                    ? "Signed & Acknowledged by Guardian"
-                    : "Sign & Acknowledge Entry"}
-                </span>
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{acknowledgedIds[selectedEntry.id] ? "Signed & Acknowledged" : "Sign as Parent"}</span>
               </button>
-
-              <Link
-                href="/parent/messages"
-                className="text-xs font-bold text-[#0050CB] hover:underline flex items-center gap-1.5"
-              >
-                <span>Message {entry.teacher}</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
             </div>
-          </SpotlightCard>
-        ))}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
