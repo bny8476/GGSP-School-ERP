@@ -7,6 +7,10 @@ export interface IUser extends Document {
   passwordHash: string;
   role: mongoose.Types.ObjectId;
   isActive: boolean;
+  status: 'Active' | 'Suspended' | 'Inactive';
+  isDeleted: boolean;
+  schoolId?: mongoose.Types.ObjectId;
+  campusId?: mongoose.Types.ObjectId;
   phoneNumber?: string;
   salary?: number;
   designation?: string;
@@ -53,18 +57,41 @@ const UserSchema: Schema = new Schema(
     isActive: {
       type: Boolean,
       default: true,
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: ['Active', 'Suspended', 'Inactive'],
+      default: 'Active',
+      index: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    schoolId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
+    },
+    campusId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
     },
     phoneNumber: {
       type: String,
+      trim: true,
     },
     salary: {
       type: Number,
     },
     designation: {
       type: String,
+      trim: true,
     },
     qualification: {
       type: String,
+      trim: true,
     },
     experienceYears: {
       type: Number,
@@ -79,13 +106,15 @@ const UserSchema: Schema = new Schema(
     teachingAssignments: [
       {
         classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
-        subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }
-      }
+        subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject' },
+      },
     ],
   },
   { timestamps: true }
 );
 
+UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ role: 1 });
+UserSchema.index({ campusId: 1, role: 1 });
 
-export default mongoose.model<IUser>('User', UserSchema);
+export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

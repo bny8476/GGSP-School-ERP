@@ -1,30 +1,22 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { errorHandler } from './middleware/errorHandler';
-
-// Load env vars FIRST before anything else
-dotenv.config();
-if (!process.env.JWT_SECRET) {
-  console.error('FATAL: Missing JWT_SECRET environment variable');
-  process.exit(1);
-}
-if (!process.env.MONGO_URI) {
-  console.error('FATAL: Missing MONGO_URI environment variable');
-  process.exit(1);
-}
-
+import mongoose from 'mongoose';
 import { createServer } from 'http';
+import swaggerUi from 'swagger-ui-express';
+
+import env from './config/env';
 import connectDB from './config/db';
+import logger from './utils/logger';
+import { requestLogger } from './middleware/requestLogger';
+import { errorHandler } from './middleware/errorHandler';
 import { initSocket } from './socket';
 import { registerDomainModules } from './modules';
+import { swaggerDocument } from './config/swagger';
 
-
-
-// Connect to database
+// Connect to MongoDB
 connectDB();
 
 const app = express();
@@ -37,10 +29,10 @@ const rawAllowedOrigins = [
   'https://ggsp-school-erp.vercel.app',
   'https://schoolerp-livid.vercel.app',
   'https://school-erp-bny2.vercel.app',
-  process.env.FRONTEND_URL,
+  env.CLIENT_URL,
 ].filter(Boolean) as string[];
 
-const normalizeUrl = (url?: string) => url ? url.replace(/\/+$/, '').toLowerCase() : '';
+const normalizeUrl = (url?: string) => (url ? url.replace(/\/+$/, '').toLowerCase() : '');
 const allowedOrigins = rawAllowedOrigins.map(normalizeUrl);
 
 const isOriginAllowed = (origin: string | undefined): boolean => {
@@ -48,52 +40,109 @@ const isOriginAllowed = (origin: string | undefined): boolean => {
   const cleanOrigin = normalizeUrl(origin);
   if (allowedOrigins.includes(cleanOrigin)) return true;
   if (cleanOrigin.endsWith('.vercel.app')) return true;
-  if (process.env.NODE_ENV !== 'production' && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+  if (
+    env.NODE_ENV !== 'production' &&
+    (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))
+  ) {
     return true;
   }
   return false;
 };
 
-// Middleware - CORS
-app.use(cors({
-  origin: (origin, callback) => {
-    if (isOriginAllowed(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error(`CORS: origin '${origin}' not allowed`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Allows Swagger UI and cross-origin assets in dev/staging
+  })
+);
 
-// Security middlewares
-app.use(helmet());
+// CORS configuration
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
+  })
+);
+
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use(limiter);
 
-// Handle OPTIONS preflight for all routes explicitly
-app.options(/.*/, cors({
-  origin: (origin, callback) => {
-    if (isOriginAllowed(origin)) return callback(null, true);
-    return callback(new Error(`CORS: origin '${origin}' not allowed`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// OPTIONS preflight
+app.options(
+  /.*/,
+  cors({
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) return callback(null, true);
+      return callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
+  })
+);
 
-app.use(express.json());
+// Body and cookie parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Basic health check route
+// Request tracking & correlation logging
+app.use(requestLogger);
+
+// API Documentation via Swagger / OpenAPI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Root Health Check routes
+app.get('/health', (req: Request, res: Response) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.status(200).json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV,
+    database: dbStatus,
+  });
+});
+
+app.get('/health/db', (req: Request, res: Response) => {
+  const isConnected = mongoose.connection.readyState === 1;
+  if (isConnected) {
+    res.status(200).json({
+      status: 'up',
+      database: 'MongoDB',
+      host: mongoose.connection.host,
+      name: mongoose.connection.name,
+    });
+  } else {
+    res.status(503).json({
+      status: 'down',
+      database: 'MongoDB',
+      readyState: mongoose.connection.readyState,
+    });
+  }
+});
+
+// Root welcome message
 app.get('/', (req: Request, res: Response) => {
-  res.send('Global International School ERP API is running...');
+  res.json({
+    message: 'GGPS School ERP Production API is operational',
+    version: '1.0.0',
+    documentation: '/api-docs',
+    health: '/health',
+  });
 });
 
 // Canonical API Router (supports both /api/v1 and legacy /api)
@@ -104,16 +153,23 @@ registerDomainModules(apiRouter);
 app.use('/api/v1', apiRouter);
 app.use('/api', apiRouter);
 
+// Centralized error handling
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5001;
+const PORT = env.PORT || 5001;
 
-// Create HTTP server instead of listening directly on Express app
+// Create HTTP server for Express and Socket.IO
 const httpServer = createServer(app);
 
-// Initialize Socket.io
+// Initialize Socket.io with authenticated connections
 initSocket(httpServer);
 
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  httpServer.listen(PORT, () => {
+    logger.info(`GGPS ERP Server running on port ${PORT} in ${env.NODE_ENV} mode`);
+    logger.info(`Swagger API documentation available at http://localhost:${PORT}/api-docs`);
+  });
+}
+
+export { app, httpServer };
+export default app;

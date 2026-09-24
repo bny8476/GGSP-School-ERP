@@ -5,26 +5,7 @@ import Student from '../models/Student';
 import Parent from '../models/Parent';
 import StudentParent from '../models/StudentParent';
 import Notification from '../models/Notification';
-import { getIO } from '../socket';
-
-const emitSocketSafely = (event: string, payload: any) => {
-  try {
-    const io = getIO();
-    io.emit(event, payload);
-  } catch (err) {}
-};
-
-const DEMO_REMARKS = [
-  {
-    _id: 'rem-1',
-    studentName: 'Aarav Sharma',
-    teacherName: 'Ms. Ananya Roy',
-    date: new Date(),
-    content: 'Aarav participated very well in today’s story activity and helped his classmates arrange the picture cards with genuine enthusiasm.',
-    category: 'Appreciation',
-    parentReply: '',
-  },
-];
+import { emitToUser, emitToRoom } from '../socket';
 
 // @desc    Get remarks for a specific child (Strict Parent Authorization)
 // @route   GET /api/teacher-remarks/child/:childId
@@ -33,7 +14,7 @@ export const getChildRemarks = async (req: Request, res: Response) => {
   const childId = Array.isArray(rawChildId) ? rawChildId[0] : rawChildId;
 
   if (mongoose.connection.readyState !== 1) {
-    return res.json(DEMO_REMARKS);
+    return res.json([]);
   }
 
   try {
@@ -46,7 +27,7 @@ export const getChildRemarks = async (req: Request, res: Response) => {
         const allowed = [...new Set([...linked.map((r) => String(r.studentId)), ...direct.map((d) => String(d._id))])];
 
         if (childId && !allowed.includes(String(childId))) {
-          return res.status(403).json({ message: 'Access denied to this student’s teacher remarks' });
+          return res.status(403).json({ success: false, message: 'Access denied to this student’s teacher remarks' });
         }
       }
     }
@@ -56,15 +37,10 @@ export const getChildRemarks = async (req: Request, res: Response) => {
       query.studentId = new mongoose.Types.ObjectId(childId);
     }
 
-    const list = await TeacherRemark.find(query).sort({ date: -1 }).limit(30);
-
-    if (!list || list.length === 0) {
-      return res.json(DEMO_REMARKS);
-    }
-
-    res.json(list);
+    const list = await TeacherRemark.find(query).sort({ date: -1 }).limit(50);
+    res.json(list || []);
   } catch (error) {
-    res.json(DEMO_REMARKS);
+    res.status(500).json({ success: false, message: 'Failed to fetch teacher remarks', error });
   }
 };
 
@@ -75,11 +51,11 @@ export const createRemark = async (req: Request, res: Response) => {
     const { studentId, studentName: rawStudentName, content, category, teacherName: rawTeacherName } = req.body;
 
     if (!studentId || !content) {
-      return res.status(400).json({ message: 'studentId and content are required' });
+      return res.status(400).json({ success: false, message: 'studentId and content are required' });
     }
 
     const teacherId = req.user?.id;
-    let teacherName = rawTeacherName || 'Ms. Ananya Roy';
+    let teacherName = rawTeacherName || 'Teacher';
     if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
       try {
         const u = await mongoose.model('User').findById(teacherId).select('firstName lastName');
@@ -110,23 +86,26 @@ export const createRemark = async (req: Request, res: Response) => {
 
     const newRemark = await TeacherRemark.create({
       studentId: new mongoose.Types.ObjectId(studentId),
-      studentName: studentName || 'Child',
-      teacherId: teacherId && mongoose.Types.ObjectId.isValid(teacherId) ? new mongoose.Types.ObjectId(teacherId) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
+      studentName: studentName || 'Student',
+      teacherId: teacherId && mongoose.Types.ObjectId.isValid(teacherId) ? new mongoose.Types.ObjectId(teacherId) : undefined,
       teacherName,
       content,
       category: category || 'Appreciation',
       date: new Date(),
     });
 
-    // Notify Parent
+    // Notify Parent if parent user is linked
     if (parentUserId) {
-      await Notification.create({
+      const notif = await Notification.create({
+        recipient: parentUserId,
         userId: parentUserId,
         studentId: new mongoose.Types.ObjectId(studentId),
         targetRole: 'Parent',
         title: 'Teacher Update',
-        message: `${teacherName} added a personal remark for ${studentName || 'your child'}.`,
+        message: `${teacherName} added a remark for ${studentName || 'your child'}: "${content.slice(0, 60)}${content.length > 60 ? '...' : ''}"`,
         type: 'remark',
+        entityType: 'TeacherRemark',
+        entityId: newRemark._id,
         priority: 'normal',
         link: '/parent',
         metadata: {
@@ -137,21 +116,21 @@ export const createRemark = async (req: Request, res: Response) => {
           content,
         },
       });
+
+      emitToUser(String(parentUserId), 'notification:new', notif);
+      emitToUser(String(parentUserId), 'remark:added', newRemark);
     }
 
-    emitSocketSafely('remark:added', newRemark);
-    emitSocketSafely('notification:new', {
-      type: 'remark',
-      message: `Teacher Remark added for ${studentName}`,
-    });
+    emitToRoom(`student:${studentId}`, 'remark:added', newRemark);
 
     res.status(201).json({
+      success: true,
       message: 'Teacher remark sent to parent successfully!',
       remark: newRemark,
     });
   } catch (error) {
     console.error('Error creating teacher remark:', error);
-    res.status(400).json({ message: 'Failed to create teacher remark', error });
+    res.status(400).json({ success: false, message: 'Failed to create teacher remark', error });
   }
 };
 
@@ -164,12 +143,12 @@ export const replyToRemark = async (req: Request, res: Response) => {
     const { reply } = req.body;
 
     if (!reply || !reply.trim()) {
-      return res.status(400).json({ message: 'Reply message cannot be empty' });
+      return res.status(400).json({ success: false, message: 'Reply message cannot be empty' });
     }
 
     const remark = await TeacherRemark.findById(id);
     if (!remark) {
-      return res.status(404).json({ message: 'Teacher remark not found' });
+      return res.status(404).json({ success: false, message: 'Teacher remark not found' });
     }
 
     let parentName = 'Parent';
@@ -184,10 +163,12 @@ export const replyToRemark = async (req: Request, res: Response) => {
     remark.readByParent = true;
     await remark.save();
 
-    emitSocketSafely('remark:replied', remark);
+    if (remark.teacherId) {
+      emitToUser(String(remark.teacherId), 'remark:replied', remark);
+    }
 
-    res.json({ message: 'Reply sent to teacher successfully!', remark });
+    res.json({ success: true, message: 'Reply sent to teacher successfully!', remark });
   } catch (error) {
-    res.status(400).json({ message: 'Failed to reply to teacher remark', error });
+    res.status(400).json({ success: false, message: 'Failed to reply to teacher remark', error });
   }
 };

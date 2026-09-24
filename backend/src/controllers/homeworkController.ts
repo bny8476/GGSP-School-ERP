@@ -3,65 +3,24 @@ import mongoose from 'mongoose';
 import Homework from '../models/Homework';
 import Student from '../models/Student';
 import Parent from '../models/Parent';
+import User from '../models/User';
+import ClassModel from '../models/Class';
+import SectionModel from '../models/Section';
 import Notification from '../models/Notification';
-import { getIO } from '../socket';
+import { emitToClass, emitToUser, emitToRole } from '../socket';
 
-const emitSocketSafely = (event: string, payload: any) => {
-  try {
-    const io = getIO();
-    io.emit(event, payload);
-  } catch (err) {}
-};
-
-const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
-
-const DEMO_HOMEWORK = [
-  {
-    _id: 'hw-1',
-    subject: 'English',
-    title: 'Practice letters A–E',
-    description: 'Trace uppercase and lowercase letters A to E in your four-line handwriting workbook.',
-    instructions: 'Use sharp pencils, trace slowly along the dotted outlines, and say phonetic sounds aloud.',
-    dueDate: tomorrow,
-    assignedDate: new Date(),
-    attachmentUrl: '/worksheets/homework-english-letters.pdf',
-    teacherName: 'Ms. Ananya Roy',
-    className: 'LKG',
-    sectionName: 'Section A',
-    status: 'Pending',
-  },
-  {
-    _id: 'hw-2',
-    subject: 'Maths',
-    title: 'Count 5 favorite toys',
-    description: 'Find 5 favorite toys at home and line them up in numerical order with parents.',
-    instructions: 'Count from 1 to 5 pointing at each toy. Color 5 circles in the mini math logbook.',
-    dueDate: new Date(Date.now() + 2 * 86400000),
-    assignedDate: new Date(),
-    teacherName: 'Ms. Ananya Roy',
-    className: 'LKG',
-    sectionName: 'Section A',
-    status: 'Pending',
-  },
-];
-
-// @desc    Get homework for child
-// @route   GET /api/homework/child/:childId
+// @desc    Get homework for child or class
+// @route   GET /api/homework/child/:childId / GET /api/homework
 export const getChildHomework = async (req: Request, res: Response) => {
-  const rawChildId = req.params.childId;
-  const childId = Array.isArray(rawChildId) ? rawChildId[0] : rawChildId;
-
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(DEMO_HOMEWORK);
-  }
-
   try {
+    const rawChildId = req.params.childId || req.query.childId;
+    const childId = Array.isArray(rawChildId) ? rawChildId[0] : rawChildId;
+
     let studentClassId: any;
     let studentSectionId: any;
 
-    if (childId && mongoose.Types.ObjectId.isValid(childId)) {
-      const student = await Student.findById(childId).select('classId sectionId');
+    if (childId && mongoose.Types.ObjectId.isValid(childId as string)) {
+      const student = await Student.findById(childId as string).select('classId sectionId');
       if (student) {
         studentClassId = student.classId;
         studentSectionId = student.sectionId;
@@ -72,20 +31,18 @@ export const getChildHomework = async (req: Request, res: Response) => {
     if (studentClassId) query.classId = studentClassId;
     if (studentSectionId) query.sectionId = studentSectionId;
 
-    const list = await Homework.find(query).sort({ dueDate: 1 }).limit(30);
-
-    if (!list || list.length === 0) {
-      return res.json(DEMO_HOMEWORK);
-    }
+    const list = await Homework.find(query).sort({ dueDate: 1 }).limit(50);
 
     const now = new Date();
     const formatted = list.map((hw) => {
       let status: 'Pending' | 'Submitted' | 'Completed' | 'Overdue' = 'Pending';
-      const sub = hw.submissions.find((s) => String(s.studentId) === String(childId));
-      if (sub) {
-        status = sub.status;
-      } else if (new Date(hw.dueDate) < now) {
-        status = 'Overdue';
+      if (childId) {
+        const sub = hw.submissions.find((s) => String(s.studentId) === String(childId));
+        if (sub) {
+          status = sub.status;
+        } else if (new Date(hw.dueDate) < now) {
+          status = 'Overdue';
+        }
       }
 
       return {
@@ -106,7 +63,7 @@ export const getChildHomework = async (req: Request, res: Response) => {
 
     res.json(formatted);
   } catch (error) {
-    res.json(DEMO_HOMEWORK);
+    res.status(500).json({ success: false, message: 'Server Error fetching homework', error });
   }
 };
 
@@ -123,18 +80,40 @@ export const createHomework = async (req: Request, res: Response) => {
       attachmentUrl,
       classId,
       sectionId,
-      className,
-      sectionName,
+      className: rawClassName,
+      sectionName: rawSectionName,
       teacherName: rawTeacherName,
     } = req.body;
 
+    if (!subject || !title || !dueDate) {
+      return res.status(400).json({ success: false, message: 'Subject, title, and due date are required' });
+    }
+
     const teacherId = req.user?.id;
-    let teacherName = rawTeacherName || 'Ms. Ananya Roy';
+    let teacherName = rawTeacherName || 'Teacher';
     if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
-      try {
-        const u = await mongoose.model('User').findById(teacherId).select('firstName lastName');
-        if (u) teacherName = `${(u as any).firstName || ''} ${(u as any).lastName || ''}`.trim() || teacherName;
-      } catch (err) {}
+      const u = await User.findById(teacherId).select('firstName lastName');
+      if (u) {
+        teacherName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || teacherName;
+      }
+    }
+
+    // Resolve class and section names
+    let className = rawClassName;
+    let sectionName = rawSectionName;
+    let resolvedClassId = classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : undefined;
+
+    if (!resolvedClassId && className) {
+      const cDoc = await ClassModel.findOne({ name: new RegExp(`^${className}$`, 'i') });
+      if (cDoc) {
+        resolvedClassId = cDoc._id as mongoose.Types.ObjectId;
+        className = cDoc.name;
+      }
+    }
+
+    if (!resolvedClassId) {
+      const defaultClass = await ClassModel.findOne();
+      if (defaultClass) resolvedClassId = defaultClass._id as mongoose.Types.ObjectId;
     }
 
     const newHw = await Homework.create({
@@ -144,64 +123,67 @@ export const createHomework = async (req: Request, res: Response) => {
       instructions,
       dueDate: new Date(dueDate),
       attachmentUrl,
-      classId: classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
+      classId: resolvedClassId,
       sectionId: sectionId && mongoose.Types.ObjectId.isValid(sectionId) ? new mongoose.Types.ObjectId(sectionId) : undefined,
-      className: className || 'LKG',
-      sectionName: sectionName || 'Section A',
-      teacherId: teacherId && mongoose.Types.ObjectId.isValid(teacherId) ? new mongoose.Types.ObjectId(teacherId) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
+      className: className || 'Class',
+      sectionName: sectionName || 'A',
+      teacherId: teacherId ? new mongoose.Types.ObjectId(teacherId) : undefined,
       teacherName,
       assignedDate: new Date(),
       submissions: [],
     });
 
-    // Notify parents
-    try {
-      const students = await Student.find({ classId: newHw.classId }).select('parentId _id');
-      const formattedDue = new Date(dueDate).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
+    // Notify parents in target class
+    if (resolvedClassId) {
+      try {
+        const students = await Student.find({ classId: resolvedClassId }).select('parentId _id');
+        const formattedDue = new Date(dueDate).toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
 
-      for (const st of students) {
-        if (st.parentId) {
-          const p = await Parent.findById(st.parentId).select('userId');
-          if (p && p.userId) {
-            await Notification.create({
-              userId: p.userId,
-              studentId: st._id,
-              targetRole: 'Parent',
-              title: `New Homework: ${subject}`,
-              message: `${subject} homework '${title}' is due ${formattedDue}.`,
-              type: 'homework',
-              priority: 'normal',
-              link: '/parent/homework',
-              metadata: {
-                homeworkId: newHw._id,
-                subject,
-                title,
-                dueDate: newHw.dueDate,
-                teacherName,
-              },
-            });
+        for (const st of students) {
+          if (st.parentId) {
+            const p = await Parent.findById(st.parentId).select('userId');
+            if (p && p.userId) {
+              const notif = await Notification.create({
+                recipient: p.userId,
+                userId: p.userId,
+                studentId: st._id,
+                targetRole: 'Parent',
+                title: `New Homework: ${subject}`,
+                message: `${subject} homework '${title}' is due ${formattedDue}.`,
+                type: 'homework',
+                priority: 'normal',
+                link: '/parent/homework',
+                metadata: {
+                  homeworkId: newHw._id,
+                  subject,
+                  title,
+                  dueDate: newHw.dueDate,
+                  teacherName,
+                },
+              });
+              emitToUser(p.userId.toString(), 'notification:new', notif);
+            }
           }
         }
-      }
-    } catch (notifErr) {}
+      } catch (notifErr) {}
 
-    emitSocketSafely('homework:assigned', newHw);
-    emitSocketSafely('notification:new', {
-      type: 'homework',
-      message: `New Homework: ${title} (${subject})`,
-    });
+      emitToClass(resolvedClassId.toString(), 'homework:published', newHw);
+    }
+
+    emitToRole('Admin', 'homework:published', newHw);
 
     res.status(201).json({
+      success: true,
       message: 'Homework assigned and parents notified!',
       homework: newHw,
     });
   } catch (error) {
     console.error('Error creating homework:', error);
-    res.status(400).json({ message: 'Failed to assign homework', error });
+    res.status(400).json({ success: false, message: 'Failed to assign homework', error });
   }
 };
 
@@ -214,12 +196,12 @@ export const updateHomeworkStatus = async (req: Request, res: Response) => {
     const { studentId, status } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid homework ID' });
+      return res.status(400).json({ success: false, message: 'Invalid homework ID' });
     }
 
     const hw = await Homework.findById(id);
     if (!hw) {
-      return res.status(404).json({ message: 'Homework not found' });
+      return res.status(404).json({ success: false, message: 'Homework not found' });
     }
 
     const existingIdx = hw.submissions.findIndex((s) => String(s.studentId) === String(studentId));
@@ -237,8 +219,8 @@ export const updateHomeworkStatus = async (req: Request, res: Response) => {
     }
 
     await hw.save();
-    res.json({ message: 'Homework status updated successfully', homework: hw });
+    res.json({ success: true, message: 'Homework status updated successfully', homework: hw });
   } catch (error) {
-    res.status(400).json({ message: 'Error updating homework status', error });
+    res.status(400).json({ success: false, message: 'Error updating homework status', error });
   }
 };

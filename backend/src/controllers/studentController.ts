@@ -6,59 +6,187 @@ import Assessment from '../models/Assessment';
 import Enrollment from '../models/Enrollment';
 import StudentParent from '../models/StudentParent';
 import AcademicYear from '../models/AcademicYear';
+import Class from '../models/Class';
+import Section from '../models/Section';
 import { generateReportCardPDF } from '../utils/pdfGenerator';
-import { FALLBACK_CHILDREN, FALLBACK_ASSESSMENTS } from '../utils/parentFallbackData';
+import {
+  generateNextAdmissionNumber,
+  generateNextStudentID,
+  generateNextRollNumber,
+  peekNextIdentifiers,
+} from '../services/sequenceService';
+import { emitToRole, emitToRoom } from '../socket';
 
-// @desc    Get all students
+// Helper to resolve linked student IDs for a Parent user
+export async function getLinkedStudentIdsForParent(parentUserId: string): Promise<mongoose.Types.ObjectId[]> {
+  const parent = await Parent.findOne({ userId: parentUserId });
+  if (!parent) return [];
+
+  const [linkedRecords, directStudents] = await Promise.all([
+    StudentParent.find({ parentId: parent._id }).select('studentId'),
+    Student.find({ parentId: parent._id }).select('_id'),
+  ]);
+
+  const allIds = [
+    ...linkedRecords.map((r) => r.studentId.toString()),
+    ...directStudents.map((s) => s._id.toString()),
+  ];
+
+  return [...new Set(allIds)].map((id) => new mongoose.Types.ObjectId(id));
+}
+
+// @desc    Get all students (with search, filter, pagination, & role-based isolation)
 // @route   GET /api/students
 export const getStudents = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(FALLBACK_CHILDREN);
-  }
-
   try {
-    let query: Record<string, unknown> = {};
+    const {
+      page,
+      limit,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      className,
+      sectionName,
+      status,
+    } = req.query;
 
+    let query: Record<string, any> = {};
+
+    // 1. Role-based isolation for Parents: strictly limit to their own children
     if (req.user?.role === 'Parent') {
-      const parent = await Parent.findOne({ userId: req.user.id });
-      if (!parent) {
-        return res.json(FALLBACK_CHILDREN);
+      const allowedStudentIds = await getLinkedStudentIdsForParent(req.user.id);
+      if (allowedStudentIds.length === 0) {
+        // Return empty array / empty pagination if parent has no registered children
+        if (page) {
+          return res.json({ success: true, data: [], total: 0, page: Number(page), limit: Number(limit) || 20, totalPages: 0 });
+        }
+        return res.json([]);
       }
-
-      // Query both modern StudentParent junction and legacy parentId for 100% backward compatibility
-      const linkedRecords = await StudentParent.find({ parentId: parent._id }).select('studentId');
-      const linkedStudentIds = linkedRecords.map((r) => r.studentId);
-
-      query = {
-        $or: [{ _id: { $in: linkedStudentIds } }, { parentId: parent._id }],
-      };
+      query._id = { $in: allowedStudentIds };
     }
 
+    // 2. Status filter
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    // 3. Search by name or admissionNumber or studentId
+    if (search) {
+      const searchRegex = new RegExp(String(search).trim(), 'i');
+      query.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { admissionNumber: searchRegex },
+        { studentId: searchRegex },
+      ];
+    }
+
+    // 4. Class & Section filter
+    if (className) {
+      const classDoc = await Class.findOne({ name: new RegExp(`^${className}$`, 'i') });
+      if (classDoc) query.classId = classDoc._id;
+    }
+
+    if (sectionName) {
+      const sectionDoc = await Section.findOne({ name: new RegExp(`^${sectionName}$`, 'i') });
+      if (sectionDoc) query.sectionId = sectionDoc._id;
+    }
+
+    // Sorting
+    const sortOptions: Record<string, 1 | -1> = {
+      [String(sortBy)]: sortOrder === 'asc' ? 1 : -1,
+    };
+
+    // If pagination requested
+    if (page) {
+      const pageNum = Math.max(1, Number(page));
+      const limitNum = Math.max(1, Math.min(100, Number(limit) || 20));
+      const skip = (pageNum - 1) * limitNum;
+
+      const [students, total] = await Promise.all([
+        Student.find(query)
+          .sort(sortOptions)
+          .skip(skip)
+          .limit(limitNum)
+          .populate('parentId', 'fatherName motherName primaryEmail fatherContact motherContact')
+          .populate('classId', 'name')
+          .populate('sectionId', 'name'),
+        Student.countDocuments(query),
+      ]);
+
+      return res.json({
+        success: true,
+        data: students,
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      });
+    }
+
+    // Default list response for backward compatibility
     const students = await Student.find(query)
-      .populate('parentId', 'fatherName motherName primaryEmail')
+      .sort(sortOptions)
+      .limit(100)
+      .populate('parentId', 'fatherName motherName primaryEmail fatherContact motherContact')
       .populate('classId', 'name')
       .populate('sectionId', 'name');
 
-    if (req.user?.role === 'Parent' && (!students || students.length === 0)) {
-      return res.json(FALLBACK_CHILDREN);
-    }
-
     res.json(students);
   } catch (error) {
-    if (req.user?.role === 'Parent') {
-      return res.json(FALLBACK_CHILDREN);
-    }
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ success: false, message: 'Server Error fetching students', error });
   }
 };
 
-import Class from '../models/Class';
-import Section from '../models/Section';
-import { 
-  generateNextAdmissionNumber, 
-  generateNextRollNumber, 
-  peekNextIdentifiers 
-} from '../services/sequenceService';
+// @desc    Get single student by ID (with authorization verification)
+// @route   GET /api/students/:id
+export const getStudentById = async (req: Request, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid student ID format' });
+    }
+
+    // Role-based privacy verification: Parent can only view their own child
+    if (req.user?.role === 'Parent') {
+      const allowedStudentIds = await getLinkedStudentIdsForParent(req.user.id);
+      const isAllowed = allowedStudentIds.some((sId) => sId.toString() === id);
+      if (!isAllowed) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied: You do not have permission to view this student profile.',
+        });
+      }
+    }
+
+    const student = await Student.findById(id)
+      .populate('parentId', 'fatherName motherName primaryEmail fatherContact motherContact address')
+      .populate('classId', 'name')
+      .populate('sectionId', 'name');
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student record not found' });
+    }
+
+    // Also fetch active enrollment
+    const enrollment = await Enrollment.findOne({ studentId: student._id, status: 'Active' })
+      .populate('academicYearId', 'name isCurrent')
+      .populate('classId', 'name')
+      .populate('sectionId', 'name');
+
+    const result = {
+      ...student.toObject(),
+      enrollment,
+      rollNumber: enrollment?.rollNumber,
+    };
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error retrieving student details', error });
+  }
+};
 
 // @desc    Preview next student identifiers (non-binding preview)
 // @route   GET /api/students/preview-identifiers
@@ -72,7 +200,7 @@ export const previewStudentIdentifiers = async (req: Request, res: Response) => 
     );
     res.json(preview);
   } catch (error) {
-    res.status(500).json({ message: 'Error previewing student identifiers', error });
+    res.status(500).json({ success: false, message: 'Error previewing student identifiers', error });
   }
 };
 
@@ -134,13 +262,15 @@ export const createStudent = async (req: Request, res: Response) => {
     while (attempts < maxAttempts) {
       attempts++;
       try {
+        const studentId = await generateNextStudentID(yearStr, classStr);
         const admissionNumber = await generateNextAdmissionNumber(yearStr, classStr);
         const rollNumber = await generateNextRollNumber(yearStr, classStr, sectionStr);
 
-        // Strip any manual IDs if mistakenly passed by client
         const studentData = {
           ...req.body,
+          studentId,
           admissionNumber,
+          grade: classStr,
           classId: classDoc?._id || req.body.classId,
           sectionId: sectionDoc?._id || req.body.sectionId,
           enrollmentDate: req.body.enrollmentDate || new Date(),
@@ -170,7 +300,7 @@ export const createStudent = async (req: Request, res: Response) => {
     }
 
     if (!student) {
-      return res.status(500).json({ message: 'Failed to assign unique enrollment identifiers after retries' });
+      return res.status(500).json({ success: false, message: 'Failed to assign unique enrollment identifiers after retries' });
     }
 
     // 5. Relational Sync: If parentId is provided, link in StudentParent junction
@@ -187,15 +317,18 @@ export const createStudent = async (req: Request, res: Response) => {
           { upsert: true, new: true }
         );
       } catch (parentErr) {
-        console.warn('Non-blocking StudentParent sync error:', parentErr);
+        console.warn('Non-blocking StudentParent sync notice:', parentErr);
       }
     }
+
+    emitToRole('Admin', 'student:created', { student, enrollment });
 
     res.status(201).json({
       success: true,
       message: 'Student enrolled successfully with authoritative identifiers',
       student,
       enrollment,
+      studentId: student.studentId,
       admissionNumber: student.admissionNumber,
       rollNumber: enrollment?.rollNumber,
       academicYear: yearStr,
@@ -203,17 +336,17 @@ export const createStudent = async (req: Request, res: Response) => {
       sectionName: sectionStr,
     });
   } catch (error) {
-    res.status(400).json({ message: 'Invalid student enrollment data', error });
+    res.status(400).json({ success: false, message: 'Invalid student enrollment data', error });
   }
 };
 
-// @desc    Update a student (with relational sync)
-// @route   PUT /api/students/:id
+// @desc    Update a student
+// @route   PUT /api/students/:id / PATCH /api/students/:id
 export const updateStudent = async (req: Request, res: Response) => {
   try {
-    const student = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const student = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
     // Sync enrollment if class or section changed
@@ -256,9 +389,77 @@ export const updateStudent = async (req: Request, res: Response) => {
       }
     }
 
+    emitToRole('Admin', 'student:updated', student);
+
     res.json(student);
   } catch (error) {
-    res.status(400).json({ message: 'Invalid data', error });
+    res.status(400).json({ success: false, message: 'Invalid student update data', error });
+  }
+};
+
+// @desc    Promote student to next academic year/class (Preserves history)
+// @route   POST /api/students/:id/promote
+export const promoteStudent = async (req: Request, res: Response) => {
+  try {
+    const { targetAcademicYearId, targetClassId, targetSectionId, remarks } = req.body;
+
+    if (!targetAcademicYearId || !targetClassId) {
+      return res.status(400).json({ success: false, message: 'Target academic year and class are required' });
+    }
+
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student record not found' });
+    }
+
+    // 1. Mark previous active enrollment as 'Promoted'
+    const prevEnrollment = await Enrollment.findOneAndUpdate(
+      { studentId: student._id, status: 'Active' },
+      { status: 'Promoted' },
+      { new: true }
+    );
+
+    // 2. Resolve class and section names for roll number generation
+    const [cDoc, sDoc, yearDoc] = await Promise.all([
+      Class.findById(targetClassId),
+      targetSectionId ? Section.findById(targetSectionId) : null,
+      AcademicYear.findById(targetAcademicYearId),
+    ]);
+
+    const yearStr = yearDoc?.name || '2026-27';
+    const classStr = cDoc?.name || 'Class 1';
+    const sectionStr = sDoc?.name || 'A';
+
+    const rollNumber = await generateNextRollNumber(yearStr, classStr, sectionStr);
+
+    // 3. Create new Enrollment preserving history
+    const newEnrollment = await Enrollment.create({
+      studentId: student._id,
+      academicYearId: targetAcademicYearId,
+      classId: targetClassId,
+      sectionId: targetSectionId || undefined,
+      rollNumber,
+      admissionDate: new Date(),
+      status: 'Active',
+      promotedFrom: prevEnrollment?._id,
+      remarks: remarks || 'Promoted to next grade',
+    });
+
+    // 4. Update student profile with new active class
+    student.classId = targetClassId;
+    if (targetSectionId) student.sectionId = targetSectionId;
+    student.grade = classStr;
+    await student.save();
+
+    res.json({
+      success: true,
+      message: `Student successfully promoted to ${classStr} (${yearStr})`,
+      student,
+      newEnrollment,
+      previousEnrollment: prevEnrollment,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error promoting student', error });
   }
 };
 
@@ -268,14 +469,14 @@ export const deleteStudent = async (req: Request, res: Response) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.id);
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ success: false, message: 'Student not found' });
     }
     // Clean up relational links
     await Enrollment.deleteMany({ studentId: student._id });
     await StudentParent.deleteMany({ studentId: student._id });
-    res.json({ message: 'Student removed' });
+    res.json({ success: true, message: 'Student removed' });
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ success: false, message: 'Server Error', error });
   }
 };
 
@@ -291,7 +492,7 @@ export const getStudentEnrollments = async (req: Request, res: Response) => {
 
     res.json(enrollments);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ success: false, message: 'Server Error', error });
   }
 };
 
@@ -305,44 +506,27 @@ export const getStudentParents = async (req: Request, res: Response) => {
 
     res.json(studentParents);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ success: false, message: 'Server Error', error });
   }
 };
 
 // @desc    Download Student Report Card PDF
 // @route   GET /api/students/:id/report-card
 export const downloadReportCard = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    const student = FALLBACK_CHILDREN.find((c) => c._id === req.params.id) || FALLBACK_CHILDREN[0];
-    const assessments = FALLBACK_ASSESSMENTS.filter((a) => (a.childId as any)._id === student._id);
-    generateReportCardPDF(res, student as any, assessments as any);
-    return;
-  }
-
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
-      const fallbackChild = FALLBACK_CHILDREN.find((c) => c._id === req.params.id);
-      if (fallbackChild) {
-        const assessments = FALLBACK_ASSESSMENTS.filter((a) => (a.childId as any)._id === fallbackChild._id);
-        generateReportCardPDF(res, fallbackChild as any, assessments as any);
-        return;
-      }
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
-    // Ownership check for parent accounts (support both StudentParent junction and legacy parentId)
+    // Ownership check for parent accounts
     if (req.user?.role === 'Parent') {
-      const parent = await Parent.findOne({ userId: req.user.id });
-      if (!parent) {
-        return res.status(403).json({ message: 'Access denied: Parent profile not found.' });
-      }
+      const allowedStudentIds = await getLinkedStudentIdsForParent(req.user.id);
+      const isAllowed = allowedStudentIds.some((sId) => sId.toString() === student._id.toString());
 
-      const isDirectParent = student.parentId?.toString() === parent._id.toString();
-      const isJunctionParent = Boolean(await StudentParent.findOne({ studentId: student._id, parentId: parent._id }));
-
-      if (!isDirectParent && !isJunctionParent) {
+      if (!isAllowed) {
         return res.status(403).json({
+          success: false,
           message: 'Access denied: You do not have permission to view this report card.',
         });
       }
@@ -355,6 +539,6 @@ export const downloadReportCard = async (req: Request, res: Response) => {
     generateReportCardPDF(res, student, assessments);
   } catch (error) {
     console.error('Report Card PDF Error:', error);
-    res.status(500).json({ message: 'Failed to generate Report Card' });
+    res.status(500).json({ success: false, message: 'Failed to generate Report Card' });
   }
 };

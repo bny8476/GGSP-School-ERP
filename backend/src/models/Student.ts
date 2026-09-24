@@ -1,12 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IStudent extends Document {
+  studentId?: string;
+  admissionNumber?: string;
   firstName: string;
   lastName: string;
-  grade?: string; // Legacy field
+  gender?: 'Male' | 'Female' | 'Other';
+  dateOfBirth?: Date;
+  grade?: string;
   classId?: mongoose.Types.ObjectId;
   sectionId?: mongoose.Types.ObjectId;
-  admissionNumber?: string;
   bloodGroup?: string;
   medicalNotes?: string;
   emergencyContact?: string;
@@ -14,14 +17,30 @@ export interface IStudent extends Document {
   transportId?: mongoose.Types.ObjectId;
   transportStopId?: mongoose.Types.ObjectId;
   parentId?: mongoose.Types.ObjectId;
+  schoolId?: mongoose.Types.ObjectId;
+  campusId?: mongoose.Types.ObjectId;
   enrollmentDate: Date;
-  status: 'Active' | 'Inactive' | 'Graduated';
+  status: 'Active' | 'Inactive' | 'Graduated' | 'Transferred' | 'Withdrawn';
   createdAt: Date;
   updatedAt: Date;
 }
 
 const StudentSchema: Schema = new Schema(
   {
+    studentId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      index: true,
+    },
+    admissionNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      index: true,
+    },
     firstName: {
       type: String,
       required: true,
@@ -32,23 +51,26 @@ const StudentSchema: Schema = new Schema(
       required: true,
       trim: true,
     },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female', 'Other'],
+    },
+    dateOfBirth: {
+      type: Date,
+    },
     grade: {
       type: String,
-      enum: ['Pre-KG', 'LKG', 'UKG'],
+      trim: true,
     },
     classId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Class',
+      index: true,
     },
     sectionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Section',
-    },
-    admissionNumber: {
-      type: String,
-      unique: true,
-      sparse: true,
-      trim: true,
+      index: true,
     },
     bloodGroup: {
       type: String,
@@ -56,12 +78,15 @@ const StudentSchema: Schema = new Schema(
     },
     medicalNotes: {
       type: String,
+      trim: true,
     },
     emergencyContact: {
       type: String,
+      trim: true,
     },
     studentPhoto: {
       type: String,
+      trim: true,
     },
     transportId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -72,7 +97,16 @@ const StudentSchema: Schema = new Schema(
     },
     parentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Parent', // Updated to reference the new Parent model instead of User
+      ref: 'Parent',
+      index: true,
+    },
+    schoolId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
+    },
+    campusId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
     },
     enrollmentDate: {
       type: Date,
@@ -80,15 +114,16 @@ const StudentSchema: Schema = new Schema(
     },
     status: {
       type: String,
-      enum: ['Active', 'Inactive', 'Graduated'],
+      enum: ['Active', 'Inactive', 'Graduated', 'Transferred', 'Withdrawn'],
       default: 'Active',
+      index: true,
     },
   },
   { timestamps: true }
 );
 
-StudentSchema.index({ parentId: 1 });
-StudentSchema.index({ classId: 1, sectionId: 1 });
-StudentSchema.index({ admissionNumber: 1 });
+StudentSchema.index({ parentId: 1, status: 1 });
+StudentSchema.index({ classId: 1, sectionId: 1, status: 1 });
+StudentSchema.index({ firstName: 1, lastName: 1 });
 
-export default mongoose.model<IStudent>('Student', StudentSchema);
+export default mongoose.models.Student || mongoose.model<IStudent>('Student', StudentSchema);

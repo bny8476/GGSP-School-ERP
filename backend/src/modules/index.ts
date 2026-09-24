@@ -36,6 +36,8 @@ import {
   broadcastRoutes,
   emailRoutes,
 } from './communication';
+import messageRoutes from '../routes/messageRoutes';
+import reportRoutes from '../routes/reportRoutes';
 import {
   healthRoutes,
   dashboardRoutes,
@@ -120,8 +122,12 @@ export function registerDomainModules(apiRouter: Router): void {
   // Communication
   apiRouter.use('/announcements', announcementRoutes);
   apiRouter.use('/notifications', notificationRoutes);
+  apiRouter.use('/messages', messageRoutes);
   apiRouter.use('/broadcasts', broadcastRoutes);
   apiRouter.use('/email', emailRoutes);
+
+  // Reports
+  apiRouter.use('/reports', reportRoutes);
 }
 
 // Export all modules for direct domain imports

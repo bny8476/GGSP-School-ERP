@@ -13,15 +13,29 @@ const RoleSchema: Schema = new Schema(
       type: String,
       required: true,
       unique: true,
-      enum: ['Admin', 'Teacher', 'Parent', 'Receptionist', 'SuperAdmin', 'Principal', 'Accountant'],
+      trim: true,
+      enum: [
+        'SuperAdmin',
+        'Admin',
+        'Principal',
+        'Teacher',
+        'Parent',
+        'Accountant',
+        'Receptionist',
+        'HR',
+        'Transport',
+        'Librarian',
+        'Staff',
+      ],
     },
     permissions: [
       {
         type: String,
+        trim: true,
       },
     ],
   },
   { timestamps: true }
 );
 
-export default mongoose.model<IRole>('Role', RoleSchema);
+export default mongoose.models.Role || mongoose.model<IRole>('Role', RoleSchema);

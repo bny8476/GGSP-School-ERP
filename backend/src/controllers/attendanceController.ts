@@ -2,36 +2,37 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Attendance from '../models/Attendance';
 import StudentAttendance from '../models/StudentAttendance';
-import EmployeeAttendance from '../models/EmployeeAttendance';
 import Student from '../models/Student';
 import Parent from '../models/Parent';
 import StudentParent from '../models/StudentParent';
+import User from '../models/User';
 import Notification from '../models/Notification';
 import ClassModel from '../models/Class';
 import SectionModel from '../models/Section';
-import { getIO } from '../socket';
-import { FALLBACK_ATTENDANCE } from '../utils/parentFallbackData';
+import { emitToClass, emitToUser, emitToRole } from '../socket';
 
-// Helper to get socket safely
-const emitSocketSafely = (event: string, payload: any) => {
-  try {
-    const io = getIO();
-    io.emit(event, payload);
-  } catch (err) {
-    // Socket not ready or running in tests
+// Helper to get parent user ID for a student
+async function getParentUserIdForStudent(studentId: mongoose.Types.ObjectId): Promise<mongoose.Types.ObjectId | undefined> {
+  const student = await Student.findById(studentId).select('parentId');
+  if (student?.parentId) {
+    const parent = await Parent.findById(student.parentId).select('userId');
+    if (parent?.userId) return parent.userId;
   }
-};
 
-// @desc    Get attendance records for a specific date or child
+  const sp = await StudentParent.findOne({ studentId }).select('parentId');
+  if (sp?.parentId) {
+    const parent = await Parent.findById(sp.parentId).select('userId');
+    if (parent?.userId) return parent.userId;
+  }
+  return undefined;
+}
+
+// @desc    Get attendance records for a specific date, class, or child
 // @route   GET /api/attendance
 export const getAttendance = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(FALLBACK_ATTENDANCE);
-  }
-
   try {
-    const { date, entityType, childId, studentId } = req.query;
-    let query: Record<string, unknown> = {};
+    const { date, entityType, childId, studentId, classId, sectionId } = req.query;
+    let query: Record<string, any> = {};
 
     if (date) {
       const queryDate = new Date(date as string);
@@ -44,52 +45,46 @@ export const getAttendance = async (req: Request, res: Response) => {
       };
     }
 
-    if (entityType) {
-      query.entityType = entityType;
-    }
-
     const targetStudentId = (childId || studentId) as string;
 
     // Role-based filtering for Parents
     if (req.user?.role === 'Parent') {
       const parent = await Parent.findOne({ userId: req.user.id });
       if (!parent) {
-        return res.json(FALLBACK_ATTENDANCE);
+        return res.json([]);
       }
       const linkedRecords = await StudentParent.find({ parentId: parent._id }).select('studentId');
-      const linkedStudentIds = linkedRecords.map((r) => r.studentId);
+      const linkedStudentIds = linkedRecords.map((r) => r.studentId.toString());
       const directStudents = await Student.find({ parentId: parent._id }).select('_id');
-      const allStudentIds = [
-        ...new Set([...linkedStudentIds.map(String), ...directStudents.map((s) => String(s._id))]),
-      ];
+      const allStudentIds = [...new Set([...linkedStudentIds, ...directStudents.map((s) => s._id.toString())])];
 
-      // Privacy Check: Ensure targetStudentId belongs to this parent
       if (targetStudentId && !allStudentIds.includes(targetStudentId)) {
-        return res.status(403).json({ message: 'Forbidden: You do not have permission to view this student.' });
+        return res.status(403).json({ success: false, message: 'Forbidden: You do not have permission to view this student.' });
       }
 
-      query.entityId = targetStudentId
+      query.studentId = targetStudentId
         ? new mongoose.Types.ObjectId(targetStudentId)
         : { $in: allStudentIds.map((id) => new mongoose.Types.ObjectId(id)) };
-      query.entityType = 'Student';
-    } else if (targetStudentId) {
-      query.entityId = new mongoose.Types.ObjectId(targetStudentId);
+    } else {
+      if (targetStudentId && mongoose.Types.ObjectId.isValid(targetStudentId)) {
+        query.studentId = new mongoose.Types.ObjectId(targetStudentId);
+      }
+      if (classId && mongoose.Types.ObjectId.isValid(classId as string)) {
+        query.classId = new mongoose.Types.ObjectId(classId as string);
+      }
+      if (sectionId && mongoose.Types.ObjectId.isValid(sectionId as string)) {
+        query.sectionId = new mongoose.Types.ObjectId(sectionId as string);
+      }
     }
 
-    const attendance = await Attendance.find(query)
-      .populate('entityId', 'firstName lastName grade name classId sectionId')
-      .populate('markedBy', 'firstName lastName');
+    const records = await StudentAttendance.find(query)
+      .populate('studentId', 'firstName lastName grade admissionNumber studentId')
+      .populate('markedBy', 'firstName lastName')
+      .sort({ date: -1 });
 
-    if (req.user?.role === 'Parent' && (!attendance || attendance.length === 0)) {
-      return res.json(FALLBACK_ATTENDANCE);
-    }
-
-    res.json(attendance);
+    res.json(records);
   } catch (error) {
-    if (req.user?.role === 'Parent') {
-      return res.json(FALLBACK_ATTENDANCE);
-    }
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ success: false, message: 'Server Error fetching attendance', error });
   }
 };
 
@@ -97,17 +92,6 @@ export const getAttendance = async (req: Request, res: Response) => {
 // @route   GET /api/attendance/today
 export const getTodayAttendance = async (req: Request, res: Response) => {
   const childId = (req.query.childId || req.query.studentId) as string;
-
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(FALLBACK_ATTENDANCE[0] || {
-      date: new Date(),
-      status: 'Present',
-      checkInTime: '8:42 AM',
-      teacherName: 'Ms. Ananya Roy',
-      className: 'LKG',
-      sectionName: 'Section A',
-    });
-  }
 
   try {
     const todayStart = new Date();
@@ -133,7 +117,7 @@ export const getTodayAttendance = async (req: Request, res: Response) => {
         const allStudentIds = [...new Set([...linkedStudentIds, ...directStudents.map((s) => String(s._id))])];
 
         if (childId && !allStudentIds.includes(childId)) {
-          return res.status(403).json({ message: 'Access denied to this student record' });
+          return res.status(403).json({ success: false, message: 'Access denied to this student record' });
         }
         if (!childId && allStudentIds.length > 0) {
           query.studentId = { $in: allStudentIds.map((id) => new mongoose.Types.ObjectId(id)) };
@@ -142,12 +126,11 @@ export const getTodayAttendance = async (req: Request, res: Response) => {
     }
 
     const record = await StudentAttendance.findOne(query)
-      .populate('studentId', 'firstName lastName admissionNumber rollNumber grade')
+      .populate('studentId', 'firstName lastName admissionNumber rollNumber grade studentId')
       .populate('markedBy', 'firstName lastName')
       .sort({ updatedAt: -1 });
 
     if (!record) {
-      // Return null or placeholder with teacher in roll-call mode
       return res.json({
         recorded: false,
         status: 'Not Marked',
@@ -166,14 +149,14 @@ export const getTodayAttendance = async (req: Request, res: Response) => {
       sectionName: record.sectionName,
       date: record.date,
       status: record.status,
-      checkInTime: record.checkInTime || (record.status === 'Present' ? '8:42 AM' : undefined),
+      checkInTime: record.checkInTime,
       absenceReason: record.absenceReason,
       teacherRemark: record.teacherRemark || record.remarks,
-      teacherName: record.teacherName || 'Ms. Ananya Roy',
+      teacherName: record.teacherName,
       timestamp: record.updatedAt || record.createdAt,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving today attendance', error });
+    res.status(500).json({ success: false, message: 'Error retrieving today attendance', error });
   }
 };
 
@@ -192,26 +175,23 @@ export const markAttendance = async (req: Request, res: Response) => {
     } = req.body;
 
     const markedById = req.user?.id;
-    let teacherName = req.body.teacherName || 'Ms. Ananya Roy';
+    let teacherName = req.body.teacherName || 'Teacher';
+
     if (markedById && mongoose.Types.ObjectId.isValid(markedById)) {
-      try {
-        const u = await mongoose.model('User').findById(markedById).select('firstName lastName');
-        if (u) {
-          teacherName = `${(u as any).firstName || ''} ${(u as any).lastName || ''}`.trim() || teacherName;
-        }
-      } catch (uErr) {
-        // User lookup non-fatal
+      const u = await User.findById(markedById).select('firstName lastName');
+      if (u) {
+        teacherName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || teacherName;
       }
     }
 
-    if (!records || !Array.isArray(records)) {
-      return res.status(400).json({ message: 'Records must be an array' });
+    if (!records || !Array.isArray(records) || records.length === 0) {
+      return res.status(400).json({ success: false, message: 'Records array is required and must not be empty' });
     }
 
     const recordDate = rawDate ? new Date(rawDate) : new Date();
     recordDate.setHours(0, 0, 0, 0);
 
-    // Resolve class and section names if not provided
+    // Resolve class and section names
     let className = rawClassName;
     let sectionName = rawSectionName;
     if (classId && mongoose.Types.ObjectId.isValid(classId) && !className) {
@@ -224,178 +204,148 @@ export const markAttendance = async (req: Request, res: Response) => {
     }
 
     const academicYear = rawAcademicYear || '2026-2027';
-
     const savedRecords: any[] = [];
 
     for (const record of records) {
-      // Support both new schema and legacy schema
-      const studentId = record.studentId || (record.entityType === 'Student' ? record.entityId : null);
-      const entityId = studentId || record.entityId;
-      const entityType = record.entityType || 'Student';
+      const studentId = record.studentId || record.entityId;
+      if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
+        continue;
+      }
+
       const status = record.status || 'Present';
       const remarks = record.teacherRemark || record.remarks || '';
-      const absenceReason = record.absenceReason || null;
-      const checkInTime = record.checkInTime || (status === 'Present' || status === 'Late' ? '08:42 AM' : undefined);
+      const absenceReason = record.absenceReason || undefined;
 
-      // 1. Fetch student info for complete metadata
-      let studentName = record.studentName;
-      let studentParentUserId: mongoose.Types.ObjectId | undefined;
+      // 1. Fetch student info for real class/section and name if missing
+      const studentDoc = await Student.findById(studentId).select('firstName lastName classId sectionId grade');
+      if (!studentDoc) continue;
 
-      if (studentId && mongoose.Types.ObjectId.isValid(studentId)) {
-        const studentDoc = await Student.findById(studentId).select('firstName lastName parentId');
-        if (studentDoc) {
-          if (!studentName) {
-            studentName = `${studentDoc.firstName} ${studentDoc.lastName}`.trim();
-          }
-          if (studentDoc.parentId) {
-            const parentDoc = await Parent.findById(studentDoc.parentId).select('userId');
-            if (parentDoc && parentDoc.userId) {
-              studentParentUserId = parentDoc.userId;
-            }
-          }
-          if (!studentParentUserId) {
-            const sp = await StudentParent.findOne({ studentId: studentDoc._id }).select('parentId');
-            if (sp && sp.parentId) {
-              const parentDoc = await Parent.findById(sp.parentId).select('userId');
-              if (parentDoc && parentDoc.userId) {
-                studentParentUserId = parentDoc.userId;
-              }
-            }
-          }
-        }
-      }
+      const studentName = record.studentName || `${studentDoc.firstName} ${studentDoc.lastName}`.trim();
+      const resolvedClassId = classId || studentDoc.classId;
+      const resolvedSectionId = sectionId || studentDoc.sectionId;
 
-      // 2. Upsert in StudentAttendance
-      if (studentId && mongoose.Types.ObjectId.isValid(studentId)) {
-        const studentAttendanceDoc = await StudentAttendance.findOneAndUpdate(
-          { studentId: new mongoose.Types.ObjectId(studentId), date: recordDate },
-          {
-            studentId: new mongoose.Types.ObjectId(studentId),
-            studentName: studentName || 'Student',
-            classId: classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
-            className: className || 'LKG',
-            sectionId: sectionId && mongoose.Types.ObjectId.isValid(sectionId) ? new mongoose.Types.ObjectId(sectionId) : undefined,
-            sectionName: sectionName || 'Section A',
-            academicYear,
-            date: recordDate,
-            status,
-            checkInTime: status === 'Late' || status === 'Present' ? checkInTime : undefined,
-            absenceReason: status === 'Absent' ? absenceReason : undefined,
-            teacherRemark: remarks,
-            teacherId: markedById ? new mongoose.Types.ObjectId(markedById) : undefined,
-            teacherName,
-            markedBy: markedById ? new mongoose.Types.ObjectId(markedById) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
-            remarks,
-          },
-          { upsert: true, new: true }
-        );
-        savedRecords.push(studentAttendanceDoc);
+      const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const checkInTime = record.checkInTime || (status === 'Present' || status === 'Late' ? nowTime : undefined);
 
-        // 3. Automated Parent Notification Trigger
-        const formattedDate = recordDate.toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        });
+      // 2. Concurrency-safe atomic upsert in StudentAttendance
+      const studentAttendanceDoc = await StudentAttendance.findOneAndUpdate(
+        { studentId: new mongoose.Types.ObjectId(studentId), date: recordDate },
+        {
+          studentId: new mongoose.Types.ObjectId(studentId),
+          studentName,
+          classId: resolvedClassId,
+          className: className || studentDoc.grade || 'Class',
+          sectionId: resolvedSectionId,
+          sectionName: sectionName || 'A',
+          academicYear,
+          date: recordDate,
+          status,
+          checkInTime: status === 'Late' || status === 'Present' ? checkInTime : undefined,
+          absenceReason: status === 'Absent' ? absenceReason : undefined,
+          teacherRemark: remarks,
+          teacherId: markedById ? new mongoose.Types.ObjectId(markedById) : undefined,
+          teacherName,
+          markedBy: markedById ? new mongoose.Types.ObjectId(markedById) : undefined,
+          remarks,
+        },
+        { upsert: true, new: true }
+      );
+      savedRecords.push(studentAttendanceDoc);
 
+      // 3. Automated Parent Notification Trigger
+      const parentUserId = await getParentUserIdForStudent(new mongoose.Types.ObjectId(studentId));
+      const formattedDate = recordDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+
+      if (parentUserId) {
         if (status === 'Absent') {
-          // Absent Student Workflow
           const reasonClause = absenceReason ? ` Reason: ${absenceReason}.` : ' Please contact the school if this absence was unexpected.';
-          const absenceMsg = `${studentName || 'Your child'} was marked absent today (${formattedDate}).${reasonClause}`;
+          const absenceMsg = `${studentName} was marked absent today (${formattedDate}).${reasonClause}`;
 
-          if (studentParentUserId) {
-            await Notification.create({
-              userId: studentParentUserId,
-              studentId: new mongoose.Types.ObjectId(studentId),
-              targetRole: 'Parent',
-              title: 'Attendance Update',
-              message: absenceMsg,
-              type: 'attendance',
-              priority: 'high',
-              link: '/parent/attendance',
-              metadata: {
-                studentId,
-                studentName,
-                status: 'Absent',
-                date: recordDate,
-                formattedDate,
-                className: className || 'LKG',
-                sectionName: sectionName || 'Section A',
-                absenceReason: absenceReason || null,
-                teacherRemark: remarks || (absenceReason ? 'Parent informed' : null),
-                teacherName,
-                actions: [
-                  { label: 'View Attendance', link: '/parent/attendance' },
-                  { label: 'Message Teacher', link: '/parent/messages' },
-                ],
-              },
-            });
-          }
+          const notif = await Notification.create({
+            recipient: parentUserId,
+            userId: parentUserId,
+            studentId: new mongoose.Types.ObjectId(studentId),
+            targetRole: 'Parent',
+            title: 'Attendance Notice: Absent',
+            message: absenceMsg,
+            type: 'attendance',
+            priority: 'high',
+            link: '/parent/attendance',
+            metadata: {
+              studentId,
+              status: 'Absent',
+              date: recordDate,
+              absenceReason,
+              teacherName,
+            },
+          });
+
+          emitToUser(parentUserId.toString(), 'notification:new', notif);
+          emitToUser(parentUserId.toString(), 'attendance:updated', { studentId, status: 'Absent', date: recordDate });
         } else if (status === 'Late') {
-          // Late Student Workflow
-          const lateMsg = `${studentName || 'Your child'} arrived at ${checkInTime || '8:42 AM'} (Late).`;
-          if (studentParentUserId) {
-            await Notification.create({
-              userId: studentParentUserId,
-              studentId: new mongoose.Types.ObjectId(studentId),
-              targetRole: 'Parent',
-              title: 'Late Arrival',
-              message: lateMsg,
-              type: 'attendance',
-              priority: 'normal',
-              link: '/parent/attendance',
-              metadata: {
-                studentId,
-                studentName,
-                status: 'Late',
-                arrivalTime: checkInTime || '8:42 AM',
-                date: recordDate,
-                formattedDate,
-                teacherRemark: remarks || 'Heavy traffic',
-                teacherName,
-              },
-            });
-          }
+          const lateMsg = `${studentName} arrived at ${checkInTime || 'School'} (Late).`;
+          const notif = await Notification.create({
+            recipient: parentUserId,
+            userId: parentUserId,
+            studentId: new mongoose.Types.ObjectId(studentId),
+            targetRole: 'Parent',
+            title: 'Late Arrival Notice',
+            message: lateMsg,
+            type: 'attendance',
+            priority: 'normal',
+            link: '/parent/attendance',
+            metadata: {
+              studentId,
+              status: 'Late',
+              arrivalTime: checkInTime,
+              date: recordDate,
+            },
+          });
+
+          emitToUser(parentUserId.toString(), 'notification:new', notif);
+          emitToUser(parentUserId.toString(), 'attendance:updated', { studentId, status: 'Late', date: recordDate });
         }
       }
 
-      // 4. Legacy Attendance Upsert
-      if (entityId) {
-        await Attendance.findOneAndUpdate(
-          { date: recordDate, entityId: new mongoose.Types.ObjectId(entityId), entityType },
-          {
-            $set: {
-              status: status === 'Excused' ? 'Absent' : status,
-              remarks: absenceReason ? `${absenceReason}${remarks ? ` - ${remarks}` : ''}` : remarks,
-              markedBy: markedById ? new mongoose.Types.ObjectId(markedById) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
-            },
+      // 4. Legacy Attendance Upsert for backwards compatibility
+      await Attendance.findOneAndUpdate(
+        { date: recordDate, entityId: new mongoose.Types.ObjectId(studentId), entityType: 'Student' },
+        {
+          $set: {
+            status: status === 'Excused' ? 'Absent' : status,
+            remarks: absenceReason ? `${absenceReason}${remarks ? ` - ${remarks}` : ''}` : remarks,
+            markedBy: markedById ? new mongoose.Types.ObjectId(markedById) : undefined,
           },
-          { upsert: true }
-        );
-      }
+        },
+        { upsert: true }
+      );
     }
 
-    // 5. Real-Time Broadcast to Connected Parent Clients
-    emitSocketSafely('attendance:marked', {
-      classId,
-      sectionId,
-      className,
-      sectionName,
-      date: recordDate,
-      records: savedRecords,
-    });
-    emitSocketSafely('notification:new', {
-      type: 'attendance',
-      message: 'Attendance has been finalized for today.',
-    });
+    // 5. Scoped Real-Time Broadcast to Class
+    if (classId) {
+      emitToClass(classId.toString(), 'attendance:marked', {
+        classId,
+        sectionId,
+        className,
+        sectionName,
+        date: recordDate,
+        count: savedRecords.length,
+      });
+    }
+    emitToRole('Admin', 'attendance:updated', { date: recordDate, count: savedRecords.length });
 
     res.status(200).json({
+      success: true,
       message: 'Attendance register submitted & parents updated!',
       count: savedRecords.length,
       records: savedRecords,
     });
   } catch (error) {
     console.error('Attendance submit error:', error);
-    res.status(400).json({ message: 'Failed to mark attendance', error });
+    res.status(400).json({ success: false, message: 'Failed to mark attendance', error });
   }
 };

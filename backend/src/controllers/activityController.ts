@@ -4,61 +4,13 @@ import ClassroomActivity from '../models/ClassroomActivity';
 import Notification from '../models/Notification';
 import Student from '../models/Student';
 import Parent from '../models/Parent';
-import { getIO } from '../socket';
-
-const emitSocketSafely = (event: string, payload: any) => {
-  try {
-    const io = getIO();
-    io.emit(event, payload);
-  } catch (err) {}
-};
-
-const DEMO_ACTIVITIES = [
-  {
-    _id: 'act-1',
-    category: 'Art & Craft',
-    title: 'Rainbow Drawing Activity',
-    description: 'Children dipped sponge rollers into vibrant watercolor paints to create radiant rainbow arches and fluffy cotton cloud textures.',
-    icon: '🎨',
-    photos: ['https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600&auto=format&fit=crop'],
-    teacherName: 'Ms. Ananya Roy',
-    date: new Date(),
-    className: 'LKG',
-    sectionName: 'Section A',
-  },
-  {
-    _id: 'act-2',
-    category: 'Story Time',
-    title: 'The Little Seed',
-    description: 'An engaging interactive puppet theater narration illustrating plant life cycles, sunlight, rain, and blooming flowers.',
-    icon: '📚',
-    photos: ['https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=600&auto=format&fit=crop'],
-    teacherName: 'Ms. Ananya Roy',
-    date: new Date(),
-    className: 'LKG',
-    sectionName: 'Section A',
-  },
-  {
-    _id: 'act-3',
-    category: 'Rhymes',
-    title: 'Twinkle Twinkle Little Star',
-    description: 'Musical rhythm session featuring handheld star wands, clapping beats, and melodic vocal singing in unison.',
-    icon: '🎵',
-    photos: ['https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop'],
-    teacherName: 'Ms. Ananya Roy',
-    date: new Date(),
-    className: 'LKG',
-    sectionName: 'Section A',
-  },
-];
+import User from '../models/User';
+import ClassModel from '../models/Class';
+import { emitToClass, emitToRole, emitToUser } from '../socket';
 
 // @desc    Get today's classroom activities
 // @route   GET /api/activities/today
 export const getTodayActivities = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(DEMO_ACTIVITIES);
-  }
-
   try {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -84,13 +36,50 @@ export const getTodayActivities = async (req: Request, res: Response) => {
     }
 
     const items = await ClassroomActivity.find(query).sort({ createdAt: -1 });
-    if (!items || items.length === 0) {
-      return res.json(DEMO_ACTIVITIES);
-    }
-
     res.json(items);
   } catch (error) {
-    res.json(DEMO_ACTIVITIES);
+    res.status(500).json({ success: false, message: 'Server Error fetching activities', error });
+  }
+};
+
+// @desc    Get all classroom activities (with pagination/filters)
+// @route   GET /api/activities
+export const getAllActivities = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 30;
+    const skip = (page - 1) * limit;
+
+    const query: Record<string, any> = {};
+    const { classId, sectionId, category } = req.query;
+
+    if (classId && mongoose.Types.ObjectId.isValid(classId as string)) {
+      query.classId = new mongoose.Types.ObjectId(classId as string);
+    }
+    if (sectionId && mongoose.Types.ObjectId.isValid(sectionId as string)) {
+      query.sectionId = new mongoose.Types.ObjectId(sectionId as string);
+    }
+    if (category) {
+      query.category = category;
+    }
+
+    const [activities, total] = await Promise.all([
+      ClassroomActivity.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit),
+      ClassroomActivity.countDocuments(query),
+    ]);
+
+    res.json({
+      success: true,
+      data: activities,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error fetching activities', error });
   }
 };
 
@@ -99,115 +88,106 @@ export const getTodayActivities = async (req: Request, res: Response) => {
 export const createActivity = async (req: Request, res: Response) => {
   try {
     const {
-      classId,
-      sectionId,
-      className,
-      sectionName,
-      title,
       category,
+      title,
       description,
       icon,
       photos,
       date,
+      classId,
+      sectionId,
+      className: rawClassName,
+      sectionName: rawSectionName,
       teacherName: rawTeacherName,
     } = req.body;
 
-    const teacherId = req.user?.id;
-    let teacherName = rawTeacherName || 'Ms. Ananya Roy';
-    if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
-      try {
-        const u = await mongoose.model('User').findById(teacherId).select('firstName lastName');
-        if (u) teacherName = `${(u as any).firstName || ''} ${(u as any).lastName || ''}`.trim() || teacherName;
-      } catch (err) {}
+    if (!category || !title) {
+      return res.status(400).json({ success: false, message: 'Category and title are required' });
     }
 
-    // Default icon map
-    const iconMap: Record<string, string> = {
-      'Art & Craft': '🎨',
-      'Story Time': '📚',
-      'Rhymes': '🎵',
-      'Drawing': '✏️',
-      'Writing': '📝',
-      'Games': '🎲',
-      'Songs': '🎶',
-      'Worksheets': '📋',
-      'Outdoor Activity': '⚽',
-      'Classroom Celebration': '🎉',
-    };
+    const teacherId = req.user?.id;
+    let teacherName = rawTeacherName || 'Teacher';
+    if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
+      const u = await User.findById(teacherId).select('firstName lastName');
+      if (u) {
+        teacherName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || teacherName;
+      }
+    }
 
-    const newActivity = await ClassroomActivity.create({
-      classId: classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
-      sectionId: sectionId && mongoose.Types.ObjectId.isValid(sectionId) ? new mongoose.Types.ObjectId(sectionId) : undefined,
-      className: className || 'LKG',
-      sectionName: sectionName || 'Section A',
+    let className = rawClassName;
+    let sectionName = rawSectionName;
+    let resolvedClassId = classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : undefined;
+
+    if (!resolvedClassId && className) {
+      const cDoc = await ClassModel.findOne({ name: new RegExp(`^${className}$`, 'i') });
+      if (cDoc) {
+        resolvedClassId = cDoc._id as mongoose.Types.ObjectId;
+        className = cDoc.name;
+      }
+    }
+
+    if (!resolvedClassId) {
+      const defaultClass = await ClassModel.findOne();
+      if (defaultClass) resolvedClassId = defaultClass._id as mongoose.Types.ObjectId;
+    }
+
+    const activity = await ClassroomActivity.create({
+      category,
       title,
-      category: category || 'Art & Craft',
       description,
-      icon: icon || iconMap[category] || '✨',
-      photos: Array.isArray(photos) ? photos : [],
-      teacherId: teacherId && mongoose.Types.ObjectId.isValid(teacherId) ? new mongoose.Types.ObjectId(teacherId) : undefined,
-      teacherName,
+      icon: icon || '🎨',
+      photos: Array.isArray(photos) ? photos : photos ? [photos] : [],
       date: date ? new Date(date) : new Date(),
+      classId: resolvedClassId,
+      sectionId: sectionId && mongoose.Types.ObjectId.isValid(sectionId) ? new mongoose.Types.ObjectId(sectionId) : undefined,
+      className: className || 'Class',
+      sectionName: sectionName || 'A',
+      teacherName,
     });
 
-    // Notify parents
-    try {
-      let queryStudent: any = {};
-      if (classId && mongoose.Types.ObjectId.isValid(classId)) {
-        queryStudent.classId = new mongoose.Types.ObjectId(classId);
-      }
-      const students = await Student.find(queryStudent).select('parentId _id');
-      for (const st of students) {
-        if (st.parentId) {
-          const p = await Parent.findById(st.parentId).select('userId');
-          if (p && p.userId) {
-            await Notification.create({
-              userId: p.userId,
-              studentId: st._id,
-              targetRole: 'Parent',
-              title: `New Activity: ${title}`,
-              message: `${category} activity published: "${title}"`,
-              type: 'activity',
-              priority: 'normal',
-              link: '/parent/activities',
-              metadata: {
-                activityId: newActivity._id,
-                category,
-                title,
-                teacherName,
-              },
-            });
+    // Notify parents in target class
+    if (resolvedClassId) {
+      try {
+        const students = await Student.find({ classId: resolvedClassId }).select('parentId _id');
+        for (const st of students) {
+          if (st.parentId) {
+            const p = await Parent.findById(st.parentId).select('userId');
+            if (p && p.userId) {
+              const notif = await Notification.create({
+                recipient: p.userId,
+                userId: p.userId,
+                studentId: st._id,
+                targetRole: 'Parent',
+                title: `New Classroom Activity: ${title}`,
+                message: `Ms./Mr. ${teacherName} posted a new activity (${category}): '${title}'.`,
+                type: 'activity',
+                priority: 'normal',
+                link: '/parent/activities',
+                metadata: {
+                  activityId: activity._id,
+                  category,
+                  title,
+                  teacherName,
+                },
+              });
+              emitToUser(p.userId.toString(), 'notification:new', notif);
+            }
           }
         }
-      }
-    } catch (notifErr) {}
+      } catch (notifErr) {}
 
-    emitSocketSafely('activity:published', newActivity);
-    emitSocketSafely('notification:new', {
-      type: 'activity',
-      message: `New activity published: ${title}`,
-    });
+      emitToClass(resolvedClassId.toString(), 'activity:published', activity);
+    }
+
+    emitToRole('Admin', 'activity:published', activity);
 
     res.status(201).json({
+      success: true,
       message: 'Classroom activity published successfully!',
-      activity: newActivity,
+      activity,
     });
   } catch (error) {
     console.error('Error creating activity:', error);
-    res.status(400).json({ message: 'Failed to create activity', error });
-  }
-};
-
-// @desc    Get all activities history
-// @route   GET /api/activities
-export const getAllActivities = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(DEMO_ACTIVITIES);
-  }
-  try {
-    const list = await ClassroomActivity.find({}).sort({ date: -1 }).limit(60);
-    res.json(list.length > 0 ? list : DEMO_ACTIVITIES);
-  } catch (err) {
-    res.json(DEMO_ACTIVITIES);
+    res.status(400).json({ success: false, message: 'Failed to create activity', error });
   }
 };

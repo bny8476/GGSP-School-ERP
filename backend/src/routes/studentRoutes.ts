@@ -1,16 +1,17 @@
 import express from 'express';
-import { 
-  getStudents, 
-  createStudent, 
+import {
+  getStudents,
+  getStudentById,
+  createStudent,
   previewStudentIdentifiers,
-  updateStudent, 
-  deleteStudent, 
+  updateStudent,
+  promoteStudent,
+  deleteStudent,
   downloadReportCard,
   getStudentEnrollments,
-  getStudentParents
+  getStudentParents,
 } from '../controllers/studentController';
 import { protect, authorize } from '../middleware/auth';
-
 import { validate } from '../middleware/validate';
 import { createStudentSchema, updateStudentSchema } from '../validators/studentValidator';
 
@@ -18,13 +19,39 @@ const router = express.Router();
 
 router.get('/preview-identifiers', protect, previewStudentIdentifiers);
 
-router.route('/')
+router
+  .route('/')
   .get(protect, getStudents)
-  .post(protect, authorize('Admin', 'SuperAdmin', 'Teacher'), validate(createStudentSchema), createStudent);
+  .post(
+    protect,
+    authorize('Admin', 'SuperAdmin', 'Teacher', 'Principal'),
+    validate(createStudentSchema),
+    createStudent
+  );
 
-router.route('/:id')
-  .put(protect, authorize('Admin', 'SuperAdmin'), validate(updateStudentSchema), updateStudent)
+router
+  .route('/:id')
+  .get(protect, getStudentById)
+  .put(
+    protect,
+    authorize('Admin', 'SuperAdmin', 'Principal'),
+    validate(updateStudentSchema),
+    updateStudent
+  )
+  .patch(
+    protect,
+    authorize('Admin', 'SuperAdmin', 'Principal'),
+    validate(updateStudentSchema),
+    updateStudent
+  )
   .delete(protect, authorize('Admin', 'SuperAdmin'), deleteStudent);
+
+router.post(
+  '/:id/promote',
+  protect,
+  authorize('Admin', 'SuperAdmin', 'Principal'),
+  promoteStudent
+);
 
 router.get('/:id/report-card', protect, downloadReportCard);
 router.get('/:id/enrollments', protect, getStudentEnrollments);

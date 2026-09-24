@@ -18,43 +18,43 @@ describe('Auth Middleware', () => {
   });
 
   describe('protect middleware', () => {
-    it('should return 401 if no Authorization header is present', () => {
-      protect(req as Request, res as Response, next);
+    it('should return 401 if no Authorization header is present', async () => {
+      await protect(req as Request, res as Response, next);
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Not authorized, no token' });
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Not authorized, no token' }));
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('should verify valid Bearer token and call next()', () => {
+    it('should verify valid Bearer token and call next()', async () => {
       const payload = { user: { id: 'user123', role: 'Admin' } };
       const token = jwt.sign(payload, 'test_secret_key');
       req.headers = { authorization: `Bearer ${token}` };
 
-      protect(req as Request, res as Response, next);
+      await protect(req as Request, res as Response, next);
 
       expect(req.user).toEqual({ id: 'user123', role: 'Admin' });
       expect(next).toHaveBeenCalled();
     });
 
-    it('should verify valid HttpOnly cookie and call next()', () => {
+    it('should verify valid HttpOnly cookie and call next()', async () => {
       const payload = { user: { id: 'user456', role: 'Parent' } };
       const token = jwt.sign(payload, 'test_secret_key');
       // @ts-ignore
       req.cookies = { token };
 
-      protect(req as Request, res as Response, next);
+      await protect(req as Request, res as Response, next);
 
       expect(req.user).toEqual({ id: 'user456', role: 'Parent' });
       expect(next).toHaveBeenCalled();
     });
 
-    it('should return 401 for an invalid token', () => {
+    it('should return 401 for an invalid token', async () => {
       req.headers = { authorization: 'Bearer invalid_token_xyz' };
 
-      protect(req as Request, res as Response, next);
+      await protect(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Not authorized, token failed' });
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Not authorized, token failed' }));
       expect(next).not.toHaveBeenCalled();
     });
   });
@@ -67,15 +67,22 @@ describe('Auth Middleware', () => {
       middleware(req as Request, res as Response, next);
 
       expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
     });
 
     it('should return 403 if user role is not authorized', () => {
-      req.user = { id: '123', role: 'Parent' };
-      const middleware = authorize('Admin', 'Teacher');
+      req.user = { id: '123', role: 'Teacher' };
+      const middleware = authorize('Admin', 'SuperAdmin');
 
       middleware(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          code: 'FORBIDDEN_ROLE',
+        })
+      );
       expect(next).not.toHaveBeenCalled();
     });
   });

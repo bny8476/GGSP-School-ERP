@@ -1,42 +1,126 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface IFeePaymentRecord {
+  receiptNumber: string;
+  amount: number;
+  paymentMethod: string;
+  transactionId?: string;
+  paidAt: Date;
+  paidBy?: mongoose.Types.ObjectId;
+}
+
 export interface IFee extends Document {
   studentId: mongoose.Types.ObjectId;
-  grade: 'Pre-KG' | 'LKG' | 'UKG';
-  feeType: 'Admission' | 'Tuition' | 'Transport' | 'Activity' | 'Day Care';
+  grade?: string;
+  classId?: mongoose.Types.ObjectId;
+  feeType: 'Admission' | 'Tuition' | 'Transport' | 'Activity' | 'Day Care' | 'Examination' | 'Other';
+  title?: string;
+  invoiceNumber?: string;
   totalAmount: number;
   amountPaid: number;
   dueDate: Date;
+  paidAt?: Date;
+  paymentMethod?: string;
+  transactionId?: string;
+  receiptNumber?: string;
   status: 'Paid' | 'Partial' | 'Overdue' | 'Pending';
+  paymentHistory: IFeePaymentRecord[];
+  schoolId?: mongoose.Types.ObjectId;
+  campusId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const FeePaymentRecordSchema = new Schema(
+  {
+    receiptNumber: { type: String, required: true },
+    amount: { type: Number, required: true },
+    paymentMethod: { type: String, default: 'Online / UPI' },
+    transactionId: { type: String },
+    paidAt: { type: Date, default: Date.now },
+    paidBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  },
+  { _id: false }
+);
 
 const FeeSchema: Schema = new Schema(
   {
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student', // Fixed from User to Student
+      ref: 'Student',
       required: true,
+      index: true,
     },
     grade: {
       type: String,
-      enum: ['Pre-KG', 'LKG', 'UKG'],
-      required: true,
+      trim: true,
+    },
+    classId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Class',
+      index: true,
     },
     feeType: {
       type: String,
-      enum: ['Admission', 'Tuition', 'Transport', 'Activity', 'Day Care'],
+      enum: ['Admission', 'Tuition', 'Transport', 'Activity', 'Day Care', 'Examination', 'Other'],
       default: 'Tuition',
       required: true,
     },
-    totalAmount: { type: Number, required: true },
-    amountPaid: { type: Number, default: 0 },
-    dueDate: { type: Date, required: true },
+    title: {
+      type: String,
+      trim: true,
+    },
+    invoiceNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      index: true,
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    amountPaid: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    dueDate: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+    paidAt: {
+      type: Date,
+    },
+    paymentMethod: {
+      type: String,
+      trim: true,
+    },
+    transactionId: {
+      type: String,
+      trim: true,
+    },
+    receiptNumber: {
+      type: String,
+      trim: true,
+    },
     status: {
       type: String,
       enum: ['Paid', 'Partial', 'Overdue', 'Pending'],
       default: 'Pending',
+      index: true,
+    },
+    paymentHistory: [FeePaymentRecordSchema],
+    schoolId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
+    },
+    campusId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
     },
   },
   { timestamps: true }
@@ -44,5 +128,6 @@ const FeeSchema: Schema = new Schema(
 
 FeeSchema.index({ studentId: 1, status: 1 });
 FeeSchema.index({ dueDate: 1 });
+FeeSchema.index({ createdAt: -1 });
 
-export default mongoose.model<IFee>('Fee', FeeSchema);
+export default mongoose.models.Fee || mongoose.model<IFee>('Fee', FeeSchema);

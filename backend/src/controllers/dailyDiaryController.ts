@@ -4,39 +4,13 @@ import DailyDiary from '../models/DailyDiary';
 import Student from '../models/Student';
 import Parent from '../models/Parent';
 import StudentParent from '../models/StudentParent';
+import User from '../models/User';
 import Notification from '../models/Notification';
-import { getIO } from '../socket';
-import { FALLBACK_DIARIES } from '../utils/parentFallbackData';
-
-const emitSocketSafely = (event: string, payload: any) => {
-  try {
-    const io = getIO();
-    io.emit(event, payload);
-  } catch (err) {}
-};
-
-const DEFAULT_TODAY_DIARY = {
-  _id: 'diary-today-default',
-  date: new Date(),
-  todayLearning: 'English alphabet practice and story time.',
-  todayActivity: 'Rainbow drawing with watercolor sponge roll.',
-  homework: 'Practice letters A–E in handwriting workbook.',
-  teacherNote: 'Children participated actively and enthusiastically today.',
-  teacherName: 'Ms. Ananya Roy',
-  className: 'LKG',
-  sectionName: 'Section A',
-  mood: 'Happy',
-  activities: ['Rainbow drawing', 'Phonics letters A–E', 'Story circle'],
-  notes: 'Children participated actively today.',
-};
+import { emitToClass, emitToUser, emitToRole } from '../socket';
 
 // @desc    Get today's daily diary for child/class
 // @route   GET /api/daily-diary/today
 export const getTodayDailyDiary = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(DEFAULT_TODAY_DIARY);
-  }
-
   try {
     const { childId } = req.query;
     let targetClassId: any;
@@ -68,28 +42,28 @@ export const getTodayDailyDiary = async (req: Request, res: Response) => {
       query.classId = targetClassId;
     }
 
-    const diary = await DailyDiary.findOne(query).sort({ updatedAt: -1 });
+    const diary = await DailyDiary.findOne(query)
+      .populate('teacherId', 'firstName lastName')
+      .sort({ updatedAt: -1 });
 
     if (!diary) {
-      return res.json(DEFAULT_TODAY_DIARY);
+      return res.json({
+        recorded: false,
+        message: "No daily diary entry posted yet for today.",
+      });
     }
 
     res.json(diary);
   } catch (error) {
-    res.json(DEFAULT_TODAY_DIARY);
+    res.status(500).json({ success: false, message: 'Error retrieving daily diary', error });
   }
 };
 
 // @desc    Get all daily diaries for a class/date
 // @route   GET /api/daily-diary
 export const getDailyDiaries = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(FALLBACK_DIARIES);
-  }
-
   try {
     const { date, grade, childId } = req.query;
-
     let query: Record<string, any> = {};
 
     if (childId && mongoose.Types.ObjectId.isValid(childId as string)) {
@@ -123,16 +97,9 @@ export const getDailyDiaries = async (req: Request, res: Response) => {
       .sort({ date: -1 })
       .limit(30);
 
-    if (req.user?.role === 'Parent' && (!diaries || diaries.length === 0)) {
-      return res.json(FALLBACK_DIARIES);
-    }
-
     res.json(diaries);
   } catch (error) {
-    if (req.user?.role === 'Parent') {
-      return res.json(FALLBACK_DIARIES);
-    }
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ success: false, message: 'Server Error fetching diaries', error });
   }
 };
 
@@ -160,12 +127,13 @@ export const saveDailyDiary = async (req: Request, res: Response) => {
     } = req.body;
 
     const teacherId = req.user?.id;
-    let teacherName = rawTeacherName || 'Ms. Ananya Roy';
+    let teacherName = rawTeacherName || 'Teacher';
+
     if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
-      try {
-        const u = await mongoose.model('User').findById(teacherId).select('firstName lastName');
-        if (u) teacherName = `${(u as any).firstName || ''} ${(u as any).lastName || ''}`.trim() || teacherName;
-      } catch (err) {}
+      const u = await User.findById(teacherId).select('firstName lastName');
+      if (u) {
+        teacherName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || teacherName;
+      }
     }
 
     const recordDate = date ? new Date(date) : new Date();
@@ -187,25 +155,25 @@ export const saveDailyDiary = async (req: Request, res: Response) => {
         studentId: studentId && mongoose.Types.ObjectId.isValid(studentId) ? new mongoose.Types.ObjectId(studentId) : undefined,
         classId: classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : undefined,
         sectionId: sectionId && mongoose.Types.ObjectId.isValid(sectionId) ? new mongoose.Types.ObjectId(sectionId) : undefined,
-        className: className || 'LKG',
-        sectionName: sectionName || 'Section A',
+        className: className || 'Class',
+        sectionName: sectionName || 'A',
         date: recordDate,
-        todayLearning: todayLearning || 'English alphabet practice and story time.',
-        todayActivity: todayActivity || 'Rainbow drawing.',
-        homework: homework || 'Practice letters A–E.',
-        teacherNote: teacherNote || 'Children participated actively today.',
+        todayLearning: todayLearning || '',
+        todayActivity: todayActivity || '',
+        homework: homework || '',
+        teacherNote: teacherNote || '',
         teacherName,
         teacherId: teacherId && mongoose.Types.ObjectId.isValid(teacherId) ? new mongoose.Types.ObjectId(teacherId) : undefined,
         meals,
         napTime,
         mood: mood || 'Happy',
-        activities: Array.isArray(activities) ? activities : [todayActivity || 'Rainbow drawing'],
+        activities: Array.isArray(activities) ? activities : todayActivity ? [todayActivity] : [],
         notes: notes || teacherNote || '',
       },
       { new: true, upsert: true }
     );
 
-    // Notify parents
+    // Notify parents in target class / student
     try {
       let queryStudent: any = {};
       if (studentId) queryStudent._id = studentId;
@@ -216,12 +184,13 @@ export const saveDailyDiary = async (req: Request, res: Response) => {
         if (st.parentId) {
           const p = await Parent.findById(st.parentId).select('userId');
           if (p && p.userId) {
-            await Notification.create({
+            const notif = await Notification.create({
+              recipient: p.userId,
               userId: p.userId,
               studentId: st._id,
               targetRole: 'Parent',
               title: "Today's Daily Diary",
-              message: `Daily Diary published: ${todayLearning || 'Learning updates available.'}`,
+              message: `Daily Diary update: ${todayLearning || 'New classroom updates are available.'}`,
               type: 'diary',
               priority: 'normal',
               link: '/parent/diary',
@@ -231,23 +200,24 @@ export const saveDailyDiary = async (req: Request, res: Response) => {
                 teacherName,
               },
             });
+            emitToUser(p.userId.toString(), 'notification:new', notif);
           }
         }
       }
     } catch (notifErr) {}
 
-    emitSocketSafely('diary:published', diary);
-    emitSocketSafely('notification:new', {
-      type: 'diary',
-      message: "Today's Daily Diary has been published by the class teacher.",
-    });
+    if (classId) {
+      emitToClass(classId.toString(), 'diary:published', diary);
+    }
+    emitToRole('Admin', 'diary:published', diary);
 
     res.status(200).json({
+      success: true,
       message: 'Daily diary published and parents notified!',
       diary,
     });
   } catch (error) {
     console.error('Save diary error:', error);
-    res.status(400).json({ message: 'Invalid diary data', error });
+    res.status(400).json({ success: false, message: 'Invalid diary data', error });
   }
 };

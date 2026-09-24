@@ -12,7 +12,7 @@ export const getSubjects = async (req: Request, res: Response) => {
     const subjects = await Subject.find().sort({ name: 1 });
     res.json(subjects);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ success: false, message: 'Server Error', error });
   }
 };
 
@@ -24,7 +24,7 @@ export const createSubject = async (req: Request, res: Response) => {
     const subject = await Subject.create({ name, description, colorCode });
     res.status(201).json(subject);
   } catch (error) {
-    res.status(400).json({ message: 'Invalid data or duplicate subject name', error });
+    res.status(400).json({ success: false, message: 'Invalid data or duplicate subject name', error });
   }
 };
 
@@ -34,10 +34,10 @@ export const createSubject = async (req: Request, res: Response) => {
 export const deleteSubject = async (req: Request, res: Response) => {
   try {
     const subject = await Subject.findByIdAndDelete(req.params.id);
-    if (!subject) return res.status(404).json({ message: 'Subject not found' });
-    res.json({ message: 'Subject removed' });
+    if (!subject) return res.status(404).json({ success: false, message: 'Subject not found' });
+    res.json({ success: true, message: 'Subject removed' });
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ success: false, message: 'Server Error', error });
   }
 };
 
@@ -52,7 +52,7 @@ export const getTimeTables = async (req: Request, res: Response) => {
       .populate('periods.teacherId', 'firstName lastName');
     res.json(timetables);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ success: false, message: 'Server Error', error });
   }
 };
 
@@ -63,7 +63,7 @@ export const saveTimeTable = async (req: Request, res: Response) => {
     const { classId, dayOfWeek, periods } = req.body;
 
     if (!classId || !dayOfWeek || !Array.isArray(periods)) {
-      return res.status(400).json({ message: 'Missing required fields: classId, dayOfWeek, and periods array' });
+      return res.status(400).json({ success: false, message: 'Missing required fields: classId, dayOfWeek, and periods array' });
     }
 
     // Timetable Conflict Detection Engine
@@ -98,6 +98,7 @@ export const saveTimeTable = async (req: Request, res: Response) => {
                   ? `${(otherPeriod.teacherId as any).firstName} ${(otherPeriod.teacherId as any).lastName}`
                   : 'Teacher';
               return res.status(409).json({
+                success: false,
                 message: `Timetable Conflict: ${teacherName} is already assigned to another class on ${dayOfWeek} from ${otherPeriod.startTime} to ${otherPeriod.endTime}.`,
               });
             }
@@ -122,83 +123,15 @@ export const saveTimeTable = async (req: Request, res: Response) => {
 
     res.status(200).json(populated);
   } catch (error) {
-    res.status(400).json({ message: 'Invalid data or conflict error', error });
+    res.status(400).json({ success: false, message: 'Invalid data or conflict error', error });
   }
 };
-
-const DEFAULT_TODAY_SCHEDULE = [
-  {
-    id: "p1",
-    periodNumber: 1,
-    subject: "English",
-    startTime: "09:00 AM",
-    endTime: "09:45 AM",
-    timeString: "09:00 AM – 09:45 AM",
-    className: "LKG",
-    section: "Section A",
-    type: "CLASS",
-    room: "Room 102 (Sunflower Wing)",
-    teacherName: "Ms. Ananya Roy",
-  },
-  {
-    id: "p2",
-    periodNumber: 2,
-    subject: "Maths",
-    startTime: "10:00 AM",
-    endTime: "10:45 AM",
-    timeString: "10:00 AM – 10:45 AM",
-    className: "LKG",
-    section: "Section A",
-    type: "CLASS",
-    room: "Room 102 (Sunflower Wing)",
-    teacherName: "Ms. Ananya Roy",
-  },
-  {
-    id: "p3",
-    periodNumber: 3,
-    subject: "Art & Craft",
-    startTime: "11:00 AM",
-    endTime: "11:45 AM",
-    timeString: "11:00 AM – 11:45 AM",
-    className: "LKG",
-    section: "Section A",
-    type: "ACTIVITY",
-    room: "Art Studio 1",
-    teacherName: "Mr. David Miller",
-  },
-  {
-    id: "p4",
-    periodNumber: 4,
-    subject: "Lunch Break",
-    startTime: "12:30 PM",
-    endTime: "01:15 PM",
-    timeString: "12:30 PM – 01:15 PM",
-    className: "LKG",
-    section: "Section A",
-    type: "LUNCH",
-    room: "Junior Dining Hall",
-    teacherName: "Care Staff & Teachers",
-  },
-  {
-    id: "p5",
-    periodNumber: 5,
-    subject: "Story Time",
-    startTime: "02:00 PM",
-    endTime: "02:45 PM",
-    timeString: "02:00 PM – 02:45 PM",
-    className: "LKG",
-    section: "Section A",
-    type: "ACTIVITY",
-    room: "Cozy Story Corner",
-    teacherName: "Ms. Ananya Roy",
-  },
-];
 
 // @desc    Get today's schedule for child or class
 // @route   GET /api/academic/timetables/today
 export const getTodaySchedule = async (req: Request, res: Response) => {
   if (mongoose.connection.readyState !== 1) {
-    return res.json(DEFAULT_TODAY_SCHEDULE);
+    return res.json([]);
   }
 
   try {
@@ -227,7 +160,7 @@ export const getTodaySchedule = async (req: Request, res: Response) => {
       .populate('periods.teacherId', 'firstName lastName');
 
     if (!timetable || !timetable.periods || timetable.periods.length === 0) {
-      return res.json(DEFAULT_TODAY_SCHEDULE);
+      return res.json([]);
     }
 
     const periods = timetable.periods.map((p: any, idx: number) => {
@@ -242,16 +175,14 @@ export const getTodaySchedule = async (req: Request, res: Response) => {
         startTime: p.startTime,
         endTime: p.endTime,
         timeString: `${p.startTime} – ${p.endTime}`,
-        className: 'LKG',
-        section: 'Section A',
         type: isLunch ? 'LUNCH' : isActivity ? 'ACTIVITY' : 'CLASS',
-        room: p.room || 'Room 102',
-        teacherName: p.teacherId ? `${p.teacherId.firstName || ''} ${p.teacherId.lastName || ''}`.trim() : 'Ms. Ananya Roy',
+        room: p.room || 'Classroom',
+        teacherName: p.teacherId ? `${p.teacherId.firstName || ''} ${p.teacherId.lastName || ''}`.trim() : 'Teacher',
       };
     });
 
     res.json(periods);
   } catch (error) {
-    res.json(DEFAULT_TODAY_SCHEDULE);
+    res.status(500).json({ success: false, message: 'Failed to fetch today schedule', error });
   }
 };

@@ -3,60 +3,15 @@ import mongoose from 'mongoose';
 import ClassWork from '../models/ClassWork';
 import Student from '../models/Student';
 import Parent from '../models/Parent';
-import StudentParent from '../models/StudentParent';
+import User from '../models/User';
+import ClassModel from '../models/Class';
+import SectionModel from '../models/Section';
 import Notification from '../models/Notification';
-import { getIO } from '../socket';
-
-const emitSocketSafely = (event: string, payload: any) => {
-  try {
-    const io = getIO();
-    io.emit(event, payload);
-  } catch (err) {
-    // Socket not available or testing
-  }
-};
-
-const DEMO_CLASSWORK = [
-  {
-    _id: 'cw-1',
-    subject: 'English',
-    topic: 'Alphabet A–E',
-    whatWasTaught: 'Children practiced identifying letters A–E and phonics sounds.',
-    learningObjective: 'Recognition and phonetic pronunciation of uppercase and lowercase letters A through E.',
-    classroomActivity: 'Letter matching game with wooden alphabet flashcards.',
-    worksheetUrl: '/worksheets/alphabet-a-e.pdf',
-    homework: 'Practice letters A–E tracing sheet.',
-    teacherRemark: 'Children actively participated and recognized initial sounds with high enthusiasm.',
-    photos: ['https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&auto=format&fit=crop'],
-    teacherName: 'Ms. Ananya Roy',
-    date: new Date(),
-    className: 'LKG',
-    sectionName: 'Section A',
-  },
-  {
-    _id: 'cw-2',
-    subject: 'Maths',
-    topic: 'Counting 1 to 10',
-    whatWasTaught: 'Count and sort colorful beads and blocks in groups.',
-    learningObjective: 'Develop one-to-one correspondence and number recognition 1–10.',
-    classroomActivity: 'Bead necklace counting activity & block towers.',
-    homework: 'Count 5 favorite toys at home with parents.',
-    teacherRemark: 'Great counting and grouping skills shown by the learners today.',
-    photos: ['https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600&auto=format&fit=crop'],
-    teacherName: 'Ms. Ananya Roy',
-    date: new Date(),
-    className: 'LKG',
-    sectionName: 'Section A',
-  },
-];
+import { emitToClass, emitToRole, emitToUser } from '../socket';
 
 // @desc    Get today's class work (for child or class)
 // @route   GET /api/classwork/today
 export const getTodayClassWork = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(DEMO_CLASSWORK);
-  }
-
   try {
     const childId = req.query.childId as string;
     let targetClassId = req.query.classId as string;
@@ -87,131 +42,23 @@ export const getTodayClassWork = async (req: Request, res: Response) => {
     }
 
     const items = await ClassWork.find(query).sort({ createdAt: -1 });
-
-    if (!items || items.length === 0) {
-      // Return demo classwork for rich parent experience if db is fresh
-      return res.json(DEMO_CLASSWORK);
-    }
-
     res.json(items);
   } catch (error) {
-    res.json(DEMO_CLASSWORK);
+    res.status(500).json({ success: false, message: 'Server Error fetching classwork', error });
   }
 };
 
-// @desc    Submit new class work (Teacher Portal)
-// @route   POST /api/classwork
-export const createClassWork = async (req: Request, res: Response) => {
-  try {
-    const {
-      classId,
-      sectionId,
-      className,
-      sectionName,
-      subject,
-      topic,
-      whatWasTaught,
-      learningObjective,
-      classroomActivity,
-      worksheetUrl,
-      homework,
-      teacherRemark,
-      photos,
-      attachments,
-      date,
-      teacherName: rawTeacherName,
-    } = req.body;
-
-    const teacherId = req.user?.id;
-    let teacherName = rawTeacherName || 'Ms. Ananya Roy';
-    if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
-      try {
-        const u = await mongoose.model('User').findById(teacherId).select('firstName lastName');
-        if (u) teacherName = `${(u as any).firstName || ''} ${(u as any).lastName || ''}`.trim() || teacherName;
-      } catch (err) {}
-    }
-
-    const newWork = await ClassWork.create({
-      classId: classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
-      sectionId: sectionId && mongoose.Types.ObjectId.isValid(sectionId) ? new mongoose.Types.ObjectId(sectionId) : undefined,
-      className: className || 'LKG',
-      sectionName: sectionName || 'Section A',
-      subject: subject || 'General',
-      topic: topic || 'Daily Classroom Learning',
-      whatWasTaught: whatWasTaught || 'Engaged in interactive learning activities today.',
-      learningObjective,
-      classroomActivity,
-      worksheetUrl,
-      homework,
-      teacherRemark,
-      photos: Array.isArray(photos) ? photos : [],
-      attachments: Array.isArray(attachments) ? attachments : [],
-      teacherId: teacherId && mongoose.Types.ObjectId.isValid(teacherId) ? new mongoose.Types.ObjectId(teacherId) : new mongoose.Types.ObjectId('66789abcdef0123456789abc'),
-      teacherName,
-      date: date ? new Date(date) : new Date(),
-    });
-
-    // Create targeted notification for parents
-    try {
-      let queryStudent: any = {};
-      if (classId && mongoose.Types.ObjectId.isValid(classId)) {
-        queryStudent.classId = new mongoose.Types.ObjectId(classId);
-      }
-      const students = await Student.find(queryStudent).select('parentId _id');
-      for (const st of students) {
-        if (st.parentId) {
-          const parentDoc = await Parent.findById(st.parentId).select('userId');
-          if (parentDoc && parentDoc.userId) {
-            await Notification.create({
-              userId: parentDoc.userId,
-              studentId: st._id,
-              targetRole: 'Parent',
-              title: `New Class Work: ${subject}`,
-              message: `${topic} lesson has been published by ${teacherName}.`,
-              type: 'classwork',
-              priority: 'normal',
-              link: '/parent/classwork',
-              metadata: {
-                classWorkId: newWork._id,
-                subject,
-                topic,
-                whatWasTaught,
-                teacherName,
-              },
-            });
-          }
-        }
-      }
-    } catch (notifErr) {
-      console.warn('Classwork parent notification warning:', notifErr);
-    }
-
-    // Broadcast real-time Socket event
-    emitSocketSafely('classwork:published', newWork);
-    emitSocketSafely('notification:new', {
-      type: 'classwork',
-      message: `New Class Work for ${subject}: ${topic}`,
-    });
-
-    res.status(201).json({
-      message: "Today's Class Work published and parents notified!",
-      classWork: newWork,
-    });
-  } catch (error) {
-    console.error('Error creating classwork:', error);
-    res.status(400).json({ message: 'Failed to create class work', error });
-  }
-};
-
-// @desc    Get all class work records
+// @desc    Get class work history (with pagination & filters)
 // @route   GET /api/classwork
 export const getClassWorkHistory = async (req: Request, res: Response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(DEMO_CLASSWORK);
-  }
   try {
-    const { classId, sectionId, subject } = req.query;
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 30;
+    const skip = (page - 1) * limit;
+
     const query: Record<string, any> = {};
+    const { classId, sectionId, subject } = req.query;
+
     if (classId && mongoose.Types.ObjectId.isValid(classId as string)) {
       query.classId = new mongoose.Types.ObjectId(classId as string);
     }
@@ -221,9 +68,141 @@ export const getClassWorkHistory = async (req: Request, res: Response) => {
     if (subject) {
       query.subject = subject;
     }
-    const list = await ClassWork.find(query).sort({ date: -1 }).limit(50);
-    res.json(list.length > 0 ? list : DEMO_CLASSWORK);
-  } catch (err) {
-    res.json(DEMO_CLASSWORK);
+
+    const [items, total] = await Promise.all([
+      ClassWork.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit),
+      ClassWork.countDocuments(query),
+    ]);
+
+    res.json({
+      success: true,
+      data: items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error fetching classwork history', error });
+  }
+};
+
+// @desc    Publish new class work entry (Teacher Portal)
+// @route   POST /api/classwork
+export const createClassWork = async (req: Request, res: Response) => {
+  try {
+    const {
+      subject,
+      topic,
+      whatWasTaught,
+      learningObjective,
+      classroomActivity,
+      worksheetUrl,
+      homework,
+      teacherRemark,
+      photos,
+      date,
+      classId,
+      sectionId,
+      className: rawClassName,
+      sectionName: rawSectionName,
+      teacherName: rawTeacherName,
+    } = req.body;
+
+    if (!subject || !whatWasTaught) {
+      return res.status(400).json({ success: false, message: 'Subject and whatWasTaught are required' });
+    }
+
+    const teacherId = req.user?.id;
+    let teacherName = rawTeacherName || 'Teacher';
+    if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
+      const u = await User.findById(teacherId).select('firstName lastName');
+      if (u) {
+        teacherName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || teacherName;
+      }
+    }
+
+    let className = rawClassName;
+    let sectionName = rawSectionName;
+    let resolvedClassId = classId && mongoose.Types.ObjectId.isValid(classId) ? new mongoose.Types.ObjectId(classId) : undefined;
+
+    if (!resolvedClassId && className) {
+      const cDoc = await ClassModel.findOne({ name: new RegExp(`^${className}$`, 'i') });
+      if (cDoc) {
+        resolvedClassId = cDoc._id as mongoose.Types.ObjectId;
+        className = cDoc.name;
+      }
+    }
+
+    if (!resolvedClassId) {
+      const defaultClass = await ClassModel.findOne();
+      if (defaultClass) resolvedClassId = defaultClass._id as mongoose.Types.ObjectId;
+    }
+
+    const item = await ClassWork.create({
+      subject,
+      topic,
+      whatWasTaught,
+      learningObjective,
+      classroomActivity,
+      worksheetUrl,
+      homework,
+      teacherRemark,
+      photos: Array.isArray(photos) ? photos : photos ? [photos] : [],
+      date: date ? new Date(date) : new Date(),
+      classId: resolvedClassId,
+      sectionId: sectionId && mongoose.Types.ObjectId.isValid(sectionId) ? new mongoose.Types.ObjectId(sectionId) : undefined,
+      className: className || 'Class',
+      sectionName: sectionName || 'A',
+      teacherId: teacherId ? new mongoose.Types.ObjectId(teacherId) : undefined,
+      teacherName,
+    });
+
+    // Notify parents in target class
+    if (resolvedClassId) {
+      try {
+        const students = await Student.find({ classId: resolvedClassId }).select('parentId _id');
+        for (const st of students) {
+          if (st.parentId) {
+            const p = await Parent.findById(st.parentId).select('userId');
+            if (p && p.userId) {
+              const notif = await Notification.create({
+                recipient: p.userId,
+                userId: p.userId,
+                studentId: st._id,
+                targetRole: 'Parent',
+                title: `Today's Classwork: ${subject}`,
+                message: `${subject}: ${topic || whatWasTaught.slice(0, 50)}... has been updated.`,
+                type: 'classwork',
+                priority: 'normal',
+                link: '/parent/classwork',
+                metadata: {
+                  classworkId: item._id,
+                  subject,
+                  topic,
+                  teacherName,
+                },
+              });
+              emitToUser(p.userId.toString(), 'notification:new', notif);
+            }
+          }
+        }
+      } catch (notifErr) {}
+
+      emitToClass(resolvedClassId.toString(), 'classwork:published', item);
+    }
+
+    emitToRole('Admin', 'classwork:published', item);
+
+    res.status(201).json({
+      success: true,
+      message: 'Classwork logged and parents updated!',
+      classWork: item,
+    });
+  } catch (error) {
+    console.error('Error logging classwork:', error);
+    res.status(400).json({ success: false, message: 'Failed to record classwork', error });
   }
 };
