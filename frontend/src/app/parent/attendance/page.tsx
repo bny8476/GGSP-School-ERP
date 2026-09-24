@@ -3,722 +3,640 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Home, ChevronRight, Calendar, Clock, Check, AlertCircle,
-  TrendingUp, ChevronDown, ChevronLeft, Lightbulb, ArrowRight,
-  ShieldCheck, X, FileText, Send
+import { 
+  Home, ChevronRight, Calendar, ChevronDown, Check, X, Clock, 
+  Hourglass, BarChart3, AlertTriangle, ArrowUpRight, CheckCircle2,
+  Info, Bell, SlidersHorizontal, User, Award, ShieldCheck, Download,
+  TrendingUp, TrendingDown
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useParent } from "@/context/ParentContext";
+import ReportCardModal from "@/components/parent/ReportCardModal";
 
-export default function ParentAttendancePage() {
+interface DayAttendance {
+  day: string;
+  status: "present" | "absent" | "late" | "holiday";
+  height: number; // percentage
+  label: string;
+}
+
+export default function AttendancePage() {
   const { selectedChild, children, selectChild } = useParent();
-  const [timeframe, setTimeframe] = useState<"Today" | "This Week" | "This Month" | "Academic Year">("Today");
-  const [isReportAbsenceOpen, setIsReportAbsenceOpen] = useState(false);
-  const [absenceDate, setAbsenceDate] = useState("2026-09-22");
-  const [absenceReason, setAbsenceReason] = useState("Medical / Fever");
-  const [absenceNote, setAbsenceNote] = useState("");
-  const [absenceStatus, setAbsenceStatus] = useState<"idle" | "success">("idle");
+  const [activeTimeframe, setActiveTimeframe] = useState<"Overview" | "Daily" | "Weekly" | "Monthly" | "Term">("Overview");
+  const [selectedSubject, setSelectedSubject] = useState<string>("All Subjects");
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+  const [selectedDateRange, setSelectedDateRange] = useState<string>("01 Sep 2026 - 30 Sep 2026");
+  const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+  const [isChildDropdownOpen, setIsChildDropdownOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedDayHover, setSelectedDayHover] = useState<DayAttendance | null>(null);
 
-  const child = selectedChild || children[0] || {
+  const child = selectedChild || {
     _id: "c10101010101010101010101",
     firstName: "Aarav",
     lastName: "Sharma",
-    grade: "LKG",
+    grade: "Grade 4",
     section: "Section A",
     rollNumber: "01",
-    studentPhoto: "/aarav-hero-student.jpg",
+    studentPhoto: "/aarav-profile-avatar.png",
   };
 
-  const handleReportAbsence = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAbsenceStatus("success");
-    setTimeout(() => {
-      setIsReportAbsenceOpen(false);
-      setAbsenceStatus("idle");
-      setAbsenceNote("");
-    }, 1500);
-  };
-
-  // Interactive Date Selector Options
-  const dateOptions = [
-    "Friday, 18 September 2026",
-    "Thursday, 17 September 2026",
-    "Wednesday, 16 September 2026",
-    "Tuesday, 15 September 2026",
-    "Monday, 14 September 2026",
+  // 30 Days of September 2026 matching exact reference screenshot distribution
+  const septemberDays: DayAttendance[] = [
+    { day: "01", status: "present", height: 78, label: "01 Sep: Present (100%)" },
+    { day: "02", status: "present", height: 72, label: "02 Sep: Present (95%)" },
+    { day: "03", status: "present", height: 82, label: "03 Sep: Present (100%)" },
+    { day: "04", status: "present", height: 82, label: "04 Sep: Present (100%)" },
+    { day: "05", status: "holiday", height: 60, label: "05 Sep: Saturday Activity" },
+    { day: "06", status: "absent", height: 72, label: "06 Sep: Absent (Medical)" },
+    { day: "07", status: "present", height: 82, label: "07 Sep: Present (100%)" },
+    { day: "08", status: "present", height: 90, label: "08 Sep: Present (100%)" },
+    { day: "09", status: "absent", height: 72, label: "09 Sep: Absent (Leave)" },
+    { day: "10", status: "holiday", height: 60, label: "10 Sep: Mid-term Break" },
+    { day: "11", status: "present", height: 82, label: "11 Sep: Present (100%)" },
+    { day: "12", status: "present", height: 82, label: "12 Sep: Present (100%)" },
+    { day: "13", status: "present", height: 72, label: "13 Sep: Present (90%)" },
+    { day: "14", status: "present", height: 90, label: "14 Sep: Present (100%)" },
+    { day: "15", status: "present", height: 90, label: "15 Sep: Present (100%)" },
+    { day: "16", status: "holiday", height: 70, label: "16 Sep: Fever Leave" },
+    { day: "17", status: "holiday", height: 70, label: "17 Sep: Excused Rest" },
+    { day: "18", status: "present", height: 82, label: "18 Sep: Present (100%)" },
+    { day: "19", status: "present", height: 82, label: "19 Sep: Present (100%)" },
+    { day: "20", status: "late", height: 88, label: "20 Sep: Late (Traffic Delay)" },
+    { day: "21", status: "holiday", height: 60, label: "21 Sep: Sunday" },
+    { day: "22", status: "present", height: 82, label: "22 Sep: Present (100%)" },
+    { day: "23", status: "present", height: 80, label: "23 Sep: Present (100%)" },
+    { day: "24", status: "present", height: 82, label: "24 Sep: Present (100%)" },
+    { day: "25", status: "present", height: 82, label: "25 Sep: Present (100%)" },
+    { day: "26", status: "present", height: 80, label: "26 Sep: Present (100%)" },
+    { day: "27", status: "absent", height: 75, label: "27 Sep: Absent" },
+    { day: "28", status: "late", height: 88, label: "28 Sep: Late (15 mins)" },
+    { day: "29", status: "present", height: 78, label: "29 Sep: Present (100%)" },
+    { day: "30", status: "present", height: 82, label: "30 Sep: Present (100%)" },
   ];
-  const [currentDateIndex, setCurrentDateIndex] = useState(0);
 
-  // Dynamic datasets based on active timeframe tab
-  const timeframeConfig = {
-    Today: {
-      subtitle: "Hourly session attendance for today",
-      kpiRate: "100%",
-      kpiTrend: "Present all day",
-      daysPresent: "1",
-      daysTotal: "All 5 sessions present",
-      daysAbsent: "0",
-      absentNote: "Zero absences today",
-      lateCount: "0",
-      lateNote: "On time for all classes",
-      highlightTitle: "Perfect Presence!",
-      highlightDesc: "Your child has attended 100% of today's scheduled classroom and activity sessions.",
-      bars: [
-        { date: "09:00 AM", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-        { date: "10:30 AM", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-        { date: "12:00 PM", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-        { date: "01:30 PM", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-        { date: "03:00 PM", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-      ]
+  // Top 4 Metric KPI Cards Data
+  const kpiCards = [
+    {
+      title: "Present",
+      value: "22",
+      badge: "84.6%",
+      badgeBg: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/40",
+      icon: Check,
+      iconBg: "bg-emerald-500 text-white",
+      subtitle: "Days out of 26",
+      trend: "↑ 5% from last month",
+      trendColor: "text-emerald-500",
     },
-    "This Week": {
-      subtitle: "Daily attendance for the current school week",
-      kpiRate: "96%",
-      kpiTrend: "↑ +1.5% this week",
-      daysPresent: "4",
-      daysTotal: "out of 5 school days",
-      daysAbsent: "0",
-      absentNote: "Zero unexcused absences",
-      lateCount: "1",
-      lateNote: "On 18 Sep • 10 mins",
-      highlightTitle: "Great Consistency!",
-      highlightDesc: "Your child maintained a 96% attendance score across all 5 school days this week.",
-      bars: [
-        { date: "Mon 14", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-        { date: "Tue 15", label: "92%", presentH: 92, lateH: 0, absentH: 8 },
-        { date: "Wed 16", label: "100%", presentH: 96, lateH: 4, absentH: 0 },
-        { date: "Thu 17", label: "88%", presentH: 88, lateH: 0, absentH: 12 },
-        { date: "Fri 18", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-      ]
+    {
+      title: "Absent",
+      value: "3",
+      badge: "11.5%",
+      badgeBg: "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100 dark:border-rose-800/40",
+      icon: X,
+      iconBg: "bg-[#FF4D6D] text-white",
+      subtitle: "Days out of 26",
+      trend: "↓ 2% from last month",
+      trendColor: "text-rose-500",
     },
-    "This Month": {
-      subtitle: "Daily attendance for the last 7 days",
-      kpiRate: "94%",
-      kpiTrend: "↑ +2.4% this month",
-      daysPresent: "26",
-      daysTotal: "out of 28 school days",
-      daysAbsent: "1",
-      absentNote: "Needs attention • Fever",
-      lateCount: "1",
-      lateNote: "On 18 Sep • 10 mins",
-      highlightTitle: "Great Job!",
-      highlightDesc: "Your child's attendance is 2.4% higher than last month. Keep it up!",
-      bars: [
-        { date: "12 Sep", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-        { date: "13 Sep", label: "96%", presentH: 96, lateH: 4, absentH: 0 },
-        { date: "14 Sep", label: "100%", presentH: 100, lateH: 0, absentH: 0 },
-        { date: "15 Sep", label: "92%", presentH: 92, lateH: 0, absentH: 8 },
-        { date: "16 Sep", label: "100%", presentH: 96, lateH: 4, absentH: 0 },
-        { date: "17 Sep", label: "88%", presentH: 88, lateH: 0, absentH: 12 },
-        { date: "18 Sep", label: "92%", presentH: 92, lateH: 8, absentH: 0 },
-      ]
+    {
+      title: "Late",
+      value: "1",
+      badge: "3.8%",
+      badgeBg: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-100 dark:border-amber-800/40",
+      icon: Clock,
+      iconBg: "bg-amber-400 text-white",
+      subtitle: "Day out of 26",
+      trend: "↓ 1% from last month",
+      trendColor: "text-emerald-500",
     },
-    "Academic Year": {
-      subtitle: "Monthly attendance distribution for Academic Year 2026-27",
-      kpiRate: "95.8%",
-      kpiTrend: "↑ +3.2% vs school avg",
-      daysPresent: "184",
-      daysTotal: "out of 192 term days",
-      daysAbsent: "5",
-      absentNote: "Approved medical leaves",
-      lateCount: "3",
-      lateNote: "Average delay: 7 mins",
-      highlightTitle: "Honor Roll Standing!",
-      highlightDesc: "Annual attendance is currently above 95%, qualifying for Academic Excellence recognition.",
-      bars: [
-        { date: "Jun", label: "96%", presentH: 96, lateH: 4, absentH: 0 },
-        { date: "Jul", label: "94%", presentH: 94, lateH: 0, absentH: 6 },
-        { date: "Aug", label: "98%", presentH: 98, lateH: 2, absentH: 0 },
-        { date: "Sep", label: "94%", presentH: 92, lateH: 4, absentH: 4 },
-        { date: "Oct", label: "97%", presentH: 97, lateH: 3, absentH: 0 },
-        { date: "Nov", label: "95%", presentH: 95, lateH: 0, absentH: 5 },
-        { date: "Dec", label: "96%", presentH: 96, lateH: 4, absentH: 0 },
-        { date: "Jan", label: "98%", presentH: 98, lateH: 2, absentH: 0 },
-      ]
-    }
-  };
+    {
+      title: "Total Sessions",
+      value: "26",
+      badge: "100%",
+      badgeBg: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-100 dark:border-blue-800/40",
+      icon: Hourglass,
+      iconBg: "bg-[#0050CB] text-white",
+      subtitle: "School Days",
+      trend: "No change",
+      trendColor: "text-slate-400",
+    },
+  ];
 
-  const activeConfig = timeframeConfig[timeframe] || timeframeConfig["This Month"];
-  const barChartData = activeConfig.bars;
-
-  // Attendance History matching screenshot
-  const historyData = [
-    { date: "18 Sep 2026", status: "Present", reason: "-", markedBy: "Class Teacher", isDot: "emerald" },
-    { date: "17 Sep 2026", status: "Present", reason: "-", markedBy: "Class Teacher", isDot: "emerald" },
-    { date: "16 Sep 2026", status: "Present", reason: "-", markedBy: "Class Teacher", isDot: "emerald" },
-    { date: "15 Sep 2026", status: "Absent", reason: "Fever", markedBy: "Class Teacher", isDot: "rose" },
-    { date: "14 Sep 2026", status: "Present", reason: "-", markedBy: "Class Teacher", isDot: "emerald" },
+  // Recent Attendance Records List
+  const recentRecords = [
+    { date: "18 Sep 2026", status: "Present", color: "text-emerald-500", dot: "bg-emerald-500", remarks: "-" },
+    { date: "17 Sep 2026", status: "Present", color: "text-emerald-500", dot: "bg-emerald-500", remarks: "-" },
+    { date: "16 Sep 2026", status: "Absent", color: "text-rose-500", dot: "bg-rose-500", remarks: "Fever" },
+    { date: "15 Sep 2026", status: "Present", color: "text-emerald-500", dot: "bg-emerald-500", remarks: "-" },
+    { date: "14 Sep 2026", status: "Late", color: "text-amber-500", dot: "bg-amber-400", remarks: "Traffic Delay" },
   ];
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* ========================================================
-          1. BREADCRUMB
-      ======================================================== */}
-      <div className="flex items-center gap-2 text-xs text-slate-400 font-medium pt-1">
-        <Link href="/parent" className="flex items-center gap-1.5 hover:text-blue-600 text-blue-600 font-semibold transition-colors">
-          <Home className="w-3.5 h-3.5" />
-          <span>Home</span>
+    <div className="space-y-5 pb-16 font-sans text-slate-800 dark:text-slate-100">
+      
+      {/* 1. Breadcrumb Top Navigation */}
+      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <Link href="/parent" className="hover:text-[#0050CB] transition-colors">
+          Home
         </Link>
-        <ChevronRight className="w-3 h-3 text-slate-300" />
-        <span className="text-slate-500 font-bold">Attendance</span>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
+        <span className="text-slate-800 dark:text-slate-200 font-bold">
+          Attendance
+        </span>
       </div>
 
-      {/* ========================================================
-          2. CHILD PROFILE HERO BANNER (EXACT TO REFERENCE)
-      ======================================================== */}
-      <section className="relative w-full rounded-[24px] sm:rounded-[28px] overflow-hidden border border-blue-200/70 dark:border-white/10 shadow-[0_4px_24px_rgba(0,80,203,0.06)] bg-[#EBF5FF] dark:bg-[#07142F] aspect-[1024/342] min-h-[120px] sm:min-h-[160px] max-h-[280px] group transition-all">
-        <Image
-          src="/parent-portal-banner.png"
-          alt="GGPS Attendance & Academic Growth"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.005]"
-        />
-
-        {/* Gradient overlay so text is always readable */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#000E28]/55 via-[#000E28]/25 to-transparent" />
-
-        {/* Text Overlay — left-aligned */}
-        <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-9 gap-1.5 sm:gap-2">
-          {/* Badge */}
-          <span className="inline-flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-[10px] sm:text-[11px] font-bold text-white tracking-wide uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            Live Attendance Tracker
-          </span>
-
-          {/* Main Heading */}
-          <h1 className="text-xl sm:text-2xl md:text-[28px] font-black text-white leading-tight tracking-tight drop-shadow-md max-w-[55%] sm:max-w-[50%]">
-            Student Attendance
-            <br />
-            <span className="text-[#A8CBFF]">Overview</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-[11px] sm:text-xs text-white/80 font-semibold leading-snug max-w-[48%] sm:max-w-[42%] hidden sm:block">
-            Track daily, weekly &amp; monthly attendance records for your child in real time.
-          </p>
-        </div>
-      </section>
-
-      {/* ========================================================
-          3. TOP 4 KPI CARDS ROW (EXACT TO REFERENCE SCREENSHOT)
-      ======================================================== */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. Top Hero Banner (Exact match to design screenshot) */}
+      <div className="relative rounded-[26px] bg-gradient-to-r from-[#F4F8FE] via-[#EDF4FE] to-[#E3EFFF] dark:from-[#091E42] dark:via-[#0A2554] dark:to-[#091E42] border border-[#D7E6FD] dark:border-blue-900/40 p-5 sm:p-6 shadow-xs overflow-hidden">
         
-        {/* Card 1: Attendance (Exact matching user screenshot) */}
-        <motion.div
-          whileHover={{ y: -3, scale: 1.008 }}
-          whileTap={{ scale: 0.99 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#EBF3FF]/70 dark:from-[#07142F] dark:via-[#091838] dark:to-[#0D2452] border border-blue-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(0,80,203,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(0,80,203,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
-        >
-          {/* Row 1: Circular Blue Icon on left, Chevron on right */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#E1EFFF] to-[#C8E0FF] dark:from-blue-950/60 dark:to-blue-900/40 p-[2.5px] shadow-sm shadow-blue-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full rounded-full bg-gradient-to-b from-[#2563EB] to-[#0050CB] flex items-center justify-center shadow-inner">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="w-5 h-5 text-white"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="4" width="18" height="17" rx="3" fill="currentColor" fillOpacity="0.2" />
-                  <line x1="3" y1="9" x2="21" y2="9" />
-                  <line x1="8" y1="2" x2="8" y2="5" strokeWidth="2.5" />
-                  <line x1="16" y1="2" x2="16" y2="5" strokeWidth="2.5" />
-                  <circle cx="8" cy="13" r="1" fill="currentColor" />
-                  <circle cx="12" cy="13" r="1" fill="currentColor" />
-                  <circle cx="16" cy="13" r="1" fill="currentColor" />
-                </svg>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-blue-400 group-hover:translate-x-0.5 transition-transform" />
-          </div>
+        {/* Subtle decorative glow */}
+        <div className="absolute top-0 right-1/3 w-64 h-32 bg-blue-100/50 dark:bg-blue-500/5 rounded-full blur-2xl pointer-events-none" />
 
-          {/* Row 2: Metric & Title (Exact to reference screenshot) */}
-          <div className="relative z-10 mt-3 min-w-0">
-            <div className="text-[28px] sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none font-sans">
-              {activeConfig.kpiRate}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          
+          {/* Left: Icon, Subtitle, Title & Description */}
+          <div className="flex items-start sm:items-center gap-3.5 max-w-xl">
+            {/* Blue Calendar Square Icon */}
+            <div className="w-12 h-12 rounded-2xl bg-[#0050CB] text-white flex items-center justify-center shadow-md shadow-[#0050CB]/20 shrink-0">
+              <Calendar className="w-6 h-6 stroke-[2.2]" />
             </div>
-            <div className="text-[15px] sm:text-[16px] font-bold text-[#001D4A] dark:text-blue-100 tracking-tight leading-tight mt-1.5 whitespace-nowrap">
-              Attendance
+
+            <div>
+              <span className="text-[10.5px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-400 block">
+                ATTENDANCE
+              </span>
+              <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white tracking-tight leading-snug">
+                My Child&apos;s Attendance
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-300 font-medium mt-0.5 leading-relaxed max-w-md">
+                Track your child&apos;s daily attendance, view monthly records and stay updated with their school activities.
+              </p>
             </div>
           </div>
 
-          {/* Row 3: Trend footer (Exact to reference screenshot) */}
-          <div className="relative z-10 mt-3 pt-0.5 flex items-center justify-between">
-            <span className="inline-flex items-center gap-1 text-[11px] sm:text-[12px] font-extrabold text-[#059669] dark:text-emerald-400 leading-tight">
-              {activeConfig.kpiTrend}
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Card 2: Days Present */}
-        <motion.div
-          whileHover={{ y: -3, scale: 1.008 }}
-          whileTap={{ scale: 0.99 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#E6F9F0]/60 dark:from-[#07142F] dark:via-[#09221C] dark:to-[#0D382E] border border-emerald-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(16,185,129,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(16,185,129,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
-        >
-          {/* Row 1: Icon on left, Chevron on right */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#D1FAE5] to-[#A7F3D0] dark:from-emerald-950/60 dark:to-emerald-900/40 p-[2.5px] shadow-sm shadow-emerald-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full rounded-full bg-gradient-to-b from-[#10B981] to-[#059669] flex items-center justify-center shadow-inner">
-                <Check className="w-5 h-5 text-white stroke-[2.8]" />
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
-          </div>
-
-          {/* Row 2: Metric & Title */}
-          <div className="relative z-10 mt-3 min-w-0">
-            <div className="text-[28px] sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none font-sans">
-              {activeConfig.daysPresent}
-            </div>
-            <div className="text-[15px] sm:text-[16px] font-bold text-[#001D4A] dark:text-emerald-100 tracking-tight leading-tight mt-1.5 whitespace-nowrap">
-              Days Present
+          {/* Center-Right Illustration Composition */}
+          <div className="hidden lg:block absolute left-[52%] -bottom-1 -translate-x-1/2 pointer-events-none select-none z-10">
+            <div className="relative w-72 h-32">
+              <Image
+                src="/attendance-banner-illustration.jpg"
+                alt="Student Attendance Illustration"
+                fill
+                priority
+                className="object-contain object-bottom drop-shadow-sm"
+              />
             </div>
           </div>
 
-          {/* Row 3: Trend footer */}
-          <div className="relative z-10 mt-3 pt-0.5 flex items-center justify-between">
-            <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">
-              {activeConfig.daysTotal}
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Card 3: Days Absent */}
-        <motion.div
-          whileHover={{ y: -3, scale: 1.008 }}
-          whileTap={{ scale: 0.99 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#FFF1F2]/70 dark:from-[#07142F] dark:via-[#220B11] dark:to-[#380E18] border border-rose-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(244,63,94,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(244,63,94,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
-        >
-          {/* Row 1: Icon on left, Chevron on right */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FFE4E6] to-[#FECDD3] dark:from-rose-950/60 dark:to-rose-900/40 p-[2.5px] shadow-sm shadow-rose-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full rounded-full bg-gradient-to-b from-[#F43F5E] to-[#E11D48] flex items-center justify-center shadow-inner">
-                <AlertCircle className="w-5 h-5 text-white stroke-[2.4]" />
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
-          </div>
-
-          {/* Row 2: Metric & Title */}
-          <div className="relative z-10 mt-3 min-w-0">
-            <div className="text-[28px] sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none font-sans">
-              {activeConfig.daysAbsent}
-            </div>
-            <div className="text-[15px] sm:text-[16px] font-bold text-[#001D4A] dark:text-rose-100 tracking-tight leading-tight mt-1.5 whitespace-nowrap">
-              {activeConfig.daysAbsent === "1" ? "Day Absent" : "Days Absent"}
-            </div>
-          </div>
-
-          {/* Row 3: Trend footer */}
-          <div className="relative z-10 mt-3 pt-0.5 flex items-center justify-between">
-            <span className="text-[12px] sm:text-[12.5px] font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
-              {activeConfig.absentNote}
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Card 4: Late Arrival */}
-        <motion.div
-          whileHover={{ y: -3, scale: 1.008 }}
-          whileTap={{ scale: 0.99 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-[24px] p-5 bg-gradient-to-br from-white via-white to-[#FFFBEB]/70 dark:from-[#07142F] dark:via-[#241705] dark:to-[#382307] border border-amber-100/90 dark:border-white/10 shadow-[0_4px_20px_rgba(245,158,11,0.05)] hover:shadow-[0_12px_28px_-6px_rgba(245,158,11,0.14)] transition-all duration-300 min-h-[148px] flex flex-col justify-between group cursor-pointer"
-        >
-          {/* Row 1: Icon on left, Chevron on right */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FEF3C7] to-[#FDE68A] dark:from-amber-950/60 dark:to-amber-900/40 p-[2.5px] shadow-sm shadow-amber-500/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full rounded-full bg-gradient-to-b from-[#F59E0B] to-[#D97706] flex items-center justify-center shadow-inner">
-                <Clock className="w-5 h-5 text-white stroke-[2.4]" />
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
-          </div>
-
-          {/* Row 2: Metric & Title */}
-          <div className="relative z-10 mt-3 min-w-0">
-            <div className="text-[28px] sm:text-[32px] font-black text-[#000E28] dark:text-white tracking-tight leading-none font-sans">
-              {activeConfig.lateCount}
-            </div>
-            <div className="text-[15px] sm:text-[16px] font-bold text-[#001D4A] dark:text-amber-100 tracking-tight leading-tight mt-1.5 whitespace-nowrap">
-              {activeConfig.lateCount === "1" ? "Late Arrival" : "Late Arrivals"}
-            </div>
-          </div>
-
-          {/* Row 3: Trend footer */}
-          <div className="relative z-10 mt-3 pt-0.5 flex items-center justify-between">
-            <span className="text-[12px] sm:text-[12.5px] font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">
-              {activeConfig.lateNote}
-            </span>
-          </div>
-        </motion.div>
-
-      </section>
-
-      {/* ========================================================
-          4. FILTER BUTTONS & DATE SELECTOR ROW
-      ======================================================== */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-        {/* Left Segmented Filter */}
-        <div className="bg-[#f0f4f9] rounded-full p-1 inline-flex items-center gap-1 border border-slate-200/60 shadow-2xs self-start">
-          {(["Today", "This Week", "This Month", "Academic Year"] as const).map((item) => (
+          {/* Right: Child Selector Dropdown Pill */}
+          <div className="relative z-30 self-start md:self-auto shrink-0">
             <button
-              key={item}
-              onClick={() => setTimeframe(item)}
-              className={`px-4 sm:px-5 py-2 rounded-full text-xs font-bold transition-all ${
-                timeframe === item
-                  ? "bg-[#1c64f2] text-white shadow-xs"
-                  : "text-slate-600 hover:text-[#1c64f2]"
-              }`}
+              type="button"
+              onClick={() => setIsChildDropdownOpen(!isChildDropdownOpen)}
+              className="bg-white dark:bg-[#07142F] border border-slate-200/90 dark:border-white/10 rounded-2xl p-2 px-3 flex items-center gap-3 shadow-2xs hover:border-[#0050CB]/40 transition-all cursor-pointer"
             >
-              {item}
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 relative">
+                <Image
+                  src={child.studentPhoto || "/aarav-profile-avatar.png"}
+                  alt={child.firstName}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="text-left">
+                <p className="text-xs font-extrabold text-[#000E28] dark:text-white leading-tight">
+                  {child.firstName} {child.lastName}
+                </p>
+                <p className="text-[10px] font-semibold text-slate-400 leading-tight">
+                  {child.grade} - {child.section || "Section A"}
+                </p>
+              </div>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-1 transition-transform ${isChildDropdownOpen ? "rotate-180" : ""}`} />
             </button>
-          ))}
+
+            {isChildDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setIsChildDropdownOpen(false)} />
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-[#07142F] border border-slate-200 dark:border-slate-800 shadow-xl py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                  {(children && children.length > 0 ? children : [child]).map((c: any) => (
+                    <button
+                      key={c._id}
+                      type="button"
+                      onClick={() => {
+                        if (selectChild) selectChild(c);
+                        setIsChildDropdownOpen(false);
+                        toast.success(`Active child: ${c.firstName} ${c.lastName}`);
+                      }}
+                      className="w-full text-left px-3.5 py-2.5 text-xs font-semibold hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center justify-between transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full overflow-hidden relative">
+                          <Image src={c.studentPhoto || "/aarav-profile-avatar.png"} alt={c.firstName} fill className="object-cover" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800 dark:text-white">{c.firstName} {c.lastName}</p>
+                          <p className="text-[10px] text-slate-400">{c.grade} - {c.section}</p>
+                        </div>
+                      </div>
+                      {child._id === c._id && <Check className="w-3.5 h-3.5 text-[#0050CB]" />}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
         </div>
 
-        {/* Right Date Selector Capsule */}
-        <div className="bg-white rounded-full border border-slate-200 px-4 py-2 flex items-center gap-3 text-xs font-bold text-slate-700 shadow-2xs self-start sm:self-auto">
-          <Calendar className="w-4 h-4 text-blue-600" />
-          <span className="min-w-[180px] text-center">{dateOptions[currentDateIndex]}</span>
-          <div className="flex items-center gap-1 text-slate-400 pl-1">
+      </div>
+
+      {/* 3. Timeframe Navigation & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+        
+        {/* Left: Pill Tab Switcher */}
+        <div className="bg-white dark:bg-[#07142F] p-1 rounded-full border border-slate-200/80 dark:border-white/10 inline-flex items-center gap-1 shadow-2xs overflow-x-auto custom-scrollbar">
+          {(["Overview", "Daily", "Weekly", "Monthly", "Term"] as const).map((tab) => {
+            const isActive = activeTimeframe === tab;
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => {
+                  setActiveTimeframe(tab);
+                  toast.success(`Switched to ${tab} view`);
+                }}
+                className={`px-4 sm:px-5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  isActive
+                    ? "bg-[#0050CB] text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-300 hover:text-[#0050CB] hover:bg-blue-50/50 dark:hover:bg-slate-800/50"
+                }`}
+              >
+                {tab}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right: Date Range and Subject Filters */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          
+          {/* Date Range Dropdown Button */}
+          <div className="relative">
             <button
-              onClick={() => setCurrentDateIndex((prev) => Math.min(dateOptions.length - 1, prev + 1))}
-              disabled={currentDateIndex === dateOptions.length - 1}
-              className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              title="Previous date"
               type="button"
+              onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
+              className="bg-white dark:bg-[#07142F] border border-slate-200/80 dark:border-white/10 rounded-2xl px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 shadow-2xs hover:border-[#0050CB]/40 transition-all cursor-pointer"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5 text-[#0050CB]" />
+              <span>{selectedDateRange}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isDateDropdownOpen ? "rotate-180" : ""}`} />
             </button>
+
+            {isDateDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setIsDateDropdownOpen(false)} />
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-[#07142F] border border-slate-200 dark:border-slate-800 shadow-xl py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                  {["01 Sep 2026 - 30 Sep 2026", "01 Aug 2026 - 31 Aug 2026", "01 Jul 2026 - 31 Jul 2026"].map((range) => (
+                    <button
+                      key={range}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDateRange(range);
+                        setIsDateDropdownOpen(false);
+                        toast.success(`Date Range: ${range}`);
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 transition-colors"
+                    >
+                      <span>{range}</span>
+                      {selectedDateRange === range && <Check className="w-3.5 h-3.5 text-[#0050CB]" />}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Subject Dropdown Button */}
+          <div className="relative">
             <button
-              onClick={() => setCurrentDateIndex((prev) => Math.max(0, prev - 1))}
-              disabled={currentDateIndex === 0}
-              className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              title="Next date"
               type="button"
+              onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+              className="bg-white dark:bg-[#07142F] border border-slate-200/80 dark:border-white/10 rounded-2xl px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 shadow-2xs hover:border-[#0050CB]/40 transition-all cursor-pointer"
             >
+              <span>{selectedSubject}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isSubjectDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isSubjectDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setIsSubjectDropdownOpen(false)} />
+                <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#07142F] border border-slate-200 dark:border-slate-800 shadow-xl py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                  {["All Subjects", "Mathematics", "English", "General Science", "Social Studies", "Art & Craft"].map((sub) => (
+                    <button
+                      key={sub}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSubject(sub);
+                        setIsSubjectDropdownOpen(false);
+                        toast.success(`Subject: ${sub}`);
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 transition-colors"
+                    >
+                      <span>{sub}</span>
+                      {selectedSubject === sub && <Check className="w-3.5 h-3.5 text-[#0050CB]" />}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* 4. Top 4 Metric KPI Cards Row (Exact Match to Given Image) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpiCards.map((card, idx) => {
+          const Icon = card.icon;
+
+          return (
+            <div
+              key={idx}
+              className="bg-white dark:bg-[#07142F] rounded-3xl p-5 border border-slate-100 dark:border-white/10 shadow-xs flex flex-col justify-between hover:border-[#0050CB]/30 transition-all"
+            >
+              {/* Card Header: Circular Icon + Percentage Badge */}
+              <div className="flex items-center justify-between">
+                <div className={`w-9 h-9 rounded-full ${card.iconBg} flex items-center justify-center shrink-0 shadow-xs`}>
+                  <Icon className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-tight ${card.badgeBg}`}>
+                  {card.badge}
+                </span>
+              </div>
+
+              {/* Middle: Label & Stat Number */}
+              <div className="mt-3.5">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {card.title}
+                </p>
+                <p className="text-3xl font-black text-[#000E28] dark:text-white leading-none mt-1">
+                  {card.value}
+                </p>
+              </div>
+
+              {/* Bottom: Subtitle & Trend */}
+              <div className="flex items-center justify-between mt-3 text-xs pt-1 border-t border-slate-50 dark:border-white/5">
+                <span className="text-slate-400 font-medium text-[11.5px]">
+                  {card.subtitle}
+                </span>
+                <span className={`font-bold text-[11.5px] ${card.trendColor}`}>
+                  {card.trend}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 5. Main Content Grid (Left: 8 Cols Chart & Banner | Right: 4 Cols Recent & Alerts) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        {/* Left Column (8 Cols): Attendance Overview Bar Chart + Full Report Card */}
+        <div className="lg:col-span-8 space-y-4">
+          
+          {/* Main Chart Card */}
+          <div className="bg-white dark:bg-[#07142F] rounded-3xl p-5 sm:p-6 border border-slate-100 dark:border-white/10 shadow-xs space-y-6">
+            
+            {/* Chart Title & Legends */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-[#0050CB] flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm sm:text-base font-extrabold text-[#000E28] dark:text-white leading-tight">
+                    Attendance Overview
+                  </h2>
+                  <p className="text-[11px] font-medium text-slate-400">
+                    Daily attendance for this month
+                  </p>
+                </div>
+              </div>
+
+              {/* Legends: Present (Green) | Absent (Red) | Late (Yellow) */}
+              <div className="flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+                  <span className="text-[11.5px]">Present</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#F43F5E]" />
+                  <span className="text-[11.5px]">Absent</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+                  <span className="text-[11.5px]">Late</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Vertical Bar Chart Container */}
+            <div className="relative pt-4 pb-2">
+              
+              {/* Y-Axis Grid Lines & Labels */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] font-semibold text-slate-400 pb-12">
+                {[
+                  { val: "100%" },
+                  { val: "75%" },
+                  { val: "50%" },
+                  { val: "25%" },
+                  { val: "0%" },
+                ].map((y, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="w-7 text-right shrink-0">{y.val}</span>
+                    <div className="w-full border-b border-dashed border-slate-100 dark:border-slate-800/80" />
+                  </div>
+                ))}
+              </div>
+
+              {/* 30 Day Vertical Bars */}
+              <div className="pl-10 pr-2 h-52 flex items-end justify-between gap-1 sm:gap-1.5 pt-4">
+                {septemberDays.map((item, idx) => {
+                  let barColor = "bg-[#10B981]"; // Present Green
+                  if (item.status === "absent") barColor = "bg-[#F43F5E]"; // Absent Red
+                  else if (item.status === "late") barColor = "bg-[#F59E0B]"; // Late Amber
+                  else if (item.status === "holiday") barColor = "bg-slate-200 dark:bg-slate-700"; // Muted gray
+
+                  return (
+                    <div
+                      key={idx}
+                      onMouseEnter={() => setSelectedDayHover(item)}
+                      onMouseLeave={() => setSelectedDayHover(null)}
+                      className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer"
+                    >
+                      {/* Bar Pillar */}
+                      <div
+                        style={{ height: `${item.height}%` }}
+                        className={`w-full max-w-[12px] sm:max-w-[14px] rounded-t-full transition-all duration-300 group-hover:scale-y-105 group-hover:opacity-90 ${barColor}`}
+                      />
+                      
+                      {/* Day Number Label */}
+                      <span className="text-[9px] sm:text-[10px] font-semibold text-slate-400 mt-2 block select-none">
+                        {item.day}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Month Footer Centered Label */}
+              <div className="text-center mt-3">
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                  September 2026
+                </span>
+              </div>
+
+              {/* Interactive Tooltip on hover */}
+              {selectedDayHover && (
+                <div className="absolute top-1 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl bg-[#000E28] text-white text-[11px] font-bold shadow-lg z-20 animate-in fade-in">
+                  {selectedDayHover.label}
+                </div>
+              )}
+
+            </div>
+
+          </div>
+
+          {/* Great Progress Banner Card */}
+          <div className="bg-white dark:bg-[#07142F] rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-white/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 text-[#0050CB] flex items-center justify-center shrink-0">
+                <Info className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#000E28] dark:text-white">
+                  Great progress!
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  Your child&apos;s attendance is 84.6% this month. Keep it up! 🎉
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsReportModalOpen(true)}
+              className="px-4 py-2 rounded-full border border-slate-200 dark:border-white/10 text-xs font-bold text-[#0050CB] dark:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
+            >
+              <span>View Full Report</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
+
         </div>
-      </div>
 
-      {/* ========================================================
-          5. MAIN LOWER TWO-COLUMN GRID
-      ======================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* ================= COLUMN 1: ATTENDANCE OVERVIEW (7-DAY BARS) ================= */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-[0_2px_14px_rgba(0,0,0,0.03)] space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Calendar className="w-4 h-4" />
+        {/* Right Column (4 Cols): Recent Attendance List + Attendance Alerts */}
+        <div className="lg:col-span-4 space-y-4">
+          
+          {/* Card 1: Recent Attendance Table */}
+          <div className="bg-white dark:bg-[#07142F] rounded-3xl p-5 border border-slate-100 dark:border-white/10 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-[#0050CB] flex items-center justify-center">
+                  <Clock className="w-3.5 h-3.5" />
                 </div>
-                <div>
-                  <h3 className="text-sm font-black text-[#000e28]">Attendance Overview</h3>
-                  <p className="text-xs text-slate-400">{activeConfig.subtitle}</p>
-                </div>
+                <h3 className="text-sm font-extrabold text-[#000E28] dark:text-white">
+                  Recent Attendance
+                </h3>
               </div>
 
-              {/* Legend */}
-              <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#10b981]" /> Present
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#f43f5e]" /> Absent
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#f59e0b]" /> Late
-                </span>
-              </div>
+              <button
+                type="button"
+                onClick={() => toast("Displaying comprehensive attendance ledger...")}
+                className="text-xs font-bold text-[#0050CB] dark:text-blue-400 hover:underline cursor-pointer"
+              >
+                View All
+              </button>
             </div>
 
-            {/* 7-Day Stacked Bar Chart */}
-            <div className="relative pt-6 pb-2">
-              <div className="flex items-end justify-between gap-2 sm:gap-4 h-48 px-2 sm:px-6 relative">
-                {/* Horizontal Grid lines */}
-                <div className="absolute inset-x-0 top-0 border-b border-dashed border-slate-100 flex items-center justify-start text-[10px] text-slate-400">
-                  <span className="bg-white pr-2">100%</span>
-                </div>
-                <div className="absolute inset-x-0 top-1/4 border-b border-dashed border-slate-100 flex items-center justify-start text-[10px] text-slate-400">
-                  <span className="bg-white pr-2">75%</span>
-                </div>
-                <div className="absolute inset-x-0 top-2/4 border-b border-dashed border-slate-100 flex items-center justify-start text-[10px] text-slate-400">
-                  <span className="bg-white pr-2">50%</span>
-                </div>
-                <div className="absolute inset-x-0 top-3/4 border-b border-dashed border-slate-100 flex items-center justify-start text-[10px] text-slate-400">
-                  <span className="bg-white pr-2">25%</span>
-                </div>
-                <div className="absolute inset-x-0 bottom-0 border-b border-slate-200 flex items-center justify-start text-[10px] text-slate-400">
-                  <span className="bg-white pr-2">0%</span>
-                </div>
+            {/* Table */}
+            <div className="w-full">
+              {/* Header row */}
+              <div className="grid grid-cols-12 text-[11px] font-bold text-slate-400 pb-2 border-b border-slate-100 dark:border-white/5">
+                <span className="col-span-5">Date</span>
+                <span className="col-span-4">Status</span>
+                <span className="col-span-3 text-right">Remarks</span>
+              </div>
 
-                {/* 7 Stacked Bars */}
-                {barChartData.map((item, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full z-10 group/bar">
-                    <span className="text-[11px] font-bold text-slate-700 mb-1.5 transition-transform group-hover/bar:scale-110">
-                      {item.label}
+              {/* Data rows */}
+              <div className="divide-y divide-slate-100/80 dark:divide-white/5">
+                {recentRecords.map((rec, i) => (
+                  <div key={i} className="grid grid-cols-12 items-center py-2.5 text-xs font-semibold">
+                    <span className="col-span-5 text-slate-700 dark:text-slate-200">
+                      {rec.date}
                     </span>
-                    <div
-                      className="w-7 sm:w-10 rounded-t-lg overflow-hidden flex flex-col-reverse justify-start bg-slate-100 shadow-2xs transition-all duration-300 group-hover/bar:brightness-105"
-                      style={{ height: `${item.label}` }}
-                    >
-                      {/* Absent Segment (Red) */}
-                      {item.absentH > 0 && (
-                        <div className="w-full bg-[#f43f5e]" style={{ height: `${item.absentH * 1.5}px` }} />
-                      )}
-                      {/* Late Segment (Orange) */}
-                      {item.lateH > 0 && (
-                        <div className="w-full bg-[#f59e0b]" style={{ height: `${item.lateH * 1.5}px` }} />
-                      )}
-                      {/* Present Segment (Green) */}
-                      <div className="w-full bg-[#10b981] flex-1" />
-                    </div>
-                    <span className="text-[11px] font-medium text-slate-500 mt-2 whitespace-nowrap">
-                      {item.date}
+                    <span className={`col-span-4 flex items-center gap-1.5 font-bold ${rec.color}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rec.dot}`} />
+                      <span>{rec.status}</span>
+                    </span>
+                    <span className="col-span-3 text-right text-slate-400 text-[11px]">
+                      {rec.remarks}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
+
           </div>
 
-          {/* Callout: Dynamic Highlight based on active timeframe */}
-          <div className="bg-gradient-to-r from-[#eef6ff] to-[#f4f8fe] rounded-2xl p-4 border border-blue-100/80 flex items-center justify-between shadow-2xs">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 text-[#1c64f2] flex items-center justify-center shrink-0">
-                <Lightbulb className="w-5 h-5" />
+          {/* Card 2: Attendance Alerts */}
+          <div className="bg-white dark:bg-[#07142F] rounded-3xl p-5 border border-slate-100 dark:border-white/10 shadow-xs space-y-3.5">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-[#0050CB] flex items-center justify-center">
+                <Bell className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <p className="text-xs font-black text-[#0050cb]">{activeConfig.highlightTitle}</p>
-                <p className="text-xs text-slate-600">
-                  {activeConfig.highlightDesc}
-                </p>
-              </div>
-            </div>
-            <button className="w-8 h-8 rounded-full border border-blue-200 bg-white text-[#1c64f2] flex items-center justify-center hover:bg-blue-50 shadow-2xs transition-colors shrink-0">
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* ================= COLUMN 2: ATTENDANCE HISTORY ================= */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-[0_2px_14px_rgba(0,0,0,0.03)] space-y-4">
-            {/* Header */}
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-[#000e28]">Attendance History</h3>
-                <p className="text-xs text-slate-400">Complete record of your child&rsquo;s attendance</p>
-              </div>
+              <h3 className="text-sm font-extrabold text-[#000E28] dark:text-white">
+                Attendance Alerts
+              </h3>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-[#f8faff] text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    <th className="py-2.5 px-3 rounded-l-xl">Date</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3">Reason</th>
-                    <th className="py-2.5 px-3 rounded-r-xl">Marked By</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {historyData.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-3 font-semibold text-slate-700">{row.date}</td>
-                      <td className="py-3 px-3">
-                        <span className={`inline-flex items-center gap-1.5 font-bold ${
-                          row.status === "Present" ? "text-[#10b981]" : "text-[#f43f5e]"
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            row.status === "Present" ? "bg-[#10b981]" : "bg-[#f43f5e]"
-                          }`} />
-                          {row.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-slate-500">{row.reason}</td>
-                      <td className="py-3 px-3 text-slate-600">{row.markedBy}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Footer View Full Link */}
-            <div className="pt-2 text-right">
-              <Link
-                href="/parent/attendance"
-                className="text-xs font-bold text-[#1c64f2] hover:text-blue-700 transition-colors inline-flex items-center gap-1"
-              >
-                <span>View Full Attendance History</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Callout: "Need to Report Absence?" */}
-          <div className="bg-[#f8f9fe] rounded-2xl p-4 border border-slate-100 flex items-center justify-between shadow-2xs">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-100/70 text-purple-600 flex items-center justify-center shrink-0">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-[#000e28]">Need to Report Absence?</p>
-                <p className="text-[11px] text-slate-400">If your child will be absent, please inform the school in advance.</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsReportAbsenceOpen(true)}
-              className="px-4 py-2 rounded-xl bg-[#1c64f2] hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all shrink-0 flex items-center gap-1"
+            {/* Warning Alert Banner Card */}
+            <div
+              onClick={() => toast.error("Absence record verified by class teacher.")}
+              className="p-3.5 rounded-2xl bg-[#FFF1F2] dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 flex items-center justify-between gap-3 hover:border-rose-200 dark:hover:border-rose-800 transition-colors cursor-pointer group"
             >
-              <span>Report Absence</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-500 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-100 group-hover:text-rose-600 transition-colors">
+                    {child.firstName} was absent on 16 Sep 2026
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                    Reason: Fever
+                  </p>
+                </div>
+              </div>
+
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+            </div>
+
           </div>
+
         </div>
 
       </div>
 
-      {/* ========================================================
-          REPORT ABSENCE MODAL DIALOG
-      ======================================================== */}
-      <AnimatePresence>
-        {isReportAbsenceOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100"
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#0050cb] flex items-center justify-center">
-                    <Calendar className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">Report Planned Absence</h3>
-                    <p className="text-[11px] text-slate-400">Notify the school registrar &amp; class teacher</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsReportAbsenceOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+      {/* Report Card Modal for "View Full Report" */}
+      {isReportModalOpen && (
+        <ReportCardModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          child={child}
+        />
+      )}
 
-              {absenceStatus === "success" ? (
-                <div className="py-8 text-center space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                    <Check className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-bold text-slate-900">Absence Notified Successfully!</p>
-                  <p className="text-xs text-slate-500">The class teacher has been notified of your request.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleReportAbsence} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Student
-                    </label>
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-[#000e28] flex items-center justify-between">
-                      <span>{child.firstName} {child.lastName}</span>
-                      <span className="text-[10px] text-blue-600 font-semibold">{child.grade} - {child.section}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Absence Date
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={absenceDate}
-                      onChange={(e) => setAbsenceDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Reason for Absence
-                    </label>
-                    <select
-                      value={absenceReason}
-                      onChange={(e) => setAbsenceReason(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
-                    >
-                      <option value="Medical / Fever">Medical / Fever</option>
-                      <option value="Family Function">Family Function</option>
-                      <option value="Travel / Vacation">Travel / Out of Town</option>
-                      <option value="Other">Other Personal Reasons</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Additional Notes (Optional)
-                    </label>
-                    <textarea
-                      rows={2}
-                      placeholder="Doctor note or brief explanation..."
-                      value={absenceNote}
-                      onChange={(e) => setAbsenceNote(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-hidden resize-none"
-                    />
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-[11px] text-blue-800 flex items-start gap-2">
-                    <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                    <span>
-                      Absences of 3 or more consecutive days require a medical certificate upon return.
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2.5 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsReportAbsenceOpen(false)}
-                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2 rounded-xl bg-[#1c64f2] hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20"
-                    >
-                      Submit Absence
-                    </button>
-                  </div>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

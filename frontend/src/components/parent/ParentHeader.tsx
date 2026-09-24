@@ -17,7 +17,7 @@ interface ParentHeaderProps {
 export default function ParentHeader({ onOpenMobileMenu }: ParentHeaderProps) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const { children, selectedChild, selectChild, setIsSearchOpen } = useParent();
+  const { children, selectedChild, selectChild, setIsSearchOpen, unreadNotificationCount, unreadMessageCount } = useParent();
   const [isChildMenuOpen, setIsChildMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -114,28 +114,32 @@ export default function ParentHeader({ onOpenMobileMenu }: ParentHeaderProps) {
 
       {/* Right Controls */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Notification Bell with Badge 5 */}
+        {/* Notification Bell with Dynamic Badge */}
         <Link
           href="/parent/notifications"
           className="relative w-9 h-9 rounded-full bg-[#F6F9FE] dark:bg-white/5 hover:bg-[#EAF4FF] dark:hover:bg-white/10 flex items-center justify-center text-[#1769E8] transition-colors"
           title="Notifications"
         >
           <Bell className="w-4.5 h-4.5" />
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#EF4444] text-white text-[9px] font-black flex items-center justify-center shadow-xs">
-            5
-          </span>
+          {unreadNotificationCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#EF4444] text-white text-[9px] font-black flex items-center justify-center shadow-xs animate-in fade-in">
+              {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+            </span>
+          )}
         </Link>
 
-        {/* Messages with Badge 3 */}
+        {/* Messages with Dynamic Badge */}
         <Link
           href="/parent/messages"
           className="relative w-9 h-9 rounded-full bg-[#F6F9FE] dark:bg-white/5 hover:bg-[#EAF4FF] dark:hover:bg-white/10 flex items-center justify-center text-[#1769E8] transition-colors"
           title="Messages"
         >
           <Mail className="w-4.5 h-4.5" />
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#EF4444] text-white text-[9px] font-black flex items-center justify-center shadow-xs">
-            3
-          </span>
+          {unreadMessageCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#0050CB] text-white text-[9px] font-black flex items-center justify-center shadow-xs animate-in fade-in">
+              {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+            </span>
+          )}
         </Link>
 
         {/* Theme Toggle */}

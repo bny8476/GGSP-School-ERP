@@ -1,10 +1,13 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import env from './config/env';
 import logger from './utils/logger';
+import Conversation from './models/Conversation';
 
 let io: SocketIOServer;
+const onlineUserSockets = new Map<string, Set<string>>();
 
 export interface AuthenticatedSocket extends Socket {
   data: {
@@ -44,9 +47,11 @@ export const initSocket = (httpServer: HttpServer): SocketIOServer => {
       methods: ['GET', 'POST'],
       credentials: true,
     },
+    pingTimeout: 30000,
+    pingInterval: 25000,
   });
 
-  // Authentication Middleware
+  // Strict Authentication Middleware
   io.use((socket: AuthenticatedSocket, next) => {
     const token =
       socket.handshake.auth?.token ||
@@ -61,58 +66,177 @@ export const initSocket = (httpServer: HttpServer): SocketIOServer => {
         : null);
 
     if (!token) {
-      // Allow unauthenticated connection but mark unauthenticated
-      return next();
+      logger.warn({ socketId: socket.id }, 'Socket connection rejected: No authentication token provided');
+      return next(new Error('Authentication token required'));
     }
 
     try {
-      const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as any;
-      if (decoded && decoded.user) {
-        socket.data.user = decoded.user;
+      const secret = process.env.JWT_SECRET || env.JWT_ACCESS_SECRET;
+      const decoded = jwt.verify(token, secret) as any;
+      if (!decoded || !decoded.user || !decoded.user.id) {
+        logger.warn({ socketId: socket.id }, 'Socket connection rejected: Invalid token payload');
+        return next(new Error('Invalid token'));
       }
+
+      // Prohibit students from participating in real-time chat
+      const role = String(decoded.user.role || '').toLowerCase();
+      if (role === 'student') {
+        logger.warn({ socketId: socket.id, userId: decoded.user.id }, 'Socket connection rejected: Students cannot participate in staff/parent chat');
+        return next(new Error('Students are not authorized to use chat'));
+      }
+
+      socket.data.user = decoded.user;
+      next();
     } catch (err: any) {
       logger.warn({ socketId: socket.id, error: err.message }, 'Socket authentication failed');
+      return next(new Error('Token verification failed: ' + err.message));
     }
-    next();
   });
 
   io.on('connection', (socket: AuthenticatedSocket) => {
     const user = socket.data.user;
-    logger.info({ socketId: socket.id, userId: user?.id, role: user?.role }, 'Socket client connected');
-
-    // Auto-join authoritative isolated rooms if authenticated
-    if (user && user.id) {
-      socket.join(`user:${user.id}`);
-      if (user.role) socket.join(`role:${user.role}`);
-      if (user.campusId) socket.join(`campus:${user.campusId}`);
-      if (user.schoolId) socket.join(`school:${user.schoolId}`);
-      if (user.parentId) socket.join(`parent:${user.parentId}`);
+    if (!user || !user.id) {
+      socket.disconnect(true);
+      return;
     }
 
-    // Room subscription with authorization checks
-    socket.on('join_room', (roomId: string) => {
-      if (!roomId) return;
-      if (!socket.data.user) {
-        logger.warn({ socketId: socket.id, roomId }, 'Unauthenticated client blocked from joining room');
+    logger.info({ socketId: socket.id, userId: user.id, role: user.role }, 'Authenticated socket client connected');
+
+    // Auto-join authoritative isolated user room and role rooms
+    socket.join(`user:${user.id}`);
+    if (user.role) socket.join(`role:${user.role}`);
+    if (user.campusId) socket.join(`campus:${user.campusId}`);
+    if (user.schoolId) socket.join(`school:${user.schoolId}`);
+    if (user.parentId) socket.join(`parent:${user.parentId}`);
+
+    // Room subscription handler supporting both 'join_room' and 'join-room'
+    const handleJoinRoom = async (roomId: string) => {
+      if (!roomId || typeof roomId !== 'string') return;
+
+      // Block joining other user's private rooms
+      if (roomId.startsWith('user:') && roomId !== `user:${user.id}`) {
+        logger.warn({ socketId: socket.id, roomId, user: user.id }, 'Blocked attempt to join another user private room');
+        socket.emit('error', { message: 'Unauthorized room access' });
         return;
       }
 
-      // Block joining other user's private rooms
-      if (roomId.startsWith('user:') && roomId !== `user:${socket.data.user.id}`) {
-        logger.warn({ socketId: socket.id, roomId, user: socket.data.user.id }, 'Blocked attempt to join another user private room');
-        return;
+      // Check authorization for conversation rooms
+      if (roomId.startsWith('conversation:')) {
+        const conversationId = roomId.replace('conversation:', '');
+        
+        // If MongoDB is connected and valid ObjectId, verify user participation
+        if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(conversationId)) {
+          try {
+            const conv = await Conversation.findById(conversationId).select('participants');
+            if (conv) {
+              const isParticipant = conv.participants.some(
+                (p: any) => String(p._id || p) === String(user.id)
+              );
+              if (!isParticipant && user.role !== 'SuperAdmin') {
+                logger.warn({ socketId: socket.id, conversationId, user: user.id }, 'Blocked unauthorized conversation room join attempt');
+                socket.emit('error', { message: 'Unauthorized conversation room' });
+                return;
+              }
+            }
+          } catch (dbErr) {
+            logger.warn({ err: dbErr, conversationId }, 'Conversation lookup error on socket join');
+          }
+        }
       }
 
       socket.join(roomId);
-      logger.debug({ socketId: socket.id, roomId }, 'Socket joined room');
+      logger.debug({ socketId: socket.id, roomId, userId: user.id }, 'Socket joined room');
+      socket.emit('room:joined', { room: roomId });
+    };
+
+    // Presence Tracking
+    const userSockets = onlineUserSockets.get(user.id) || new Set<string>();
+    const isNewlyOnline = userSockets.size === 0;
+    userSockets.add(socket.id);
+    onlineUserSockets.set(user.id, userSockets);
+
+    if (isNewlyOnline) {
+      io.emit('presence:update', { userId: user.id, status: 'online' });
+    }
+
+    socket.on('presence:get', () => {
+      const onlineIds = Array.from(onlineUserSockets.keys());
+      socket.emit('presence:list', { onlineUserIds: onlineIds });
     });
 
-    socket.on('leave_room', (roomId: string) => {
-      if (roomId) socket.leave(roomId);
+    socket.on('join_room', handleJoinRoom);
+    socket.on('join-room', handleJoinRoom);
+    socket.on('conversation:join', (data: { conversationId?: string }) => {
+      if (data?.conversationId) handleJoinRoom(`conversation:${data.conversationId}`);
     });
 
-    socket.on('disconnect', () => {
-      logger.debug({ socketId: socket.id }, 'Socket client disconnected');
+    // Leave room handlers
+    const handleLeaveRoom = (roomId: string) => {
+      if (roomId && typeof roomId === 'string') {
+        socket.leave(roomId);
+        logger.debug({ socketId: socket.id, roomId }, 'Socket left room');
+      }
+    };
+
+    socket.on('leave_room', handleLeaveRoom);
+    socket.on('leave-room', handleLeaveRoom);
+    socket.on('conversation:leave', (data: { conversationId?: string }) => {
+      if (data?.conversationId) handleLeaveRoom(`conversation:${data.conversationId}`);
+    });
+
+    // Real-time typing indicators
+    const handleTypingStart = (data: { conversationId?: string; recipientId?: string }) => {
+      const payload = {
+        conversationId: data?.conversationId,
+        userId: user.id,
+        role: user.role,
+      };
+
+      if (data?.conversationId) {
+        socket.to(`conversation:${data.conversationId}`).emit('chat:typing:start', payload);
+        socket.to(`conversation:${data.conversationId}`).emit('typing:start', payload);
+      }
+      if (data?.recipientId) {
+        socket.to(`user:${data.recipientId}`).emit('chat:typing:start', payload);
+        socket.to(`user:${data.recipientId}`).emit('typing:start', payload);
+      }
+    };
+
+    const handleTypingStop = (data: { conversationId?: string; recipientId?: string }) => {
+      const payload = {
+        conversationId: data?.conversationId,
+        userId: user.id,
+        role: user.role,
+      };
+
+      if (data?.conversationId) {
+        socket.to(`conversation:${data.conversationId}`).emit('chat:typing:stop', payload);
+        socket.to(`conversation:${data.conversationId}`).emit('typing:stop', payload);
+      }
+      if (data?.recipientId) {
+        socket.to(`user:${data.recipientId}`).emit('chat:typing:stop', payload);
+        socket.to(`user:${data.recipientId}`).emit('typing:stop', payload);
+      }
+    };
+
+    socket.on('chat:typing:start', handleTypingStart);
+    socket.on('typing:start', handleTypingStart);
+    socket.on('typing', (data) => handleTypingStart(data));
+
+    socket.on('chat:typing:stop', handleTypingStop);
+    socket.on('typing:stop', handleTypingStop);
+    socket.on('stop_typing', (data) => handleTypingStop(data));
+
+    socket.on('disconnect', (reason) => {
+      const sockets = onlineUserSockets.get(user.id);
+      if (sockets) {
+        sockets.delete(socket.id);
+        if (sockets.size === 0) {
+          onlineUserSockets.delete(user.id);
+          io.emit('presence:update', { userId: user.id, status: 'offline' });
+        }
+      }
+      logger.debug({ socketId: socket.id, userId: user.id, reason }, 'Socket client disconnected');
     });
   });
 
@@ -132,6 +256,14 @@ export const emitToUser = (userId: string, event: string, payload: any): void =>
     if (io) io.to(`user:${userId}`).emit(event, payload);
   } catch (err) {
     logger.warn({ userId, event }, 'Failed to emit to user socket room');
+  }
+};
+
+export const emitToConversation = (conversationId: string, event: string, payload: any): void => {
+  try {
+    if (io) io.to(`conversation:${conversationId}`).emit(event, payload);
+  } catch (err) {
+    logger.warn({ conversationId, event }, 'Failed to emit to conversation socket room');
   }
 };
 

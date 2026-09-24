@@ -131,9 +131,11 @@ interface ParentContextType {
   teacherRemarks: TeacherRemarkItem[];
   homeworkList: HomeworkItem[];
   unreadNotificationCount: number;
+  unreadMessageCount: number;
 
   // Actions
   refreshPortalData: () => Promise<void>;
+  refreshUnreadCounts: () => Promise<void>;
   updateParentProfile: (data: Partial<ParentProfile>) => Promise<boolean>;
   replyTeacherRemark: (remarkId: string, reply: string) => Promise<boolean>;
   updateHomeworkStatus: (homeworkId: string, status: 'Pending' | 'Submitted' | 'Completed') => Promise<boolean>;
@@ -340,9 +342,45 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
   const [todayDiary, setTodayDiary] = useState<DailyDiaryInfo | null>(DEFAULT_DIARY);
   const [teacherRemarks, setTeacherRemarks] = useState<TeacherRemarkItem[]>(DEFAULT_REMARKS);
   const [homeworkList, setHomeworkList] = useState<HomeworkItem[]>(DEFAULT_HOMEWORK);
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState<number>(2);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState<number>(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState<number>(0);
 
   const selectedChild = childrenList.find(c => c._id === selectedChildId) || childrenList[0] || null;
+
+  // Real-Time Unread Counts Fetcher
+  const refreshUnreadCounts = useCallback(async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) return;
+      const apiBase = getApiBaseUrl();
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+
+      // 1. Unread Messages
+      fetch(`${apiBase}/api/v1/messages/unread-count`, { headers })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data && typeof data.unreadCount === 'number') {
+            setUnreadMessageCount(data.unreadCount);
+          }
+        })
+        .catch(() => {});
+
+      // 2. Unread Notifications
+      fetch(`${apiBase}/api/v1/notifications?read=false&limit=1`, { headers })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data && typeof data.unreadCount === 'number') {
+            setUnreadNotificationCount(data.unreadCount);
+          } else if (data && typeof data.total === 'number') {
+            setUnreadNotificationCount(data.total);
+          }
+        })
+        .catch(() => {});
+    } catch (_) {}
+  }, []);
 
   // Load child-specific classroom data from API
   const refreshChildData = useCallback(async (childId: string) => {
@@ -584,6 +622,32 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
       // 7. General Notification Event
       socket.on('notification:new', (notif: any) => {
         setUnreadNotificationCount(prev => prev + 1);
+        refreshUnreadCounts();
+      });
+
+      socket.on('notification:created', () => {
+        refreshUnreadCounts();
+      });
+
+      // 8. Real-Time Chat & Unread Count Synchronization
+      socket.on('chat:unread:updated', (data: any) => {
+        if (typeof data?.unreadCount === 'number') {
+          setUnreadMessageCount(data.unreadCount);
+        } else {
+          refreshUnreadCounts();
+        }
+      });
+
+      socket.on('chat:message:new', () => {
+        refreshUnreadCounts();
+      });
+
+      socket.on('message:new', () => {
+        refreshUnreadCounts();
+      });
+
+      socket.on('chat:message:read', () => {
+        refreshUnreadCounts();
       });
 
     } catch (sockErr) {}
@@ -591,12 +655,13 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
     return () => {
       if (socket) socket.disconnect();
     };
-  }, [selectedChildId]);
+  }, [selectedChildId, refreshUnreadCounts]);
 
-  // Initial portal data refresh
+  // Initial portal data & unread counts refresh
   useEffect(() => {
     refreshPortalData();
-  }, [refreshPortalData]);
+    refreshUnreadCounts();
+  }, [refreshPortalData, refreshUnreadCounts]);
 
   // Global keyboard shortcut for ⌘K / Ctrl+K
   useEffect(() => {
@@ -720,7 +785,9 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
         teacherRemarks,
         homeworkList,
         unreadNotificationCount,
+        unreadMessageCount,
         refreshPortalData,
+        refreshUnreadCounts,
         updateParentProfile,
         replyTeacherRemark,
         updateHomeworkStatus,

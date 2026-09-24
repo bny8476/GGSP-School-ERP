@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import GGPSLogo from "@/components/parent/GGPSLogo";
 import { useAuthStore } from "@/stores/authStore";
+import { useParent } from "@/context/ParentContext";
 
 interface ParentSidebarProps {
   isCollapsed: boolean;
@@ -121,6 +122,7 @@ export default function ParentSidebar({
 }: ParentSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { unreadMessageCount, unreadNotificationCount } = useParent();
 
   interface NavSection {
     title: string;
@@ -158,9 +160,19 @@ export default function ParentSidebar({
     {
       title: "School Life & Connect",
       items: [
-        { label: "Communication", href: "/parent/messages", icon: CommunicationIcon, badge: "5" },
+        { 
+          label: "Communication", 
+          href: "/parent/messages", 
+          icon: CommunicationIcon, 
+          badge: unreadMessageCount > 0 ? (unreadMessageCount > 99 ? "99+" : String(unreadMessageCount)) : undefined 
+        },
         { label: "School Events", href: "/parent/events", icon: SchoolEventsIcon, badge: "4" },
-        { label: "Notifications", href: "/parent/notifications", icon: Bell, badge: "5" },
+        { 
+          label: "Notifications", 
+          href: "/parent/notifications", 
+          icon: Bell, 
+          badge: unreadNotificationCount > 0 ? (unreadNotificationCount > 99 ? "99+" : String(unreadNotificationCount)) : undefined 
+        },
       ],
     },
     {

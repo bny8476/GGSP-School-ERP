@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -103,6 +103,7 @@ import ExamsMarksWorkspace from './ExamsMarksWorkspace';
 import TeacherHomeWorkspace from './TeacherHomeWorkspace';
 import EnrollChildModal from './EnrollChildModal';
 import { getApiBaseUrl } from '@/lib/utils';
+import { getSocket, joinRoom, leaveRoom } from '@/lib/socket';
 import {
   PremiumCard,
   CardHeader,
@@ -823,7 +824,7 @@ const initialClassBroadcasts: ClassBroadcastAnnouncement[] = [
 
 const initialParentThreads: ParentMessageThread[] = [
   {
-    id: 'pt-01',
+    id: '66789abcdef0123456789100',
     studentId: 's-01',
     studentName: 'Aarav Sharma',
     rollNo: '01',
@@ -2131,28 +2132,160 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
     });
   }, [parentThreads, parentFilter, parentSearch]);
 
+  const [isParentTypingInModal, setIsParentTypingInModal] = useState(false);
+  const teacherTypingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Real-time socket message and typing listener for Teacher Workspace
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleIncomingMessage = (msg: any) => {
+      const isFromParent = (msg.senderRole || msg.sender?.role || '').toLowerCase() === 'parent';
+      const msgConvId = String(msg.conversationId || '');
+
+      const newMsgItem: ParentMessageItem = {
+        id: msg._id || msg.clientTempId || `msg-${Date.now()}`,
+        sender: isFromParent ? 'Parent' : 'Teacher',
+        text: msg.message || '',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      if (selectedParentForChat && (msgConvId === selectedParentForChat.id || selectedParentForChat.id === '66789abcdef0123456789100')) {
+        setSelectedParentForChat((prev) => {
+          if (!prev) return null;
+          const exists = prev.messages.some((m) => m.id === newMsgItem.id);
+          if (exists) return prev;
+          return {
+            ...prev,
+            lastMessage: msg.message,
+            lastMessageTime: 'Just now',
+            lastSender: isFromParent ? 'Parent' : 'Teacher',
+            messages: [...prev.messages, newMsgItem],
+          };
+        });
+      }
+
+      setParentThreads((prev) =>
+        prev.map((pt) => {
+          if (pt.id === msgConvId || pt.id === '66789abcdef0123456789100') {
+            return {
+              ...pt,
+              lastMessage: msg.message,
+              lastMessageTime: 'Just now',
+              lastSender: isFromParent ? 'Parent' : 'Teacher',
+              unreadCount: selectedParentForChat && selectedParentForChat.id === pt.id ? 0 : pt.unreadCount + (isFromParent ? 1 : 0),
+            };
+          }
+          return pt;
+        })
+      );
+    };
+
+    const handleTypingStart = (data: any) => {
+      if (selectedParentForChat && (String(data.conversationId) === selectedParentForChat.id || selectedParentForChat.id === '66789abcdef0123456789100')) {
+        setIsParentTypingInModal(true);
+      }
+    };
+
+    const handleTypingStop = (data: any) => {
+      if (selectedParentForChat && (String(data.conversationId) === selectedParentForChat.id || selectedParentForChat.id === '66789abcdef0123456789100')) {
+        setIsParentTypingInModal(false);
+      }
+    };
+
+    socket.on('chat:message:new', handleIncomingMessage);
+    socket.on('message:new', handleIncomingMessage);
+    socket.on('chat:typing:start', handleTypingStart);
+    socket.on('typing:start', handleTypingStart);
+    socket.on('chat:typing:stop', handleTypingStop);
+    socket.on('typing:stop', handleTypingStop);
+
+    return () => {
+      socket.off('chat:message:new', handleIncomingMessage);
+      socket.off('message:new', handleIncomingMessage);
+      socket.off('chat:typing:start', handleTypingStart);
+      socket.off('typing:start', handleTypingStart);
+      socket.off('chat:typing:stop', handleTypingStop);
+      socket.off('typing:stop', handleTypingStop);
+    };
+  }, [selectedParentForChat]);
+
   const handleOpenDirectChat = (thread: ParentMessageThread) => {
     setParentThreads((prev) =>
       prev.map((pt) => (pt.id === thread.id ? { ...pt, unreadCount: 0 } : pt))
     );
     setSelectedParentForChat({ ...thread, unreadCount: 0 });
     setChatReplyText('');
+
+    // Join real-time room
+    joinRoom(`conversation:${thread.id}`);
+
+    // Fetch live messages from API
+    try {
+      const token = localStorage.getItem('token');
+      const apiBase = getApiBaseUrl();
+      fetch(`${apiBase}/api/v1/messages?conversationId=${thread.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            const mapped: ParentMessageItem[] = json.data.map((m: any) => ({
+              id: m._id || m.clientTempId || `msg-${Date.now()}`,
+              sender: (m.senderRole || m.sender?.role || '').toLowerCase() === 'teacher' ? 'Teacher' : 'Parent',
+              text: m.message,
+              timestamp: m.createdAt
+                ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : 'Just now',
+            }));
+            setSelectedParentForChat((prev) => (prev ? { ...prev, messages: mapped } : null));
+
+            // Mark read on server
+            fetch(`${apiBase}/api/v1/messages/read`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ conversationId: thread.id }),
+            }).catch(() => {});
+          }
+        })
+        .catch((err) => console.warn('Messages load notice:', err));
+    } catch (e) {
+      console.warn('API error:', e);
+    }
+  };
+
+  const handleTeacherChatInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setChatReplyText(e.target.value);
+    const socket = getSocket();
+    if (socket && selectedParentForChat) {
+      socket.emit('chat:typing:start', { conversationId: selectedParentForChat.id });
+      if (teacherTypingTimerRef.current) clearTimeout(teacherTypingTimerRef.current);
+      teacherTypingTimerRef.current = setTimeout(() => {
+        socket.emit('chat:typing:stop', { conversationId: selectedParentForChat.id });
+      }, 2000);
+    }
   };
 
   const handleSendDirectMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatReplyText.trim() || !selectedParentForChat) return;
 
+    const textToSend = chatReplyText.trim();
+    const clientTempId = `msg-${Date.now()}`;
     const newMessage: ParentMessageItem = {
-      id: `msg-${Date.now()}`,
+      id: clientTempId,
       sender: 'Teacher',
-      text: chatReplyText.trim(),
+      text: textToSend,
       timestamp: 'Just now',
     };
 
     const updatedThread: ParentMessageThread = {
       ...selectedParentForChat,
-      lastMessage: chatReplyText.trim(),
+      lastMessage: textToSend,
       lastMessageTime: 'Just now',
       lastSender: 'Teacher',
       unreadCount: 0,
@@ -2164,13 +2297,58 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
     );
     setSelectedParentForChat(updatedThread);
     setChatReplyText('');
+
+    // Stop typing
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chat:typing:stop', { conversationId: selectedParentForChat.id });
+    }
+
+    // Call real backend API
+    const token = localStorage.getItem('token');
+    const apiBase = getApiBaseUrl();
+    fetch(`${apiBase}/api/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        conversationId: selectedParentForChat.id,
+        message: textToSend,
+        clientTempId,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setSelectedParentForChat((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              messages: prev.messages.map((m) =>
+                m.id === clientTempId
+                  ? {
+                      ...m,
+                      id: data.data._id,
+                      timestamp: new Date(data.data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    }
+                  : m
+              ),
+            };
+          });
+        }
+      })
+      .catch((err) => console.error('Error sending message:', err));
+
     toast.success(`Message sent to ${selectedParentForChat.parentName} via Parent Portal!`);
   };
 
   const handleSendQuickCanned = (cannedText: string) => {
     if (!selectedParentForChat) return;
+    const clientTempId = `msg-${Date.now()}`;
     const newMessage: ParentMessageItem = {
-      id: `msg-${selectedParentForChat.id}-${selectedParentForChat.messages.length + 1}`,
+      id: clientTempId,
       sender: 'Teacher',
       text: cannedText,
       timestamp: 'Just now',
@@ -2189,6 +2367,23 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
       prev.map((pt) => (pt.id === selectedParentForChat.id ? updatedThread : pt))
     );
     setSelectedParentForChat(updatedThread);
+
+    // Call real backend API
+    const token = localStorage.getItem('token');
+    const apiBase = getApiBaseUrl();
+    fetch(`${apiBase}/api/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        conversationId: selectedParentForChat.id,
+        message: cannedText,
+        clientTempId,
+      }),
+    }).catch(() => {});
+
     toast.success(`Quick response dispatched to ${selectedParentForChat.parentName}!`);
   };
 
@@ -5136,6 +5331,14 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                     <span>Broadcast History ({classBroadcasts.length})</span>
                   </button>
 
+                  <Link
+                    href="/teacher/messages"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-500/20 cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Open Direct Messenger</span>
+                  </Link>
+
                   <button
                     onClick={() => setMessageParentDrawerOpen(true)}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0050CB] hover:bg-[#003da1] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer"
@@ -5636,13 +5839,27 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
                         </div>
                       </div>
 
+                      {/* Typing Indicator */}
+                      {isParentTypingInModal && (
+                        <div className="flex items-center gap-2 px-1 text-xs text-slate-400 animate-in fade-in duration-200">
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                            {selectedParentForChat.parentName} is typing
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <span className="w-1 h-1 rounded-full bg-[#0050CB] animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1 h-1 rounded-full bg-[#0050CB] animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-1 h-1 rounded-full bg-[#0050CB] animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </span>
+                        </div>
+                      )}
+
                       {/* Message Input Form */}
                       <form onSubmit={handleSendDirectMessage} className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 shrink-0">
                         <input
                           type="text"
                           required
                           value={chatReplyText}
-                          onChange={(e) => setChatReplyText(e.target.value)}
+                          onChange={handleTeacherChatInputChange}
                           placeholder={`Type a private message to ${selectedParentForChat.parentName}...`}
                           className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-[#0050CB]"
                         />

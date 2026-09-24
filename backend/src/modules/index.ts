@@ -123,6 +123,7 @@ export function registerDomainModules(apiRouter: Router): void {
   apiRouter.use('/announcements', announcementRoutes);
   apiRouter.use('/notifications', notificationRoutes);
   apiRouter.use('/messages', messageRoutes);
+  apiRouter.use('/chat', messageRoutes);
   apiRouter.use('/broadcasts', broadcastRoutes);
   apiRouter.use('/email', emailRoutes);
 

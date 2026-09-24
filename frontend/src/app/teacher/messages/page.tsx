@@ -9,12 +9,11 @@ import {
   Paperclip, Smile, Mic, Send, FileText, Image as ImageIcon, 
   Film, Pin, Download, CheckCheck, ChevronRight, User, 
   Calendar, BookOpen, Clock, ShieldCheck, CheckCircle2, ChevronDown,
-  X, Check, AlertCircle, PlusCircle, Volume2, Square
+  X, Check, AlertCircle, PlusCircle, Volume2, Square, ArrowLeft
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getSocket, joinRoom, leaveRoom } from "@/lib/socket";
 import { getApiBaseUrl } from "@/lib/utils";
-import { useParent } from "@/context/ParentContext";
 import { useAuthStore } from "@/stores/authStore";
 
 interface MessageAttachment {
@@ -45,7 +44,7 @@ interface ConversationItem {
   lastMessage: string;
   time: string;
   unreadCount?: number;
-  category: "teachers" | "parents" | "admin";
+  category: "parents" | "teachers" | "admin";
   participantId?: string;
   student?: {
     _id: string;
@@ -62,12 +61,12 @@ interface ContactItem {
   name: string;
   role: string;
   email: string;
-  designation?: string;
   avatar?: string;
   student?: {
     _id: string;
     name: string;
     grade: string;
+    section?: string;
     rollNumber?: string;
     studentPhoto?: string;
   };
@@ -104,7 +103,7 @@ function formatServerMessage(m: any, currentUserId: string): Message {
 
   return {
     id: m._id || m.clientTempId || `msg-${Date.now()}`,
-    sender: isMe ? "parent" : "teacher",
+    sender: isMe ? "teacher" : "parent",
     text: m.message || m.text || "",
     time: m.createdAt
       ? new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -117,29 +116,25 @@ function formatServerMessage(m: any, currentUserId: string): Message {
   };
 }
 
-export default function ParentMessagesPage() {
+export default function TeacherMessagesPage() {
   const { user } = useAuthStore();
-  const { children, selectedChild, selectChild, refreshUnreadCounts } = useParent();
 
-  const [activeTab, setActiveTab] = useState<"Messages" | "Announcements" | "Updates" | "Documents" | "FAQs">("Messages");
-  const [activeSubFilter, setActiveSubFilter] = useState<"All" | "Teachers" | "Parents">("All");
   const [activeChatId, setActiveChatId] = useState<string>("");
   const [messageInput, setMessageInput] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isTeacherTyping, setIsTeacherTyping] = useState<boolean>(false);
+  const [isParentTyping, setIsParentTyping] = useState<boolean>(false);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState<boolean>(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false);
 
-  // New Chat Modal & Contacts
+  // New Chat Modal & Class Contacts
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState<boolean>(false);
   const [contacts, setContacts] = useState<ContactItem[]>([]);
   const [isLoadingContacts, setIsLoadingContacts] = useState<boolean>(false);
 
   // Attachment & Media
   const [selectedFile, setSelectedFile] = useState<{ file: File; base64: string; previewUrl: string } | null>(null);
-  const [isUploadingAttachment, setIsUploadingAttachment] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Quick Emoji Bar & Voice Note Simulator
@@ -161,7 +156,7 @@ export default function ParentMessagesPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTeacherTyping]);
+  }, [messages, isParentTyping]);
 
   // 1. Fetch Conversations from REST API
   const loadConversations = useCallback(async () => {
@@ -180,18 +175,16 @@ export default function ParentMessagesPage() {
         if (json.success && Array.isArray(json.data)) {
           const mapped: ConversationItem[] = json.data.map((c: any) => ({
             id: c._id,
-            name: c.participant?.name || "Teacher",
-            role: c.participant?.role === "Teacher" 
-              ? (c.student ? `Class Teacher • ${c.student.grade}` : "Class Teacher") 
-              : (c.participant?.role || "Faculty Staff"),
-            avatar: c.participant?.avatar || "/teacher-ananya-roy.jpg",
+            name: c.participant?.name || "Parent Guardian",
+            role: c.student ? `Parent of ${c.student.name} (${c.student.grade})` : (c.participant?.role || "Parent Guardian"),
+            avatar: c.participant?.avatar || "/aarav-profile-avatar.png",
             isOnline: true,
             lastMessage: c.lastMessage?.message || "No messages exchanged yet",
             time: c.lastMessage?.createdAt
               ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
               : (c.updatedAt ? new Date(c.updatedAt).toLocaleDateString([], { month: "short", day: "numeric" }) : "New"),
             unreadCount: c.unreadCount || 0,
-            category: (c.participant?.role?.toLowerCase() === "parent" ? "parents" : "teachers") as any,
+            category: "parents" as const,
             participantId: c.participant?._id,
             student: c.student,
           }));
@@ -238,8 +231,6 @@ export default function ParentMessagesPage() {
             },
             body: JSON.stringify({ conversationId: convId }),
           }).then(() => {
-            refreshUnreadCounts();
-            // Clear unread count on local conversation item
             setConversations(prev =>
               prev.map(c => (c.id === convId ? { ...c, unreadCount: 0 } : c))
             );
@@ -251,9 +242,9 @@ export default function ParentMessagesPage() {
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [currentUserId, refreshUnreadCounts]);
+  }, [currentUserId]);
 
-  // 3. Load Contacts for New Chat
+  // 3. Load Authorized Class Parents for New Chat
   const loadContacts = useCallback(async () => {
     try {
       setIsLoadingContacts(true);
@@ -297,7 +288,6 @@ export default function ParentMessagesPage() {
       const msgConvId = String(msg.conversationId || "");
       if (msgConvId === String(activeChatId)) {
         setMessages((prev) => {
-          // Deduplicate if already present by _id or clientTempId
           const exists = prev.some(
             (m) => m.id === msg._id || (msg.clientTempId && (m.id === msg.clientTempId || m.clientTempId === msg.clientTempId))
           );
@@ -325,7 +315,7 @@ export default function ParentMessagesPage() {
           )
         );
 
-        // Mark as read immediately since user is actively viewing
+        // Mark as read immediately
         const token = localStorage.getItem("token");
         const apiBase = getApiBaseUrl();
         fetch(`${apiBase}/api/v1/messages/read`, {
@@ -335,9 +325,8 @@ export default function ParentMessagesPage() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ conversationId: activeChatId }),
-        }).then(() => refreshUnreadCounts()).catch(() => {});
+        }).catch(() => {});
       } else {
-        // Increment unread for background conversation
         setConversations((prev) =>
           prev.map((c) =>
             c.id === msgConvId
@@ -350,26 +339,25 @@ export default function ParentMessagesPage() {
               : c
           )
         );
-        refreshUnreadCounts();
       }
     };
 
     const handleTypingStart = (data: any) => {
       if (String(data?.conversationId) === String(activeChatId)) {
-        setIsTeacherTyping(true);
+        setIsParentTyping(true);
       }
     };
 
     const handleTypingStop = (data: any) => {
       if (String(data?.conversationId) === String(activeChatId)) {
-        setIsTeacherTyping(false);
+        setIsParentTyping(false);
       }
     };
 
     const handleMessageRead = (data: any) => {
       if (String(data?.conversationId) === String(activeChatId)) {
         setMessages((prev) =>
-          prev.map((m) => (m.sender === "parent" ? { ...m, status: "read" } : m))
+          prev.map((m) => (m.sender === "teacher" ? { ...m, status: "read" } : m))
         );
       }
     };
@@ -392,7 +380,7 @@ export default function ParentMessagesPage() {
       socket.off("typing:stop", handleTypingStop);
       socket.off("chat:message:read", handleMessageRead);
     };
-  }, [activeChatId, currentUserId, loadMessages, refreshUnreadCounts]);
+  }, [activeChatId, currentUserId, loadMessages]);
 
   // Input Typing Handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -439,7 +427,7 @@ export default function ParentMessagesPage() {
     const clientTempId = `temp-${Date.now()}`;
     const optimisticMsg: Message = {
       id: clientTempId,
-      sender: "parent",
+      sender: "teacher",
       text: textToSend,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       status: "sending",
@@ -505,7 +493,7 @@ export default function ParentMessagesPage() {
     }
   };
 
-  // Start New Conversation with Contact
+  // Start New Conversation with Parent
   const handleStartConversation = async (contact: ContactItem) => {
     try {
       const token = localStorage.getItem("token");
@@ -518,7 +506,7 @@ export default function ParentMessagesPage() {
         },
         body: JSON.stringify({
           recipientId: contact._id,
-          studentId: selectedChild?._id,
+          studentId: contact.student?._id,
         }),
       });
 
@@ -536,242 +524,97 @@ export default function ParentMessagesPage() {
     }
   };
 
-  // Audio Note Recording Simulator
-  const toggleAudioRecording = () => {
-    if (isRecordingAudio) {
-      // Stop and send audio note
-      clearInterval(recordingTimerRef.current as any);
-      setIsRecordingAudio(false);
-      setMessageInput(`🎙️ Voice Note (${recordingSeconds}s)`);
-      setRecordingSeconds(0);
-      toast.success("Voice note recorded! Press Send to dispatch.");
-    } else {
-      setIsRecordingAudio(true);
-      setRecordingSeconds(0);
-      recordingTimerRef.current = setInterval(() => {
-        setRecordingSeconds((prev) => prev + 1);
-      }, 1000);
-      toast("Recording audio note... Tap stop when finished.");
-    }
-  };
-
   const currentConversation = conversations.find((c) => c.id === activeChatId) || conversations[0];
 
-  // Filter conversations by search and subfilter
   const filteredConversations = conversations.filter((c) => {
     const matchesSearch = 
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       c.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (c.student?.name && c.student.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    if (!matchesSearch) return false;
-    if (activeSubFilter === "Teachers") return c.category === "teachers";
-    if (activeSubFilter === "Parents") return c.category === "parents";
-    return true;
+    return matchesSearch;
   });
 
   return (
-    <div className="space-y-4 pb-12 max-w-[1440px] mx-auto font-sans text-slate-800 dark:text-slate-100">
+    <div className="p-4 sm:p-6 space-y-4 max-w-[1440px] mx-auto font-sans text-slate-800 dark:text-slate-100">
 
-      {/* ========================================================
-          1. TOP HERO BANNER & SLOGAN
-      ======================================================== */}
-      <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-r from-[#EFF6FF] via-[#E8F4FF] to-[#DDEEFF] dark:from-[#061530] dark:via-[#091D45] dark:to-[#0B2558] border border-blue-100/90 dark:border-white/10 p-5 sm:p-6 shadow-xs flex items-center justify-between min-h-[105px]">
-        
-        {/* Left Side: Icon + Heading + Subtitle */}
-        <div className="relative z-10 flex items-center gap-4 max-w-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-[#0050CB] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
-            <BookOpen className="w-6 h-6 stroke-[2.2]" />
+      {/* Top Header & Breadcrumb */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <Link href="/dashboard" className="hover:text-[#0050CB] flex items-center gap-1">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+            </Link>
+            <span>•</span>
+            <span className="font-bold text-slate-700 dark:text-slate-200">Teacher ↔ Parent Messenger</span>
           </div>
-
-          <div className="space-y-0.5">
-            <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white tracking-tight">
-              Communication Center
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-300 font-medium">
-              Real-time messaging between school staff and parents for authorized student care.
-            </p>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#000E28] dark:text-white flex items-center gap-2.5">
+            <MessageSquare className="w-6 h-6 text-[#0050CB]" />
+            <span>Classroom Parent Communication</span>
+          </h1>
         </div>
 
-        {/* Right Side: Child Profile Pill & Slogan */}
-        <div className="relative z-10 hidden md:flex items-center gap-4">
-          {/* Child badge */}
-          {selectedChild && (
-            <div className="bg-white/80 dark:bg-[#07142F]/80 backdrop-blur-md border border-slate-200/90 dark:border-white/10 rounded-2xl p-2 px-3 flex items-center gap-2.5 shadow-2xs">
-              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 relative border border-slate-200">
-                <Image
-                  src={selectedChild.studentPhoto || "/aarav-profile-avatar.png"}
-                  alt={selectedChild.firstName}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-black text-[#000E28] dark:text-white leading-tight">
-                  {selectedChild.firstName} {selectedChild.lastName}
-                </p>
-                <p className="text-[10px] font-semibold text-slate-400">
-                  {selectedChild.grade} - {selectedChild.section || "Section A"}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => {
-              loadContacts();
-              setIsNewChatModalOpen(true);
-            }}
-            className="px-4 py-2 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform hover:scale-105 cursor-pointer"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>New Chat</span>
-          </button>
-        </div>
-
+        <button
+          type="button"
+          onClick={() => {
+            loadContacts();
+            setIsNewChatModalOpen(true);
+          }}
+          className="px-4 py-2 rounded-xl bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform hover:scale-105 cursor-pointer self-start sm:self-auto"
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>Message Parent</span>
+        </button>
       </div>
 
-      {/* ========================================================
-          2. CATEGORY TABS (Messages, Announcements, Updates, Documents, FAQs)
-      ======================================================== */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {[
-          { label: "Messages", icon: MessageSquare, badge: null },
-          { label: "Announcements", icon: Bell, badge: 3 },
-          { label: "Updates", icon: Sparkles, badge: null },
-          { label: "Documents", icon: FolderDown, badge: null },
-          { label: "FAQs", icon: HelpCircle, badge: null },
-        ].map((tab) => {
-          const isActive = activeTab === tab.label;
-          const Icon = tab.icon;
-
-          return (
-            <button
-              key={tab.label}
-              onClick={() => setActiveTab(tab.label as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
-                isActive
-                  ? "bg-[#0050CB] text-white shadow-xs"
-                  : "bg-white dark:bg-[#07142F] text-slate-600 dark:text-slate-300 hover:text-[#0050CB] border border-slate-200/80 dark:border-white/10"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-              {tab.badge !== null && (
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                  isActive ? "bg-white text-[#0050CB]" : "bg-rose-500 text-white"
-                }`}>
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ========================================================
-          3. MAIN CHAT WORKSPACE (2-COLUMN LAYOUT)
-      ======================================================== */}
+      {/* Main Workspace (2 Columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
-        {/* ========================================================
-            LEFT COLUMN: CONVERSATION LIST (4 COLS)
-        ======================================================== */}
+        {/* Left: Parent Conversations List */}
         <div className="lg:col-span-4 bg-white dark:bg-[#07142F] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-xs p-4 space-y-3.5">
-          
-          {/* Header Row: Title & Action Button */}
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-sm text-[#000E28] dark:text-white flex items-center gap-2">
-              <span>Chats & Conversations</span>
+              <span>Parent Inquiries</span>
               <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
                 {filteredConversations.length}
               </span>
             </h3>
-
-            <button
-              type="button"
-              onClick={() => {
-                loadContacts();
-                setIsNewChatModalOpen(true);
-              }}
-              className="text-xs font-bold text-[#0050CB] dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Message Teacher</span>
-            </button>
           </div>
 
-          {/* Search Input Bar */}
+          {/* Search */}
           <div className="relative flex items-center">
             <Search className="absolute left-3 w-3.5 h-3.5 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search conversations or student..."
-              className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-700 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
+              placeholder="Search parent or student..."
+              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-700 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
             />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
           </div>
 
-          {/* Sub-Filter Pills (All, Teachers, Parents) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
-            {(["All", "Teachers", "Parents"] as const).map((sub) => {
-              const isSubActive = activeSubFilter === sub;
-              return (
-                <button
-                  key={sub}
-                  onClick={() => setActiveSubFilter(sub)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full font-bold transition-all cursor-pointer shrink-0 ${
-                    isSubActive
-                      ? "bg-[#0050CB] text-white shadow-xs"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50"
-                  }`}
-                >
-                  <span>{sub}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Conversation List Items */}
-          <div className="space-y-1.5 pt-1 max-h-[520px] overflow-y-auto scrollbar-thin">
+          {/* Conversation List */}
+          <div className="space-y-1.5 max-h-[540px] overflow-y-auto scrollbar-thin">
             {isLoadingConversations ? (
-              <div className="py-12 text-center text-xs text-slate-400 font-semibold space-y-2">
-                <div className="w-6 h-6 border-2 border-[#0050CB] border-t-transparent rounded-full animate-spin mx-auto" />
-                <p>Loading real-time chats...</p>
-              </div>
+              <div className="py-12 text-center text-xs text-slate-400">Loading chats...</div>
             ) : filteredConversations.length === 0 ? (
-              <div className="py-10 text-center text-xs text-slate-400 font-medium space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#0050CB] flex items-center justify-center mx-auto">
-                  <MessageSquare className="w-6 h-6" />
-                </div>
-                <p>No active conversations yet.</p>
+              <div className="py-10 text-center text-xs text-slate-400 space-y-2">
+                <p>No active conversations found.</p>
                 <button
                   type="button"
                   onClick={() => {
                     loadContacts();
                     setIsNewChatModalOpen(true);
                   }}
-                  className="px-3.5 py-1.5 rounded-xl bg-[#0050CB] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#0050CB] text-white text-xs font-bold inline-flex items-center gap-1.5"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
-                  <span>Start Chat with Teacher</span>
+                  <span>Start Conversation</span>
                 </button>
               </div>
             ) : (
               filteredConversations.map((conv) => {
                 const isActive = activeChatId === conv.id;
-
                 return (
                   <div
                     key={conv.id}
@@ -782,12 +625,8 @@ export default function ParentMessagesPage() {
                         : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
                     }`}
                   >
-                    {/* Active Left Indicator Bar */}
-                    {isActive && (
-                      <div className="absolute left-0 top-3 bottom-3 w-1.5 rounded-r-md bg-[#0050CB]" />
-                    )}
+                    {isActive && <div className="absolute left-0 top-3 bottom-3 w-1.5 rounded-r-md bg-[#0050CB]" />}
 
-                    {/* Avatar */}
                     <div className="relative shrink-0">
                       <div className="relative w-10 h-10 rounded-full overflow-hidden border border-blue-100 shadow-xs">
                         <Image
@@ -803,7 +642,6 @@ export default function ParentMessagesPage() {
                       )}
                     </div>
 
-                    {/* Name + Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
                         <p className="text-xs font-black text-[#000E28] dark:text-white truncate">
@@ -814,10 +652,9 @@ export default function ParentMessagesPage() {
                         </span>
                       </div>
 
-                      {/* Student Context Badge */}
                       {conv.student && (
                         <span className="inline-block text-[9.5px] font-bold text-[#0050CB] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.2 rounded-md mt-0.5">
-                          Child: {conv.student.name} ({conv.student.grade})
+                          Student: {conv.student.name} ({conv.student.grade})
                         </span>
                       )}
 
@@ -837,23 +674,18 @@ export default function ParentMessagesPage() {
               })
             )}
           </div>
-
         </div>
 
-        {/* ========================================================
-            RIGHT COLUMN: ACTIVE CHAT SCREEN (8 COLS)
-        ======================================================== */}
+        {/* Right: Active Chat Window */}
         <div className="lg:col-span-8 bg-white dark:bg-[#07142F] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-xs overflow-hidden flex flex-col min-h-[580px]">
           
-          {/* 1. Chat Header */}
+          {/* Header */}
           <div className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/30">
-            
-            {/* Left: Active Contact Profile */}
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative w-10 h-10 rounded-full overflow-hidden border border-blue-100 shadow-xs shrink-0">
                 <Image
-                  src={currentConversation?.avatar || "/teacher-ananya-roy.jpg"}
-                  alt={currentConversation?.name || "Faculty Staff"}
+                  src={currentConversation?.avatar || "/aarav-profile-avatar.png"}
+                  alt={currentConversation?.name || "Parent Contact"}
                   fill
                   sizes="40px"
                   className="object-cover"
@@ -863,7 +695,7 @@ export default function ParentMessagesPage() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-black text-[#000E28] dark:text-white truncate">
-                    {currentConversation?.name || "Teacher Contact"}
+                    {currentConversation?.name || "Parent Contact"}
                   </h4>
                   <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1 shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -871,69 +703,51 @@ export default function ParentMessagesPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                  <span>{currentConversation?.role || "Class Teacher"}</span>
-                  {currentConversation?.student && (
-                    <>
-                      <span>•</span>
-                      <span className="text-[#0050CB] dark:text-blue-400 font-bold">
-                        Student: {currentConversation.student.name}
-                      </span>
-                    </>
+                  {currentConversation?.student ? (
+                    <span className="text-[#0050CB] dark:text-blue-400 font-bold">
+                      Student: {currentConversation.student.name} • {currentConversation.student.grade}
+                    </span>
+                  ) : (
+                    <span>Authorized Guardian</span>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Right: Quick Action Buttons */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => toast.success("Voice calls are routed through the official school reception")}
+                onClick={() => toast.success("Verified Parent Contact info confirmed")}
                 className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-blue-50 hover:text-[#0050CB] transition-colors cursor-pointer"
-                title="Reception Voice Call"
+                title="Phone Info"
               >
                 <Phone className="w-4 h-4" />
               </button>
-
-              <button
-                type="button"
-                onClick={() => toast.success("Parent-Teacher Video Conference schedule available in Timetable")}
-                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-blue-50 hover:text-[#0050CB] transition-colors cursor-pointer"
-                title="Video Conference"
-              >
-                <Video className="w-4 h-4" />
-              </button>
             </div>
-
           </div>
 
-          {/* 2. Messages Scroll Container */}
+          {/* Messages */}
           <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 max-h-[440px] bg-slate-50/20 dark:bg-transparent">
             {isLoadingMessages ? (
-              <div className="py-20 text-center text-xs text-slate-400 font-semibold space-y-2">
-                <div className="w-6 h-6 border-2 border-[#0050CB] border-t-transparent rounded-full animate-spin mx-auto" />
-                <p>Loading messages...</p>
-              </div>
+              <div className="py-20 text-center text-xs text-slate-400">Loading messages...</div>
             ) : messages.length === 0 ? (
-              <div className="py-20 text-center text-xs text-slate-400 font-medium space-y-2">
-                <p>No messages in this conversation yet.</p>
-                <p className="text-[11px] text-slate-400">Say hello to start the discussion!</p>
+              <div className="py-20 text-center text-xs text-slate-400">
+                No messages yet. Send a note to the parent!
               </div>
             ) : (
               messages.map((msg) => {
-                const isTeacher = msg.sender === "teacher";
+                const isMe = msg.sender === "teacher";
 
                 return (
                   <div
                     key={msg.id}
-                    className={`flex items-start gap-2.5 ${isTeacher ? "justify-start" : "justify-end"}`}
+                    className={`flex items-start gap-2.5 ${isMe ? "justify-end" : "justify-start"}`}
                   >
-                    {/* Teacher Avatar */}
-                    {isTeacher && (
+                    {!isMe && (
                       <div className="relative w-8 h-8 rounded-full overflow-hidden border border-blue-100 shrink-0 mt-1">
                         <Image
-                          src={currentConversation?.avatar || "/teacher-ananya-roy.jpg"}
-                          alt="Teacher"
+                          src={currentConversation?.avatar || "/aarav-profile-avatar.png"}
+                          alt="Parent"
                           fill
                           sizes="32px"
                           className="object-cover"
@@ -941,70 +755,53 @@ export default function ParentMessagesPage() {
                       </div>
                     )}
 
-                    {/* Bubble Container */}
-                    <div className={`max-w-[78%] space-y-1 ${isTeacher ? "items-start" : "items-end"}`}>
-                      
-                      {/* Name & Time */}
+                    <div className={`max-w-[78%] space-y-1 ${isMe ? "items-end" : "items-start"}`}>
                       <div className={`flex items-center gap-2 text-[10.5px] font-semibold text-slate-400 ${
-                        isTeacher ? "" : "justify-end"
+                        isMe ? "justify-end" : ""
                       }`}>
-                        {isTeacher && (
-                          <span className="font-bold text-[#000E28] dark:text-white">
-                            {msg.senderName || currentConversation?.name || "Teacher"}
-                          </span>
-                        )}
+                        {!isMe && <span className="font-bold text-[#000E28] dark:text-white">{msg.senderName}</span>}
                         <span>{msg.time}</span>
                       </div>
 
-                      {/* Message Bubble Surface */}
                       <div
                         className={`p-3.5 rounded-2xl text-xs leading-relaxed space-y-2 shadow-2xs ${
-                          isTeacher
-                            ? "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700 rounded-tl-sm"
-                            : "bg-[#0050CB] text-white rounded-tr-sm"
+                          isMe
+                            ? "bg-[#0050CB] text-white rounded-tr-sm"
+                            : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700 rounded-tl-sm"
                         }`}
                       >
                         {msg.text && <p className="whitespace-pre-line">{msg.text}</p>}
 
-                        {/* Optional Attachment File inside Bubble */}
                         {msg.attachment && (
                           <div
                             onClick={() => {
-                              if (msg.attachment?.url) {
-                                window.open(msg.attachment.url, "_blank");
-                              } else {
-                                toast.success(`Viewing ${msg.attachment?.name}`);
-                              }
+                              if (msg.attachment?.url) window.open(msg.attachment.url, "_blank");
                             }}
                             className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-all ${
-                              isTeacher
-                                ? "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-700 hover:border-blue-300"
-                                : "bg-white/10 border-white/20 hover:bg-white/20"
+                              isMe ? "bg-white/10 border-white/20 hover:bg-white/20" : "bg-slate-50 dark:bg-slate-900 border-slate-200"
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
                               <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                                isTeacher ? "bg-rose-50 text-rose-600 border border-rose-200" : "bg-white text-[#0050CB]"
+                                isMe ? "bg-white text-[#0050CB]" : "bg-rose-50 text-rose-600 border border-rose-200"
                               }`}>
-                                {msg.attachment.type || "FILE"}
+                                {msg.attachment.type}
                               </div>
                               <div className="min-w-0">
-                                <p className={`text-xs font-bold truncate ${isTeacher ? "text-[#000E28] dark:text-white" : "text-white"}`}>
+                                <p className={`text-xs font-bold truncate ${isMe ? "text-white" : "text-[#000E28] dark:text-white"}`}>
                                   {msg.attachment.name}
                                 </p>
-                                <p className={`text-[10px] ${isTeacher ? "text-slate-400" : "text-blue-100"}`}>
+                                <p className={`text-[10px] ${isMe ? "text-blue-100" : "text-slate-400"}`}>
                                   {msg.attachment.size} • Verified Attachment
                                 </p>
                               </div>
                             </div>
-
-                            <Download className={`w-4 h-4 shrink-0 ${isTeacher ? "text-slate-400" : "text-white"}`} />
+                            <Download className={`w-4 h-4 shrink-0 ${isMe ? "text-white" : "text-slate-400"}`} />
                           </div>
                         )}
                       </div>
 
-                      {/* Parent Read Receipt Status */}
-                      {!isTeacher && (
+                      {isMe && (
                         <div className="flex items-center justify-end gap-1 text-[10px] text-slate-400">
                           {msg.status === "sending" ? (
                             <Clock className="w-3 h-3 text-slate-400 animate-spin" />
@@ -1013,19 +810,17 @@ export default function ParentMessagesPage() {
                           ) : msg.status === "delivered" ? (
                             <CheckCheck className="w-3.5 h-3.5 text-slate-400" />
                           ) : (
-                            <Check className="w-3 h-3 text-slate-400" />
+                            <Check className="w-3.5 h-3.5 text-slate-400" />
                           )}
                         </div>
                       )}
-
                     </div>
 
-                    {/* Parent Avatar */}
-                    {!isTeacher && (
+                    {isMe && (
                       <div className="relative w-8 h-8 rounded-full overflow-hidden border border-blue-200 shrink-0 mt-1">
                         <Image
-                          src={selectedChild?.studentPhoto || "/aarav-profile-avatar.png"}
-                          alt="Parent"
+                          src="/teacher-ananya-roy.jpg"
+                          alt="Teacher"
                           fill
                           sizes="32px"
                           className="object-cover"
@@ -1037,20 +832,10 @@ export default function ParentMessagesPage() {
               })
             )}
 
-            {/* Real-Time Teacher Typing Indicator */}
-            {isTeacherTyping && (
+            {isParentTyping && (
               <div className="flex items-center gap-2 pt-1 text-xs text-slate-400 animate-in fade-in duration-200">
-                <div className="relative w-6 h-6 rounded-full overflow-hidden border border-blue-100 shrink-0">
-                  <Image
-                    src={currentConversation?.avatar || "/teacher-ananya-roy.jpg"}
-                    alt="Teacher"
-                    fill
-                    sizes="24px"
-                    className="object-cover"
-                  />
-                </div>
                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  {currentConversation?.name || "Teacher"} is typing
+                  {currentConversation?.name || "Parent"} is typing
                 </span>
                 <span className="flex items-center gap-0.5">
                   <span className="w-1 h-1 rounded-full bg-[#0050CB] animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -1063,13 +848,13 @@ export default function ParentMessagesPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* 3. Attachment Preview Chip (If Selected) */}
+          {/* Attachment Preview Chip */}
           {selectedFile && (
             <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/40 border-t border-blue-100 dark:border-blue-900/60 flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-[#0050CB] dark:text-blue-300">
                 <Paperclip className="w-3.5 h-3.5" />
                 <span className="truncate max-w-xs">{selectedFile.file.name}</span>
-                <span className="text-[10px] text-slate-400 font-semibold">
+                <span className="text-[10px] text-slate-400">
                   ({(selectedFile.file.size / 1024 / 1024).toFixed(1)} MB)
                 </span>
               </div>
@@ -1083,7 +868,7 @@ export default function ParentMessagesPage() {
             </div>
           )}
 
-          {/* 4. Quick Emoji Picker Bar (If Open) */}
+          {/* Emoji Picker Bar */}
           {showEmojiPicker && (
             <div className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 overflow-x-auto">
               {["😊", "👍", "❤️", "🙏", "👏", "🎉", "📝", "🏫", "🌟", "📚"].map((em) => (
@@ -1099,41 +884,8 @@ export default function ParentMessagesPage() {
             </div>
           )}
 
-          {/* 5. Voice Recording Simulator Bar */}
-          {isRecordingAudio && (
-            <div className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/40 border-t border-rose-200 dark:border-rose-900 flex items-center justify-between animate-pulse">
-              <div className="flex items-center gap-2 text-xs font-bold text-rose-600 dark:text-rose-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-                <span>Recording voice note... {recordingSeconds}s</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearInterval(recordingTimerRef.current as any);
-                    setIsRecordingAudio(false);
-                    setRecordingSeconds(0);
-                  }}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleAudioRecording}
-                  className="px-3 py-1 rounded-lg bg-rose-500 text-white text-xs font-bold flex items-center gap-1 shadow-xs"
-                >
-                  <Square className="w-3 h-3 fill-current" />
-                  <span>Done</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* 6. Main Chat Input Composer */}
+          {/* Composer */}
           <div className="p-3 px-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#07142F]">
-            
-            {/* Hidden Native File Input */}
             <input
               type="file"
               ref={fileInputRef}
@@ -1162,7 +914,7 @@ export default function ParentMessagesPage() {
                     handleSendMessage();
                   }
                 }}
-                placeholder={`Type a private message to ${currentConversation?.name || "Teacher"}...`}
+                placeholder={`Type a note to ${currentConversation?.name || "Parent"}...`}
                 className="flex-1 py-2 px-3 bg-transparent text-xs text-[#000E28] dark:text-white placeholder:text-slate-400 focus:outline-none"
               />
 
@@ -1177,15 +929,6 @@ export default function ParentMessagesPage() {
                 </button>
 
                 <button
-                  type="button"
-                  onClick={toggleAudioRecording}
-                  className={`p-1 transition-colors cursor-pointer ${isRecordingAudio ? "text-rose-500" : "hover:text-[#0050CB]"}`}
-                  title="Voice Note"
-                >
-                  <Mic className="w-4.5 h-4.5" />
-                </button>
-
-                <button
                   type="submit"
                   disabled={!messageInput.trim() && !selectedFile}
                   className="w-8 h-8 rounded-full bg-[#0050CB] hover:bg-[#0041A8] disabled:opacity-40 disabled:hover:scale-100 text-white flex items-center justify-center transition-transform hover:scale-105 shadow-sm shadow-blue-500/30 cursor-pointer"
@@ -1195,27 +938,23 @@ export default function ParentMessagesPage() {
                 </button>
               </div>
             </form>
-
           </div>
 
         </div>
 
       </div>
 
-      {/* ========================================================
-          4. NEW CHAT / TEACHER SELECTOR MODAL
-      ======================================================== */}
+      {/* Modal: Select Student / Parent */}
       {isNewChatModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white dark:bg-[#07142F] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4">
-            
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <div>
                 <h3 className="text-base font-extrabold text-[#000E28] dark:text-white">
-                  Message School Faculty
+                  Message Student Parent
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Select your child&apos;s teacher to begin a conversation
+                  Select a parent from your authorized classroom roster
                 </p>
               </div>
               <button
@@ -1227,36 +966,11 @@ export default function ParentMessagesPage() {
               </button>
             </div>
 
-            {/* Child Selector in Modal */}
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Communicating regarding child:
-              </label>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {children.map((c) => (
-                  <button
-                    key={c._id}
-                    type="button"
-                    onClick={() => selectChild(c._id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
-                      selectedChild?._id === c._id
-                        ? "bg-[#0050CB] text-white border-[#0050CB]"
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700"
-                    }`}
-                  >
-                    <span>{c.firstName} {c.lastName}</span>
-                    <span className="text-[10px] opacity-75 font-normal">({c.grade})</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Teachers List */}
             <div className="space-y-2 max-h-72 overflow-y-auto pt-1">
               {isLoadingContacts ? (
-                <div className="py-10 text-center text-xs text-slate-400">Loading authorized faculty...</div>
+                <div className="py-10 text-center text-xs text-slate-400">Loading student parent contacts...</div>
               ) : contacts.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-400">No faculty contacts available</div>
+                <div className="py-8 text-center text-xs text-slate-400">No student parents found</div>
               ) : (
                 contacts.map((contact) => (
                   <div
@@ -1267,7 +981,7 @@ export default function ParentMessagesPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full overflow-hidden border border-blue-100 relative shrink-0">
                         <Image
-                          src={contact.avatar || "/teacher-ananya-roy.jpg"}
+                          src={contact.avatar || "/aarav-profile-avatar.png"}
                           alt={contact.name}
                           fill
                           className="object-cover"
@@ -1277,9 +991,11 @@ export default function ParentMessagesPage() {
                         <p className="text-xs font-bold text-[#000E28] dark:text-white group-hover:text-[#0050CB] transition-colors">
                           {contact.name}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">
-                          {contact.designation || "Class Teacher"} • {contact.email}
-                        </p>
+                        {contact.student && (
+                          <p className="text-[10px] text-slate-400 font-medium">
+                            Child: {contact.student.name} • {contact.student.grade}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -1288,7 +1004,6 @@ export default function ParentMessagesPage() {
                 ))
               )}
             </div>
-
           </div>
         </div>
       )}

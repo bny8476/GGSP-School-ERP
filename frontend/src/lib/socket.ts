@@ -9,20 +9,25 @@ export function getSocket(): Socket {
     return null as unknown as Socket;
   }
 
+  const token = localStorage.getItem("token") || "";
+
   if (!socketInstance) {
     const apiBase = getApiBaseUrl();
-    const token = localStorage.getItem("token");
 
     socketInstance = io(apiBase, {
       auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
     });
 
     socketInstance.on("connect", () => {
-      // Socket connected
+      // Re-join user room upon reconnect if token is active
+      const refreshedToken = localStorage.getItem("token");
+      if (refreshedToken && socketInstance?.auth) {
+        socketInstance.auth = { token: refreshedToken };
+      }
     });
 
     socketInstance.on("connect_error", (error) => {
@@ -46,11 +51,30 @@ export function getSocket(): Socket {
     socketInstance.on("notification:created", () => {
       const qc = getQueryClient();
       qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["parent"] });
     });
 
-    socketInstance.on("message:received", () => {
+    // Chat Message Events
+    const handleNewMessage = () => {
       const qc = getQueryClient();
       qc.invalidateQueries({ queryKey: ["messages"] });
+      qc.invalidateQueries({ queryKey: ["conversations"] });
+      qc.invalidateQueries({ queryKey: ["unread-count"] });
+    };
+
+    socketInstance.on("chat:message:new", handleNewMessage);
+    socketInstance.on("message:new", handleNewMessage);
+    socketInstance.on("message:received", handleNewMessage);
+
+    socketInstance.on("chat:message:read", () => {
+      const qc = getQueryClient();
+      qc.invalidateQueries({ queryKey: ["messages"] });
+      qc.invalidateQueries({ queryKey: ["unread-count"] });
+    });
+
+    socketInstance.on("chat:unread:updated", () => {
+      const qc = getQueryClient();
+      qc.invalidateQueries({ queryKey: ["unread-count"] });
       qc.invalidateQueries({ queryKey: ["conversations"] });
     });
 
@@ -59,6 +83,11 @@ export function getSocket(): Socket {
       qc.invalidateQueries({ queryKey: ["fees"] });
       qc.invalidateQueries({ queryKey: ["child-fees"] });
     });
+  } else if (token && socketInstance.auth && (socketInstance.auth as any).token !== token) {
+    (socketInstance.auth as any).token = token;
+    if (!socketInstance.connected) {
+      socketInstance.connect();
+    }
   }
 
   return socketInstance;
@@ -73,14 +102,23 @@ export function disconnectSocket(): void {
 
 export function joinRoom(room: string): void {
   const socket = getSocket();
-  if (socket && socket.connected) {
-    socket.emit("join-room", room);
+  if (socket) {
+    if (socket.connected) {
+      socket.emit("join_room", room);
+      socket.emit("join-room", room);
+    } else {
+      socket.once("connect", () => {
+        socket.emit("join_room", room);
+        socket.emit("join-room", room);
+      });
+    }
   }
 }
 
 export function leaveRoom(room: string): void {
   const socket = getSocket();
   if (socket && socket.connected) {
+    socket.emit("leave_room", room);
     socket.emit("leave-room", room);
   }
 }
