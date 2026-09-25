@@ -81,10 +81,34 @@ function FeesFinanceContent() {
   // Tab state
   const rawTab = searchParams.get('tab') || 'invoices';
   const validTabs = ['structure', 'invoices', 'collect', 'receipts', 'dues', 'scholarships', 'refunds', 'expenses'];
-  const activeTab = validTabs.includes(rawTab) ? rawTab : 'invoices';
+  const initialTab = validTabs.includes(rawTab) ? rawTab : 'invoices';
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  useEffect(() => {
+    if (rawTab) {
+      setActiveTab(validTabs.includes(rawTab) ? rawTab : 'invoices');
+    }
+  }, [rawTab]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab') || 'invoices';
+        setActiveTab(validTabs.includes(t) ? t : 'invoices');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleTabChange = (tabKey: string) => {
-    router.push(`/dashboard/fees?tab=${tabKey}`);
+    setActiveTab(tabKey);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabKey);
+      window.history.pushState({}, '', url.toString());
+    }
   };
 
   const [fees, setFees] = useState<FeeRecord[]>([]);

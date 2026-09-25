@@ -35,9 +35,25 @@ function AdmissionsContent() {
     }
   }, [tabParam]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab') || 'pipeline';
+        setActiveTab(t);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
-    router.push(`/dashboard/admissions?tab=${newTab}`);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', newTab);
+      window.history.pushState({}, '', url.toString());
+    }
   };
 
   const fetchApplications = async () => {

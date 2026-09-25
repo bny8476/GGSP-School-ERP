@@ -19,10 +19,34 @@ function AttendanceContent() {
   const router = useRouter();
 
   const rawTab = searchParams.get('tab') || 'students';
-  const activeTab = (rawTab === 'teachers' || rawTab === 'reports' || rawTab === 'summary') ? rawTab : 'students';
+  const initialTab = (rawTab === 'teachers' || rawTab === 'reports' || rawTab === 'summary') ? rawTab : 'students';
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  useEffect(() => {
+    if (rawTab) {
+      setActiveTab((rawTab === 'teachers' || rawTab === 'reports' || rawTab === 'summary') ? rawTab : 'students');
+    }
+  }, [rawTab]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab') || 'students';
+        setActiveTab((t === 'teachers' || t === 'reports' || t === 'summary') ? t : 'students');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleTabChange = (tabKey: string) => {
-    router.push(`/dashboard/attendance?tab=${tabKey}`);
+    setActiveTab(tabKey);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabKey);
+      window.history.pushState({}, '', url.toString());
+    }
   };
 
   const [selectedClass, setSelectedClass] = useState('LKG');

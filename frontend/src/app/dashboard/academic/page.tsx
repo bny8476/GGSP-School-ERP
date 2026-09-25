@@ -57,9 +57,27 @@ function AcademicContent() {
     }
   }, [tabParam]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab');
+        if (t === 'subjects' || t === 'years' || t === 'terms' || t === 'timetable') {
+          setActiveTab(t);
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleTabChange = (t: 'timetable' | 'subjects' | 'years' | 'terms') => {
     setActiveTab(t);
-    router.push(`/dashboard/academic?tab=${t}`);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', t);
+      window.history.pushState({}, '', url.toString());
+    }
   };
 
   const apiBase = getApiBaseUrl();

@@ -58,9 +58,25 @@ function ReportsContent() {
     }
   }, [tabParam]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab') || 'academic';
+        setActiveReport(t);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleTabChange = (t: string) => {
     setActiveReport(t);
-    router.push(`/dashboard/reports?tab=${t}`);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', t);
+      window.history.pushState({}, '', url.toString());
+    }
   };
 
   const fetchReportData = async (type: string) => {

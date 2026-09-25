@@ -45,10 +45,34 @@ function ParentsPageContent() {
   const router = useRouter();
 
   const rawTab = searchParams.get('tab') || 'directory';
-  const activeTab = (rawTab === 'linked' || rawTab === 'logs') ? rawTab : 'directory';
+  const initialTab = (rawTab === 'linked' || rawTab === 'logs') ? rawTab : 'directory';
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  useEffect(() => {
+    if (rawTab) {
+      setActiveTab((rawTab === 'linked' || rawTab === 'logs') ? rawTab : 'directory');
+    }
+  }, [rawTab]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab') || 'directory';
+        setActiveTab((t === 'linked' || t === 'logs') ? t : 'directory');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleTabChange = (tabKey: string) => {
-    router.push(`/dashboard/parents?tab=${tabKey}`);
+    setActiveTab(tabKey);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabKey);
+      window.history.pushState({}, '', url.toString());
+    }
   };
 
   const [parents, setParents] = useState<ParentRecord[]>([]);
