@@ -7,6 +7,7 @@ import Parent from '../models/Parent';
 import StudentParent from '../models/StudentParent';
 import Student from '../models/Student';
 import Notification from '../models/Notification';
+import PaymentTransaction from '../models/PaymentTransaction';
 import env from '../config/env';
 import paymentGatewayService from '../services/paymentGatewayService';
 import {
@@ -235,6 +236,18 @@ export const createPaymentOrder = async (req: Request, res: Response) => {
       .update(`${feeId}:${gatewayOrderId}:${orderAmount}`)
       .digest('hex');
 
+    // Audit record in PaymentTransaction collection
+    await PaymentTransaction.create({
+      transactionId: gatewayOrderId,
+      orderId: gatewayOrderId,
+      feeId: fee._id,
+      studentId: fee.studentId,
+      payerId: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : undefined,
+      amount: orderAmount,
+      currency: 'INR',
+      status: 'Created',
+    });
+
     return res.json({
       success: true,
       data: {
@@ -296,6 +309,19 @@ export const payFee = async (req: Request, res: Response) => {
     if (!isStaff) {
       // Parent online payments strictly require payment gateway verification
       if (!gatewayOrderId || !gatewayPaymentId || !sig) {
+        await PaymentTransaction.create({
+          transactionId: gatewayOrderId || `ATTEMPT_${Date.now()}`,
+          orderId: gatewayOrderId || 'UNKNOWN',
+          feeId: fee._id,
+          studentId: fee.studentId,
+          payerId: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : undefined,
+          amount: Number(amount) || 0,
+          currency: 'INR',
+          status: 'Failed',
+          failureReason: 'Missing required payment gateway verification parameters (gatewayOrderId, gatewayPaymentId, signature)',
+          rawPayload: req.body,
+        }).catch(() => null);
+
         return res.status(400).json({
           success: false,
           message:
@@ -305,6 +331,20 @@ export const payFee = async (req: Request, res: Response) => {
 
       const isGatewayVerified = await paymentGatewayService.verifyPayment(gatewayOrderId, gatewayPaymentId, sig);
       if (!isGatewayVerified) {
+        await PaymentTransaction.create({
+          transactionId: gatewayOrderId || `ATTEMPT_${Date.now()}`,
+          orderId: gatewayOrderId || 'UNKNOWN',
+          paymentId: gatewayPaymentId,
+          feeId: fee._id,
+          studentId: fee.studentId,
+          payerId: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : undefined,
+          amount: Number(amount) || 0,
+          currency: 'INR',
+          status: 'Signature_Mismatch',
+          failureReason: 'Invalid cryptographic payment signature from payment gateway',
+          rawPayload: req.body,
+        }).catch(() => null);
+
         return res.status(400).json({
           success: false,
           message: 'Payment verification failed: Invalid cryptographic payment signature from payment gateway.',
@@ -348,6 +388,27 @@ export const payFee = async (req: Request, res: Response) => {
     fee.paymentHistory.push(paymentRecord);
     await fee.save();
 
+    // Record success in PaymentTransaction audit collection
+    if (gatewayOrderId) {
+      await PaymentTransaction.findOneAndUpdate(
+        { orderId: gatewayOrderId },
+        {
+          $set: {
+            transactionId: resolvedTxnId,
+            paymentId: gatewayPaymentId || resolvedTxnId,
+            feeId: fee._id,
+            studentId: fee.studentId,
+            payerId: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : undefined,
+            amount: payAmount,
+            currency: 'INR',
+            status: 'Success',
+            rawPayload: req.body,
+          },
+        },
+        { upsert: true, new: true }
+      ).catch(() => null);
+    }
+
     // Send receipt notification to parent user
     if (req.user?.id) {
       const student = await Student.findById(fee.studentId).select('firstName lastName');
@@ -385,6 +446,149 @@ export const payFee = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to process fee payment', error });
+  }
+};
+
+// @desc    Handle payment gateway webhook (Cryptographic verification, idempotent fee settlement, and audit tracking)
+// @route   POST /api/finance/webhook
+export const handlePaymentWebhook = async (req: Request, res: Response) => {
+  try {
+    const signature =
+      (req.headers['x-razorpay-signature'] as string) ||
+      (req.headers['x-signature'] as string) ||
+      req.body.signature;
+    const rawPayload = req.body;
+
+    if (!signature) {
+      await PaymentTransaction.create({
+        transactionId: `WEBHOOK_ERR_${Date.now()}`,
+        orderId: rawPayload?.orderId || rawPayload?.payload?.payment?.entity?.order_id || 'UNKNOWN',
+        feeId: new mongoose.Types.ObjectId(),
+        amount: 0,
+        status: 'Signature_Mismatch',
+        failureReason: 'Missing webhook signature header',
+        rawPayload,
+      }).catch(() => null);
+      return res.status(400).json({ success: false, message: 'Missing webhook signature' });
+    }
+
+    const isValidSignature = paymentGatewayService.verifyWebhookSignature(rawPayload, signature);
+    if (!isValidSignature) {
+      await PaymentTransaction.create({
+        transactionId: `WEBHOOK_FAIL_${Date.now()}`,
+        orderId: rawPayload?.orderId || rawPayload?.payload?.payment?.entity?.order_id || 'UNKNOWN',
+        feeId: new mongoose.Types.ObjectId(),
+        amount: 0,
+        status: 'Signature_Mismatch',
+        failureReason: 'Cryptographic signature mismatch on webhook payload',
+        rawPayload,
+      }).catch(() => null);
+      return res.status(400).json({ success: false, message: 'Invalid webhook signature' });
+    }
+
+    // Extract event details
+    const paymentEntity = req.body.payload?.payment?.entity || req.body;
+    const orderId = paymentEntity.order_id || req.body.orderId || req.body.gatewayOrderId;
+    const paymentId = paymentEntity.id || req.body.paymentId || req.body.gatewayPaymentId;
+    const rawAmount = paymentEntity.amount;
+    const isPaise = Boolean(req.body.payload?.payment?.entity);
+    const amount = isPaise && typeof rawAmount === 'number' ? rawAmount / 100 : Number(rawAmount) || 0;
+    const feeId = paymentEntity.notes?.feeId || req.body.feeId;
+
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'Missing order ID in webhook payload' });
+    }
+
+    // Locate Fee by feeId or existing PaymentTransaction
+    let targetFeeId = feeId;
+    if (!targetFeeId) {
+      const existingTxn = await PaymentTransaction.findOne({ orderId });
+      if (existingTxn) {
+        targetFeeId = existingTxn.feeId;
+      }
+    }
+
+    if (!targetFeeId || !mongoose.Types.ObjectId.isValid(targetFeeId)) {
+      await PaymentTransaction.create({
+        transactionId: paymentId || orderId,
+        orderId,
+        paymentId,
+        feeId: new mongoose.Types.ObjectId(),
+        amount,
+        status: 'Failed',
+        failureReason: 'Unable to resolve corresponding Fee document from webhook',
+        rawPayload,
+      }).catch(() => null);
+      return res.status(404).json({ success: false, message: 'Fee invoice reference not found' });
+    }
+
+    const fee = await Fee.findById(targetFeeId);
+    if (!fee) {
+      return res.status(404).json({ success: false, message: 'Fee document not found' });
+    }
+
+    // Idempotency: Check if this payment or order was already settled
+    const alreadyProcessed = fee.paymentHistory?.some(
+      (p: any) => p.transactionId === paymentId || p.transactionId === orderId
+    );
+
+    if (alreadyProcessed || fee.status === 'Paid') {
+      await PaymentTransaction.findOneAndUpdate(
+        { orderId },
+        { $set: { status: 'Success', paymentId, amount, rawPayload } },
+        { upsert: true }
+      ).catch(() => null);
+      return res.status(200).json({ success: true, message: 'Webhook already processed (idempotent)' });
+    }
+
+    // Settle fee
+    const remainingBalance = Math.max(0, fee.totalAmount - (fee.amountPaid || 0));
+    const payAmount = amount > 0 ? Math.min(amount, remainingBalance) : remainingBalance;
+    const yearStr = new Date().getFullYear().toString();
+    const receiptNumber = await generateNextReceiptNumber(yearStr);
+
+    const newAmountPaid = (fee.amountPaid || 0) + payAmount;
+    fee.amountPaid = newAmountPaid;
+    fee.status = newAmountPaid >= fee.totalAmount ? 'Paid' : 'Partial';
+    fee.paidAt = new Date();
+    fee.paymentMethod = 'Online / Gateway Webhook';
+    fee.transactionId = paymentId || orderId;
+    fee.receiptNumber = receiptNumber;
+
+    fee.paymentHistory.push({
+      receiptNumber,
+      amount: payAmount,
+      paymentMethod: 'Online / Gateway Webhook',
+      transactionId: paymentId || orderId,
+      paidAt: new Date(),
+    });
+    await fee.save();
+
+    // Update PaymentTransaction to Success
+    await PaymentTransaction.findOneAndUpdate(
+      { orderId },
+      {
+        $set: {
+          transactionId: paymentId || orderId,
+          orderId,
+          paymentId,
+          feeId: fee._id,
+          studentId: fee.studentId,
+          amount: payAmount,
+          currency: 'INR',
+          status: 'Success',
+          rawPayload,
+        },
+      },
+      { upsert: true }
+    );
+
+    emitToRole('Accountant', 'fee:updated', { feeId: fee._id, receiptNumber, amount: payAmount });
+    emitToRole('Admin', 'fee:updated', { feeId: fee._id, receiptNumber, amount: payAmount });
+
+    return res.status(200).json({ success: true, message: 'Payment webhook processed successfully' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: 'Webhook processing failed', error: error.message });
   }
 };
 

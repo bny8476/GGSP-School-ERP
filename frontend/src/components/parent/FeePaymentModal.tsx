@@ -67,11 +67,9 @@ export default function FeePaymentModal({
     // Simulate real bank gateway transaction (2.2 seconds)
     setTimeout(async () => {
       try {
-        const token = localStorage.getItem("token");
         const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
         const authHeaders = {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
 
         // 1. Create verified payment order from backend
@@ -93,6 +91,8 @@ export default function FeePaymentModal({
           }
         }
 
+        const gatewayPaymentId = `PAY_${Date.now()}_${Math.floor(Math.random() * 9000 + 1000)}`;
+
         // 2. Settle fee with verified gateway signature
         await fetch(`${apiBase}/api/v1/finance/fees/${activeInv.id}/pay`, {
           method: "POST",
@@ -102,7 +102,9 @@ export default function FeePaymentModal({
             amount: activeInv.amount,
             paymentMethod: paymentMethod.toUpperCase(),
             gatewayOrderId,
+            gatewayPaymentId,
             gatewaySignature,
+            signature: gatewaySignature,
           }),
         }).catch(() => null);
       } catch (_) {}

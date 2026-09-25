@@ -59,6 +59,28 @@ export class RazorpayPaymentGatewayService implements IPaymentGatewayService {
       return false;
     }
   }
+
+  verifyWebhookSignature(payload: string | Record<string, any>, signature: string): boolean {
+    if (!signature) {
+      return false;
+    }
+
+    try {
+      const bodyStr = typeof payload === 'string' ? payload : JSON.stringify(payload);
+      const expectedSignature = crypto
+        .createHmac('sha256', this.secret)
+        .update(bodyStr)
+        .digest('hex');
+
+      if (signature.length !== expectedSignature.length) {
+        return false;
+      }
+
+      return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+    } catch (err) {
+      return false;
+    }
+  }
 }
 
 export const paymentGatewayService = new RazorpayPaymentGatewayService();

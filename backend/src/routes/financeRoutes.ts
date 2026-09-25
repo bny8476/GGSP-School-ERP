@@ -1,11 +1,24 @@
 import express from 'express';
-import { getFees, createFee, updateFee, getExpenses, createExpense, payFee, createPaymentOrder, recordManualPayment } from '../controllers/financeController';
+import {
+  getFees,
+  createFee,
+  updateFee,
+  getExpenses,
+  createExpense,
+  payFee,
+  createPaymentOrder,
+  recordManualPayment,
+  handlePaymentWebhook,
+} from '../controllers/financeController';
 import { protect, authorize } from '../middleware/auth';
 
 import { validate } from '../middleware/validate';
 import { createFeeSchema, createExpenseSchema } from '../validators/financeValidator';
 
 const router = express.Router();
+
+// Webhook endpoint: Cryptographically verified server-side (no JWT auth needed)
+router.post('/webhook', handlePaymentWebhook);
 
 // Admins & Accountants can manage finance, Parents can view their fees and pay invoices
 const adminAuth = [protect, authorize('Admin', 'SuperAdmin', 'Accountant')];
