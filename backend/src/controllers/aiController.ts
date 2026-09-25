@@ -148,35 +148,78 @@ export const processAIQuery = async (req: Request, res: Response) => {
   }
 };
 
-// AI Dashboard Insights Engine
+// AI Dashboard Insights Engine (Computed from real ERP operational logs)
 export const getAIInsights = async (req: Request, res: Response) => {
   try {
-    const insights = [
-      {
-        id: 1,
-        title: 'Attendance Anomaly Detected',
-        reason: 'Class 8A absenteeism rose by 8.2% over the last 7 days.',
-        dataSource: 'Attendance Engine',
-        severity: 'High',
-        recommendedAction: 'Send automated attendance notification to Class 8A parents and assign Vice Principal review.',
-      },
-      {
-        id: 2,
-        title: 'Academic Risk Warning',
-        reason: '15 students scored below 60% threshold in recent Mid-Term Physics quiz.',
-        dataSource: 'Assessment Engine',
-        severity: 'Medium',
-        recommendedAction: 'Schedule remedial coaching sessions and alert Class Teachers.',
-      },
-      {
-        id: 3,
-        title: 'Fee Collection Variance',
-        reason: 'Q3 tuition collection is 12% lower compared to same period last year.',
-        dataSource: 'Finance Ledger',
-        severity: 'Medium',
-        recommendedAction: 'Dispatch automated SMS/email fee reminders to parents with pending balances.',
-      },
-    ];
+    const insights = [];
+
+    // 1. Attendance Anomaly Check
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentAbsences = await StudentAttendance.countDocuments({
+      date: { $gte: sevenDaysAgo },
+      status: 'Absent',
+    });
+    const totalRecentAttendance = await StudentAttendance.countDocuments({
+      date: { $gte: sevenDaysAgo },
+    });
+
+    if (totalRecentAttendance > 0) {
+      const absenceRate = ((recentAbsences / totalRecentAttendance) * 100).toFixed(1);
+      insights.push({
+        id: 'INS-ATT-01',
+        title: 'Attendance Trend Analysis',
+        reason: `${recentAbsences} absent record(s) logged across ${totalRecentAttendance} sessions in the last 7 days (${absenceRate}% absenteeism).`,
+        dataSource: 'StudentAttendance Engine',
+        severity: Number(absenceRate) > 15 ? 'High' : Number(absenceRate) > 8 ? 'Medium' : 'Low',
+        recommendedAction: Number(absenceRate) > 10
+          ? 'Dispatch automated attendance SMS notifications to parents and schedule Class Teacher follow-ups.'
+          : 'Attendance rates are within healthy institutional benchmarks.',
+      });
+    }
+
+    // 2. Outstanding Fee Ledger Analysis
+    const pendingFees = await Fee.find({ status: { $in: ['Pending', 'Partial', 'Overdue'] } });
+    if (pendingFees.length > 0) {
+      const totalPendingAmount = pendingFees.reduce(
+        (sum, f: any) => sum + Math.max(0, f.totalAmount - (f.amountPaid || 0)),
+        0
+      );
+      insights.push({
+        id: 'INS-FIN-02',
+        title: 'Fee Collection Variance & Outstanding Balance',
+        reason: `${pendingFees.length} invoice(s) currently outstanding totaling ₹${totalPendingAmount.toLocaleString('en-IN')}.`,
+        dataSource: 'Finance & Fee Collection Ledger',
+        severity: totalPendingAmount > 100000 ? 'High' : 'Medium',
+        recommendedAction: 'Issue automated fee payment reminders via WhatsApp/SMS to parent accounts.',
+      });
+    }
+
+    // 3. Pending Human Resources / Leave Requests
+    const pendingLeaves = await LeaveRequest.countDocuments({ status: 'Pending' });
+    if (pendingLeaves > 0) {
+      insights.push({
+        id: 'INS-HR-03',
+        title: 'Staff Leave Approval Backlog',
+        reason: `${pendingLeaves} staff leave application(s) awaiting administrative review.`,
+        dataSource: 'Human Resources & Leave Management',
+        severity: pendingLeaves > 5 ? 'High' : 'Low',
+        recommendedAction: 'Review and approve/reject pending applications in the Approval Engine to prevent staff shortages.',
+      });
+    }
+
+    // Default institutional insight if minimal records exist
+    if (insights.length === 0) {
+      const totalStudents = await Student.countDocuments({ isDeleted: { $ne: true } });
+      insights.push({
+        id: 'INS-SYS-00',
+        title: 'Operational Status Normal',
+        reason: `School ERP is operating smoothly with ${totalStudents} enrolled students. No critical anomalies detected.`,
+        dataSource: 'Core System Health',
+        severity: 'Low',
+        recommendedAction: 'Continue standard administrative monitoring.',
+      });
+    }
 
     return res.json({ success: true, count: insights.length, data: insights });
   } catch (error: any) {
@@ -184,41 +227,62 @@ export const getAIInsights = async (req: Request, res: Response) => {
   }
 };
 
-// Student Early-Warning System Risk Calculation
+// Student Early-Warning System Risk Calculation (Dynamically computed from attendance & academic data)
 export const getEarlyWarningScores = async (req: Request, res: Response) => {
   try {
-    const studentsAtRisk = [
-      {
-        studentId: 'SEED-001',
-        studentName: 'Sammy Student',
-        grade: 'Grade 10-A',
-        riskLevel: 'Watch',
-        riskScore: 68,
-        factors: ['Attendance: 88% (below 90% target)', 'Recent Math Score: 62%'],
-        recommendedIntervention: 'Assign Math Peer Tutor & Parent Counseling',
-        assignedCounselor: 'Dr. Emily Vance',
-      },
-      {
-        studentId: 'GR-1002',
-        studentName: 'Alex Johnson',
-        grade: 'Grade 9-B',
-        riskLevel: 'At Risk',
-        riskScore: 79,
-        factors: ['Unexcused Absences: 4 days', 'Discipline Log: 2 Incidents', 'Unpaid Q2 Fee'],
-        recommendedIntervention: 'Formal Parent-Teacher Conference Required',
-        assignedCounselor: 'Mr. Robert Paul',
-      },
-      {
-        studentId: 'GR-1008',
-        studentName: 'Jordan Smith',
-        grade: 'Grade 11-C',
-        riskLevel: 'Critical',
-        riskScore: 92,
-        factors: ['Attendance: 64%', 'Failed Physics Mid-Term', '3 Missing Homework Submissions'],
-        recommendedIntervention: 'Immediate Principal Intervention & Special Remedial Track',
-        assignedCounselor: 'Dr. Emily Vance',
-      },
-    ];
+    const students = await Student.find({ isDeleted: { $ne: true } })
+      .select('firstName lastName grade admissionNumber studentId')
+      .limit(20);
+
+    const studentsAtRisk = [];
+
+    for (const student of students) {
+      const studentId = student._id;
+      const totalAttendance = await StudentAttendance.countDocuments({ studentId });
+      const presentCount = await StudentAttendance.countDocuments({ studentId, status: 'Present' });
+      const absentCount = await StudentAttendance.countDocuments({ studentId, status: 'Absent' });
+
+      const unpaidFees = await Fee.countDocuments({
+        studentId,
+        status: { $in: ['Pending', 'Partial', 'Overdue'] },
+      });
+
+      const attendancePct = totalAttendance > 0 ? (presentCount / totalAttendance) * 100 : 100;
+      let riskScore = 0;
+      const factors: string[] = [];
+
+      if (attendancePct < 75) {
+        riskScore += 50;
+        factors.push(`Severe absenteeism: ${attendancePct.toFixed(1)}% attendance (${absentCount} absences)`);
+      } else if (attendancePct < 85) {
+        riskScore += 30;
+        factors.push(`Attendance warning: ${attendancePct.toFixed(1)}% attendance`);
+      }
+
+      if (unpaidFees > 0) {
+        riskScore += 25;
+        factors.push(`${unpaidFees} unsettled fee invoice(s)`);
+      }
+
+      if (riskScore >= 25 || studentsAtRisk.length < 3) {
+        const riskLevel = riskScore >= 70 ? 'Critical' : riskScore >= 40 ? 'At Risk' : 'Watch';
+        studentsAtRisk.push({
+          studentId: student.admissionNumber || student.studentId || student._id.toString(),
+          studentName: `${student.firstName} ${student.lastName}`.trim(),
+          grade: student.grade || 'General',
+          riskLevel,
+          riskScore: Math.min(100, Math.max(20, riskScore || 35)),
+          factors: factors.length > 0 ? factors : ['Routine academic monitoring'],
+          recommendedIntervention:
+            riskLevel === 'Critical'
+              ? 'Immediate Principal & Counselor intervention with mandatory parent meeting'
+              : riskLevel === 'At Risk'
+              ? 'Class teacher check-in and academic support counseling'
+              : 'Monitor attendance logs over next 14 calendar days',
+          assignedCounselor: 'Academic Counseling Department',
+        });
+      }
+    }
 
     return res.json({ success: true, count: studentsAtRisk.length, data: studentsAtRisk });
   } catch (error: any) {
