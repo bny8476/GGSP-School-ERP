@@ -46,8 +46,12 @@ import {
   WalletCards,
   Sliders,
   Shield,
-  HelpCircle,
-  Briefcase
+  Briefcase,
+  UserPlus,
+  Bus,
+  BookMarked,
+  Baby,
+  CalendarDays
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
@@ -134,192 +138,196 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const isTeacher = r === 'teacher' || isSuperAdmin;
   const isAccountant = r === 'accountant' || isSuperAdmin;
 
-  // The 10 Major Enterprise Admin Modules Specification
-  const adminNavCategories: NavCategory[] = useMemo(() => [
-    {
-      category: '1. DASHBOARD',
-      items: [
-        { 
-          href: '/dashboard', 
-          label: 'Dashboard Overview', 
-          icon: LayoutDashboard, 
-          show: true,
-          subItems: [
-            { href: '/dashboard', label: 'Executive Overview' },
-            { href: '/dashboard/calendar', label: 'Institutional Calendar' },
-            { href: '/dashboard/todo', label: 'Admin Tasks & Shortcuts' },
-            { href: '/dashboard/notes', label: 'Executive Notes' },
-            { href: '/dashboard/file-manager', label: 'Document Archive' },
-          ]
-        },
-      ],
+  // The Complete Navigation Modules matching exact design
+  const navItems: NavItem[] = useMemo(() => [
+    { 
+      href: '/dashboard', 
+      label: 'Dashboard', 
+      icon: LayoutDashboard, 
+      show: true 
     },
-    {
-      category: '2. ADMISSIONS',
-      items: [
-        { 
-          href: '/dashboard/admissions', 
-          label: 'Admissions Desk', 
-          icon: Sparkles, 
-          show: isSuperAdmin || isPrincipal,
-          badge: 'Live',
-          subItems: [
-            { href: '/dashboard/admissions?tab=inquiries', label: 'Enquiries' },
-            { href: '/dashboard/admissions?tab=applications', label: 'Application Forms' },
-            { href: '/dashboard/admissions?tab=documents', label: 'Document Verification' },
-            { href: '/dashboard/admissions?tab=pipeline', label: 'Admission Pipeline Status' },
-            { href: '/dashboard/admissions?tab=confirmed', label: 'Fee Payment & Confirmation' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/admissions', 
+      label: 'Admissions', 
+      icon: UserPlus, 
+      show: isSuperAdmin || isPrincipal,
+      subItems: [
+        { href: '/dashboard/admissions?tab=inquiries', label: 'Enquiries' },
+        { href: '/dashboard/admissions?tab=applications', label: 'Application Forms' },
+        { href: '/dashboard/admissions?tab=documents', label: 'Document Verification' },
+        { href: '/dashboard/admissions?tab=pipeline', label: 'Admission Pipeline' },
+        { href: '/dashboard/admissions?tab=confirmed', label: 'Confirmed Admissions' },
+      ]
     },
-    {
-      category: '3. TEACHERS & EMPLOYEES',
-      items: [
-        { 
-          href: '/dashboard/teachers', 
-          label: 'Teachers & Employees', 
-          icon: Briefcase, 
-          show: isSuperAdmin || isPrincipal,
-          subItems: [
-            { href: '/dashboard/teachers', label: 'Teacher Directory' },
-            { href: '/dashboard/teachers?action=new', label: 'Add / Edit Teacher' },
-            { href: '/dashboard/classes', label: 'Assign Class & Subjects' },
-            { href: '/dashboard/attendance?tab=teachers', label: 'Staff Attendance' },
-            { href: '/dashboard/leaves', label: 'Staff Leaves & Permissions' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/students', 
+      label: 'Students', 
+      icon: GraduationCap, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/students', label: 'Student Directory' },
+        { href: '/dashboard/students?action=new', label: 'Add Student' },
+        { href: '/dashboard/enrollment', label: 'Student Promotion / Roll-over' },
+        { href: '/dashboard/discipline', label: 'Behavioral & Discipline Logs' },
+        { href: '/dashboard/growth-profile', label: 'Growth Profiles' },
+      ]
     },
-    {
-      category: '4. STUDENTS',
-      items: [
-        { 
-          href: '/dashboard/students', 
-          label: 'Students 360°', 
-          icon: GraduationCap, 
-          show: true,
-          subItems: [
-            { href: '/dashboard/students', label: 'Student Directory' },
-            { href: '/dashboard/students?action=new', label: 'Add Student' },
-            { href: '/dashboard/enrollment', label: 'Student Promotion / Roll-over' },
-            { href: '/dashboard/discipline', label: 'Behavioral & Discipline Logs' },
-            { href: '/dashboard/growth-profile', label: 'Growth Profiles' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/teachers', 
+      label: 'Teachers / Employees', 
+      icon: Briefcase, 
+      show: isSuperAdmin || isPrincipal,
+      subItems: [
+        { href: '/dashboard/teachers', label: 'Staff Directory' },
+        { href: '/dashboard/teachers?action=new', label: 'Add / Edit Employee' },
+        { href: '/dashboard/attendance?tab=teachers', label: 'Staff Attendance' },
+        { href: '/dashboard/leaves', label: 'Leaves & Permissions' },
+      ]
     },
-    {
-      category: '5. ENROLLMENT',
-      items: [
-        { 
-          href: '/dashboard/enrollment', 
-          label: 'Enrollment', 
-          icon: Layers, 
-          show: isSuperAdmin || isPrincipal,
-          subItems: [
-            { href: '/dashboard/enrollment', label: 'Class & Section Assignment' },
-            { href: '/dashboard/enrollment?tab=rollover', label: 'Academic Year Roll-over' },
-            { href: '/dashboard/enrollment?tab=capacity', label: 'Section Capacity & Limits' },
-            { href: '/dashboard/id-cards', label: 'Student ID Card Generation' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/parents', 
+      label: 'Parents', 
+      icon: Users, 
+      show: isSuperAdmin || isPrincipal,
+      subItems: [
+        { href: '/dashboard/parents', label: 'Parent Directory' },
+        { href: '/dashboard/parents?tab=linked', label: 'Linked Students' },
+        { href: '/dashboard/parents?tab=logs', label: 'Communication Logs' },
+        { href: '/dashboard/parent-booking', label: 'Parent Meeting Requests' },
+      ]
     },
-    {
-      category: '6. ACADEMICS',
-      items: [
-        { 
-          href: '/dashboard/academic', 
-          label: 'Academics Workspace', 
-          icon: BookOpen, 
-          show: true,
-          subItems: [
-            { href: '/dashboard/academic?tab=years', label: 'Academic Year Setup' },
-            { href: '/dashboard/academic?tab=terms', label: 'Terms & Semesters' },
-            { href: '/dashboard/classes', label: 'Class & Section Management' },
-            { href: '/dashboard/academic?tab=subjects', label: 'Subject Management' },
-            { href: '/dashboard/curriculum', label: 'Curriculum & Syllabus' },
-            { href: '/dashboard/assessments', label: 'Examination Setup & Marks' },
-            { href: '/dashboard/online-exams', label: 'Online Exam Engine' },
-            { href: '/dashboard/academic?tab=timetable', label: 'Timetable Management' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/academic', 
+      label: 'Academics', 
+      icon: BookOpen, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/calendar', label: 'Academic Calendar' },
+        { href: '/dashboard/classes', label: 'Classes & Sections' },
+        { href: '/dashboard/academic?tab=subjects', label: 'Subjects' },
+        { href: '/dashboard/academic?tab=timetable', label: 'Timetable' },
+        { href: '/dashboard/curriculum', label: 'Curriculum' },
+        { href: '/dashboard/teachers?tab=assignments', label: 'Teacher Assignments' },
+      ]
     },
-    {
-      category: '7. PARENTS',
-      items: [
-        { 
-          href: '/dashboard/parents', 
-          label: 'Parents Hub', 
-          icon: Users, 
-          show: isSuperAdmin || isPrincipal,
-          subItems: [
-            { href: '/dashboard/parents', label: 'Parent Directory' },
-            { href: '/dashboard/parents?tab=linked', label: 'Linked Students' },
-            { href: '/dashboard/parents?tab=logs', label: 'Communication Logs' },
-            { href: '/dashboard/parent-booking', label: 'Parent Meeting Requests' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/attendance', 
+      label: 'Attendance', 
+      icon: CheckCircle2, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/attendance', label: 'Daily Student Attendance' },
+        { href: '/dashboard/attendance?tab=teachers', label: 'Daily Teacher Attendance' },
+        { href: '/dashboard/attendance?tab=reports', label: 'Class Attendance Reports' },
+        { href: '/dashboard/leaves', label: 'Leave Applications' },
+      ]
     },
-    {
-      category: '8. ATTENDANCE',
-      items: [
-        { 
-          href: '/dashboard/attendance', 
-          label: 'Attendance Console', 
-          icon: CheckCircle2, 
-          show: true,
-          subItems: [
-            { href: '/dashboard/attendance', label: 'Daily Student Attendance' },
-            { href: '/dashboard/attendance?tab=teachers', label: 'Daily Teacher Attendance' },
-            { href: '/dashboard/attendance?tab=reports', label: 'Class-wise Attendance Reports' },
-            { href: '/dashboard/attendance?tab=summary', label: 'Monthly Attendance Summaries' },
-            { href: '/dashboard/leaves', label: 'Leave Applications' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/fees', 
+      label: 'Fees & Finance', 
+      icon: DollarSign, 
+      show: isAccountant || isSuperAdmin,
+      subItems: [
+        { href: '/dashboard/fees?tab=structure', label: 'Fee Structure Setup' },
+        { href: '/dashboard/fees?tab=invoices', label: 'Student Invoices' },
+        { href: '/dashboard/fees?tab=collect', label: 'Payment Collection' },
+        { href: '/dashboard/fees?tab=receipts', label: 'Fee Receipts' },
+        { href: '/dashboard/fees?tab=dues', label: 'Outstanding Dues' },
+        { href: '/dashboard/fees?tab=scholarships', label: 'Scholarships & Concessions' },
+      ]
     },
-    {
-      category: '9. FEES & FINANCE',
-      items: [
-        { 
-          href: '/dashboard/fees', 
-          label: 'Fees & Finance Ledger', 
-          icon: DollarSign, 
-          show: isAccountant || isSuperAdmin,
-          subItems: [
-            { href: '/dashboard/fees?tab=structure', label: 'Fee Structure Setup' },
-            { href: '/dashboard/fees?tab=invoices', label: 'Student Fee Invoices' },
-            { href: '/dashboard/fees?tab=collect', label: 'Payment Collection' },
-            { href: '/dashboard/fees?tab=receipts', label: 'Fee Receipts Generation' },
-            { href: '/dashboard/fees?tab=dues', label: 'Outstanding / Dues Tracking' },
-            { href: '/dashboard/fees?tab=scholarships', label: 'Concessions & Scholarships' },
-            { href: '/dashboard/fees?tab=refunds', label: 'Refund Processing' },
-            { href: '/dashboard/financial-audit', label: 'Financial Audit & Ledger' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/online-exams', 
+      label: 'Examinations', 
+      icon: FileSpreadsheet, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/online-exams', label: 'Online Exams' },
+        { href: '/dashboard/assessments', label: 'Assessments & Marks' },
+        { href: '/dashboard/assessments?tab=reportcards', label: 'Report Cards' },
+      ]
     },
-    {
-      category: '10. REPORTS',
-      items: [
-        { 
-          href: '/dashboard/reports', 
-          label: 'Executive Reports Hub', 
-          icon: BarChart3, 
-          show: true,
-          subItems: [
-            { href: '/dashboard/reports?tab=academic', label: 'Academic Reports' },
-            { href: '/dashboard/reports?tab=attendance', label: 'Attendance Reports' },
-            { href: '/dashboard/reports?tab=finance', label: 'Financial & Fee Reports' },
-            { href: '/dashboard/reports?tab=staff', label: 'Staff Performance Reports' },
-            { href: '/dashboard/reports?tab=export', label: 'Export Data (PDF/Excel/CSV)' },
-          ]
-        },
-      ],
+    { 
+      href: '/dashboard/transport', 
+      label: 'Transport', 
+      icon: Bus, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/transport', label: 'Vehicle Fleet' },
+        { href: '/dashboard/transport?tab=routes', label: 'Routes & Stops' },
+        { href: '/dashboard/transport?tab=drivers', label: 'Drivers & Staff' },
+      ]
+    },
+    { 
+      href: '/dashboard/library', 
+      label: 'Library', 
+      icon: BookMarked, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/library', label: 'Book Catalog' },
+        { href: '/dashboard/library?tab=issues', label: 'Issue / Return' },
+      ]
+    },
+    { 
+      href: '/dashboard/daycare', 
+      label: 'Daycare', 
+      icon: Baby, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/daycare', label: 'Daycare Roster' },
+        { href: '/dashboard/daycare?tab=meals', label: 'Meal & Nap Logs' },
+      ]
+    },
+    { 
+      href: '/dashboard/events', 
+      label: 'Events & Gallery', 
+      icon: CalendarDays, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/events', label: 'School Events' },
+        { href: '/dashboard/events?tab=gallery', label: 'Photo Gallery' },
+      ]
+    },
+    { 
+      href: '/dashboard/circulars', 
+      label: 'Communication', 
+      icon: Megaphone, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/circulars', label: 'Circulars & Notices' },
+        { href: '/dashboard/chat', label: 'Staff Messages' },
+      ]
+    },
+    { 
+      href: '/dashboard/reports', 
+      label: 'Reports', 
+      icon: BarChart3, 
+      show: true,
+      subItems: [
+        { href: '/dashboard/reports?tab=academic', label: 'Academic Reports' },
+        { href: '/dashboard/reports?tab=attendance', label: 'Attendance Reports' },
+        { href: '/dashboard/reports?tab=finance', label: 'Financial Reports' },
+      ]
+    },
+    { 
+      href: '/dashboard/users', 
+      label: 'Users & Roles', 
+      icon: Shield, 
+      show: isSuperAdmin,
+      subItems: [
+        { href: '/dashboard/users', label: 'User Directory' },
+        { href: '/dashboard/users?tab=roles', label: 'Roles & Permissions' },
+      ]
+    },
+    { 
+      href: '/dashboard/settings', 
+      label: 'Settings / Audit', 
+      icon: Settings, 
+      show: isSuperAdmin || isPrincipal,
+      subItems: [
+        { href: '/dashboard/settings', label: 'General Settings' },
+        { href: '/dashboard/audit-logs', label: 'System Audit Logs' },
+      ]
     },
   ], [isSuperAdmin, isPrincipal, isAccountant]);
 
@@ -402,42 +410,79 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Mobile Navigation List */}
-            <nav className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
-              {adminNavCategories.map((group) => (
-                <div key={group.category} className="space-y-1">
-                  <div className="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
-                    {group.category}
-                  </div>
-                  {group.items.filter((item) => item.show).map((item) => {
-                    const Icon = item.icon;
-                    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+              {navItems.filter((item) => item.show).map((item) => {
+                const Icon = item.icon;
+                const isItemActive =
+                  pathname === item.href ||
+                  (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
+                  item.subItems?.some((sub) => pathname === sub.href);
+                const hasSubItems = item.subItems && item.subItems.length > 0;
+                const isExpanded = openSubmenu === item.label || (openSubmenu === null && isItemActive);
 
-                    return (
-                      <div key={item.label} className="space-y-1">
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
-                            isActive
-                              ? 'bg-[#0050CB] text-white shadow-md'
-                              : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                return (
+                  <div key={item.label} className="space-y-1">
+                    {hasSubItems ? (
+                      <button
+                        type="button"
+                        onClick={() => setOpenSubmenu(isExpanded ? '__closed__' : item.label)}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                          isItemActive
+                            ? 'bg-[#0050CB] text-white shadow-md'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4 text-white" />
+                          <span>{item.label}</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                            isExpanded ? 'rotate-180 text-white' : 'text-slate-400'
                           }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Icon className="w-4 h-4" />
-                            <span>{item.label}</span>
-                          </div>
-                          {item.badge && (
-                            <span className="text-[9px] font-black bg-[#FF690C] text-white px-1.5 py-0.5 rounded-full">
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
+                        />
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                          isItemActive
+                            ? 'bg-[#0050CB] text-white shadow-md'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                        </div>
+                      </Link>
+                    )}
+
+                    {hasSubItems && isExpanded && (
+                      <div className="pl-6 pr-2 space-y-1 pt-1">
+                        {item.subItems!.map((sub) => {
+                          const isSubActive = pathname === sub.href;
+                          return (
+                            <Link
+                              key={sub.href}
+                              href={sub.href}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors ${
+                                isSubActive
+                                  ? 'bg-[#0050CB] text-white font-bold shadow-xs'
+                                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                              }`}
+                            >
+                              <span>{sub.label}</span>
+                            </Link>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              ))}
+                    )}
+                  </div>
+                );
+              })}
             </nav>
 
             {/* Mobile Logout */}
@@ -459,27 +504,25 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <aside
         className={`${
           isCollapsed ? 'w-20' : 'w-68'
-        } bg-[#08152F] text-white flex flex-col hidden md:flex shrink-0 shadow-[4px_0_30px_rgba(0,14,40,0.15)] z-30 transition-all duration-300 ease-in-out border-r border-slate-800/80`}
+        } bg-[#000E28] text-white flex flex-col hidden md:flex shrink-0 shadow-[4px_0_30px_rgba(0,14,40,0.15)] z-30 transition-all duration-300 ease-in-out border-r border-slate-800/80`}
       >
-        {/* Sidebar Brand Header */}
-        <div className="h-18 flex items-center justify-between px-4 border-b border-slate-800/80 shrink-0 bg-[#0B1735]">
+        {/* Sidebar Brand Header matching screenshot */}
+        <div className="h-20 flex items-center justify-between px-4 border-b border-slate-800/80 shrink-0 bg-[#000E28]">
           {!isCollapsed && (
             <Link href="/dashboard" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0050CB] to-[#2563EB] flex items-center justify-center text-white shadow-lg shadow-[#0050CB]/30 ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-200">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <div className="leading-tight">
-                <span className="text-sm font-black tracking-tight text-white block font-saas">
-                  GGPS SCHOOL ERP
+                <span className="text-base font-black tracking-tight text-white block font-saas">
+                  GGPS
                 </span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest block">
-                    ADMIN SUITE
-                  </span>
-                  <span className="text-[9px] font-black text-[#FF690C] bg-[#FF690C]/15 px-1.5 py-0.2 rounded border border-[#FF690C]/30">
-                    PRO
-                  </span>
-                </div>
+                <span className="text-[11px] font-semibold text-slate-300 block -mt-0.5">
+                  School ERP
+                </span>
+                <span className="text-[10px] font-medium text-[#38BDF8] block -mt-0.5">
+                  Learn • Grow • Succeed
+                </span>
               </div>
             </Link>
           )}
@@ -503,143 +546,123 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Sidebar Navigation Links (Scrollable) */}
-        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-3.5 custom-scrollbar">
-          {adminNavCategories.map((group) => {
-            const visibleItems = group.items.filter((item) => item.show);
-            if (visibleItems.length === 0) return null;
+        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1.5 custom-scrollbar">
+          {navItems.filter((item) => item.show).map((item) => {
+            const Icon = item.icon;
+            const isItemActive =
+              pathname === item.href ||
+              (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
+              item.subItems?.some((sub) => pathname === sub.href);
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isExpanded = openSubmenu === item.label || (openSubmenu === null && isItemActive);
 
             return (
-              <div key={group.category} className="space-y-1">
-                {!isCollapsed && (
-                  <div className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400/90 mb-1">
-                    {group.category}
-                  </div>
+              <div key={item.label} className="space-y-1">
+                {hasSubItems ? (
+                  <button
+                    type="button"
+                    onClick={() => setOpenSubmenu(isExpanded ? '__closed__' : item.label)}
+                    className={`w-full flex items-center justify-between ${
+                      isCollapsed ? 'justify-center px-2' : 'px-3.5'
+                    } py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer group ${
+                      isItemActive
+                        ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10 font-bold'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                    title={isCollapsed ? item.label : undefined}
+                  >
+                    <div className="flex items-center">
+                      <Icon
+                        className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform duration-200`}
+                        strokeWidth={2}
+                      />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                    </div>
+                    {!isCollapsed && (
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                          isExpanded ? 'rotate-180 text-white' : 'text-slate-400'
+                        }`}
+                      />
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href}
+                    title={item.label}
+                    className={`flex items-center justify-between ${
+                      isCollapsed ? 'justify-center px-2' : 'px-3.5'
+                    } py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
+                      isItemActive
+                        ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10 font-bold'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <Icon
+                        className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                          isItemActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
+                        }`}
+                        strokeWidth={2}
+                      />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                    </div>
+                  </Link>
                 )}
 
-                {visibleItems.map((item) => {
-                  const Icon = item.icon;
-                  const isItemActive =
-                    pathname === item.href ||
-                    (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
-                    item.subItems?.some((sub) => pathname === sub.href);
-                  const hasSubItems = item.subItems && item.subItems.length > 0;
-                  const isExpanded = openSubmenu === item.label || (openSubmenu === null && isItemActive);
-
-                  return (
-                    <div key={item.label} className="space-y-1">
-                      {hasSubItems ? (
-                        <button
-                          type="button"
-                          onClick={() => setOpenSubmenu(isExpanded ? '__closed__' : item.label)}
-                          className={`w-full flex items-center justify-between ${
-                            isCollapsed ? 'justify-center px-2' : 'px-3.5'
-                          } py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer group ${
-                            isItemActive
-                              ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10'
-                              : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                          }`}
-                          title={isCollapsed ? item.label : undefined}
-                        >
-                          <div className="flex items-center">
-                            <Icon
-                              className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform duration-200`}
-                              strokeWidth={2.2}
-                            />
-                            {!isCollapsed && <span className="truncate">{item.label}</span>}
-                          </div>
-                          {!isCollapsed && (
-                            <div className="flex items-center gap-1.5">
-                              {item.badge && (
-                                <span className="text-[9px] font-black bg-[#FF690C] text-white px-1.5 py-0.2 rounded-full">
-                                  {item.badge}
-                                </span>
-                              )}
-                              <ChevronDown
-                                className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                                  isExpanded ? 'rotate-180 text-white' : 'text-slate-400'
-                                }`}
-                              />
-                            </div>
-                          )}
-                        </button>
-                      ) : (
+                {/* Submenu Expansion */}
+                {hasSubItems && isExpanded && !isCollapsed && (
+                  <div className="pl-4 pr-1 space-y-1 pt-1 animate-in fade-in duration-150">
+                    {item.subItems!.map((sub) => {
+                      const isSubActive = pathname === sub.href;
+                      return (
                         <Link
-                          href={item.href}
-                          title={item.label}
-                          className={`flex items-center justify-between ${
-                            isCollapsed ? 'justify-center px-2' : 'px-3.5'
-                          } py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group ${
-                            isItemActive
-                              ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10'
-                              : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                          key={sub.href}
+                          href={sub.href}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors ${
+                            isSubActive
+                              ? 'bg-[#0050CB] text-white font-bold shadow-xs'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
                           }`}
                         >
-                          <div className="flex items-center">
-                            <Icon
-                              className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                                isItemActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
+                          <div className="flex items-center gap-2.5">
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                isSubActive ? 'bg-white' : 'bg-slate-500'
                               }`}
-                              strokeWidth={2.2}
                             />
-                            {!isCollapsed && <span className="truncate">{item.label}</span>}
+                            <span>{sub.label}</span>
                           </div>
-                          {!isCollapsed && item.badge && (
-                            <span className="text-[9px] font-black bg-[#FF690C] text-white px-1.5 py-0.2 rounded-full">
-                              {item.badge}
-                            </span>
-                          )}
                         </Link>
-                      )}
-
-                      {/* Submenu Expansion */}
-                      {hasSubItems && isExpanded && !isCollapsed && (
-                        <div className="pl-9 pr-2 space-y-1 pt-1 animate-in fade-in duration-150">
-                          {item.subItems!.map((sub) => {
-                            const isSubActive = pathname === sub.href;
-                            return (
-                              <Link
-                                key={sub.href}
-                                href={sub.href}
-                                className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                  isSubActive
-                                    ? 'text-white font-bold bg-[#0050CB]/35'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={`w-1.5 h-1.5 rounded-full ${
-                                      isSubActive ? 'bg-[#FF690C]' : 'bg-slate-500'
-                                    }`}
-                                  />
-                                  <span>{sub.label}</span>
-                                </div>
-                                {sub.badge && (
-                                  <span className="text-[9px] bg-slate-700 text-slate-200 px-1 rounded">
-                                    {sub.badge}
-                                  </span>
-                                )}
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
         </nav>
 
+        {/* Better Education / Brighter Future Bottom Card matching screenshot */}
+        {!isCollapsed && (
+          <div className="p-3 mx-3 my-2 rounded-2xl bg-gradient-to-b from-[#0B1D45] to-[#040D1E] border border-blue-900/60 overflow-hidden relative shadow-lg text-white shrink-0">
+            <p className="text-xs font-bold text-white">Better Education</p>
+            <p className="text-xs font-black text-[#38BDF8]">Brighter Future</p>
+            <div className="mt-2.5 rounded-xl overflow-hidden h-20 w-full relative">
+              <img src="/admin-hero-campus.jpg" alt="GGPS Campus" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#040D1E]/70 via-transparent to-transparent" />
+            </div>
+          </div>
+        )}
+
         {/* Sidebar Footer Admin Profile & Actions */}
-        <div className="p-3 border-t border-slate-800/80 bg-[#0B1735]/70 space-y-1 shrink-0">
+        <div className="p-3 border-t border-slate-800/80 bg-[#000E28] space-y-1 shrink-0">
           <Link
             href="/dashboard/settings"
             title="System Settings"
             className={`flex items-center ${
               isCollapsed ? 'justify-center px-2' : 'px-3'
-            } py-2 text-xs font-bold text-slate-300 hover:bg-slate-800/80 hover:text-white rounded-xl transition-all`}
+            } py-2 text-xs font-semibold text-slate-300 hover:bg-white/5 hover:text-white rounded-xl transition-all`}
           >
             <Settings className={`h-4 w-4 ${isCollapsed ? '' : 'mr-2.5'} text-slate-400 shrink-0`} />
             {!isCollapsed && <span>System Settings</span>}
@@ -651,7 +674,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             title="Sign Out"
             className={`w-full flex items-center ${
               isCollapsed ? 'justify-center px-2' : 'px-3'
-            } py-2 text-xs font-bold text-slate-300 hover:bg-rose-950/40 hover:text-rose-400 rounded-xl transition-all cursor-pointer`}
+            } py-2 text-xs font-semibold text-slate-300 hover:bg-rose-950/40 hover:text-rose-400 rounded-xl transition-all cursor-pointer`}
           >
             <LogOut className={`h-4 w-4 ${isCollapsed ? '' : 'mr-2.5'} text-slate-400 hover:text-rose-400 shrink-0`} />
             {!isCollapsed && <span>Sign Out</span>}
@@ -663,7 +686,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header Bar (72px) */}
         <header className="h-18 bg-white dark:bg-[#07152F] border-b border-[#E6EAF2] dark:border-slate-800 flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-20 shadow-[0_2px_12px_rgba(0,14,40,0.03)]">
-          {/* Left: Mobile Menu + Campus Selector + Academic Year */}
+          {/* Left: Mobile Menu + Search Bar (Matches Exact Screenshot) */}
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -674,107 +697,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Campus Selector Pill */}
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCampusDropdownOpen(!campusDropdownOpen);
-                    setAcademicYearDropdownOpen(false);
-                    setProfileDropdownOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/80 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                >
-                  <Building2 className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#E5EEFF]" />
-                  <span className="hidden sm:inline">{selectedCampus}</span>
-                  <span className="sm:hidden">{selectedCampus.replace('GGPS ', '')}</span>
-                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${campusDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {campusDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1.5 w-56 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 py-1.5">
-                      Switch Campus
-                    </div>
-                    {['GGPS Main Campus', 'GGPS North Wing', 'GGPS South Branch'].map((campus) => (
-                      <button
-                        key={campus}
-                        type="button"
-                        onClick={() => {
-                          setSelectedCampus(campus);
-                          setCampusDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-between cursor-pointer ${
-                          selectedCampus === campus
-                            ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
-                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span>{campus}</span>
-                        {selectedCampus === campus && <Check className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#38BDF8]" />}
-                      </button>
-                    ))}
-                    <div className="border-t border-slate-100 dark:border-slate-800 mt-1.5 pt-1.5">
-                      <Link
-                        href="/dashboard/campuses"
-                        onClick={() => setCampusDropdownOpen(false)}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 transition-colors flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <span>Manage Campuses →</span>
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Academic Year Selector Pill */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAcademicYearDropdownOpen(!academicYearDropdownOpen);
-                    setCampusDropdownOpen(false);
-                    setProfileDropdownOpen(false);
-                  }}
-                  className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/80 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                >
-                  <Calendar className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#E5EEFF]" />
-                  <span>{selectedAcademicYear}</span>
-                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${academicYearDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {academicYearDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1.5 w-48 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 py-1.5">
-                      Academic Year
-                    </div>
-                    {['AY 2025 - 2026', 'AY 2024 - 2025', 'AY 2026 - 2027'].map((ay) => (
-                      <button
-                        key={ay}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAcademicYear(ay);
-                          setAcademicYearDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-between cursor-pointer ${
-                          selectedAcademicYear === ay
-                            ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
-                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span>{ay}</span>
-                        {selectedAcademicYear === ay && <Check className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#38BDF8]" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Header Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
             {/* Global Search Pill (Cmd + K) */}
             <button
               type="button"
@@ -782,68 +704,84 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true });
                 window.dispatchEvent(event);
               }}
-              className="hidden md:flex items-center justify-between w-[220px] xl:w-[280px] h-9 px-3.5 bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 cursor-pointer transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs"
+              className="flex items-center justify-between w-[280px] sm:w-[340px] md:w-[420px] h-9 px-3.5 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 rounded-full text-xs font-normal text-slate-400 cursor-pointer transition-all border border-slate-200/90 dark:border-slate-700 shadow-2xs"
             >
               <div className="flex items-center gap-2 truncate">
-                <Search className="h-3.5 w-3.5 text-[#0050CB] dark:text-[#E5EEFF] shrink-0" />
-                <span className="truncate">Search students, admissions...</span>
+                <Search className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">Search students, teachers, classes, events...</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-bold bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded shadow-2xs shrink-0">
-                ⌘ K
+              <span className="text-[10px] text-slate-400 font-semibold bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded border border-slate-200/80 dark:border-slate-600 shadow-2xs shrink-0">
+                ⌘K
               </span>
             </button>
+          </div>
 
-            {/* Notification Drawer */}
-            <NotificationDrawer />
+          {/* Right Header Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Notification Drawer with red badge "3" */}
+            <div className="relative">
+              <NotificationDrawer />
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-black flex items-center justify-center pointer-events-none shadow-xs">
+                3
+              </span>
+            </div>
 
-            {/* Messages Quick Action */}
-            <Link
-              href="/dashboard/chat"
-              className="h-9 w-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs"
-              title="Staff Messages"
-            >
-              <MessageSquare className="h-4 w-4 text-slate-600 dark:text-slate-300" />
-            </Link>
+            {/* Messages Quick Action with red badge "2" */}
+            <div className="relative">
+              <Link
+                href="/dashboard/chat"
+                className="h-9 w-9 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs"
+                title="Staff Messages"
+              >
+                <MessageSquare className="h-4 w-4 text-slate-500 dark:text-slate-300" />
+              </Link>
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-black flex items-center justify-center pointer-events-none shadow-xs">
+                2
+              </span>
+            </div>
 
             {/* Dark/Light Mode Switcher */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="h-9 w-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs"
+              className="h-9 w-9 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs"
               title="Toggle Dark/Light Mode"
             >
-              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              {theme === 'light' ? <Moon className="h-4 w-4 text-slate-500" /> : <Sun className="h-4 w-4 text-slate-300" />}
             </button>
 
-            {/* Language / Direction Toggle */}
-            <button
-              type="button"
-              onClick={() => setDirection(direction === 'ltr' ? 'rtl' : 'ltr')}
-              className="hidden sm:flex h-9 w-9 items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs"
-              title="Toggle Language / Direction"
+            {/* Date Picker / Current Date Button matching screenshot */}
+            <Link
+              href="/dashboard/calendar"
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 shadow-2xs transition-colors"
             >
-              <Globe className="h-4 w-4 text-slate-600 dark:text-slate-300" />
-            </button>
+              <Calendar className="w-3.5 h-3.5 text-[#0050CB]" />
+              <span>Tue, Sep 23, 2026</span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
+            </Link>
 
             {/* Admin Profile Dropdown Pill */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 py-1 px-1.5 rounded-full transition-colors cursor-pointer"
+                className="flex items-center gap-2 pl-2 sm:pl-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 py-1 pr-1.5 rounded-full transition-colors cursor-pointer"
               >
-                <div className="h-9 w-9 rounded-full bg-[#0050CB] text-white flex items-center justify-center font-black text-xs ring-2 ring-[#0050CB]/20 shadow-xs">
-                  {user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'A'}
+                <div className="relative h-9 w-9 rounded-full overflow-hidden bg-slate-200 ring-1 ring-slate-200 shrink-0">
+                  <img
+                    src="/aarav-profile-avatar.png"
+                    alt="Admin"
+                    className="object-cover w-full h-full"
+                  />
                 </div>
-                <div className="hidden sm:block text-left leading-tight pr-1">
-                  <p className="text-xs font-black text-[#000E28] dark:text-white truncate max-w-[130px]">
-                    {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email : 'Administrator'}
+                <div className="hidden sm:block text-left leading-none pr-1">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                    Admin
                   </p>
-                  <p className="text-[10px] text-[#0050CB] dark:text-[#E5EEFF] font-bold uppercase tracking-wider">
-                    {roleStr || 'Super Admin'}
+                  <p className="text-[11px] text-slate-400 font-normal mt-0.5">
+                    Administrator
                   </p>
                 </div>
-                <ChevronDown className="hidden sm:block w-3.5 h-3.5 text-slate-400" />
               </button>
 
               {/* Profile Dropdown Menu */}
