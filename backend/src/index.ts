@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -128,14 +128,14 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get('/health', (req: Request, res: Response) => {
   const isDbConnected = mongoose.connection.readyState === 1;
   const dbStatus = isDbConnected ? 'connected' : 'disconnected';
-  const isHealthy = env.NODE_ENV !== 'production' || isDbConnected;
 
-  res.status(isHealthy ? 200 : 503).json({
-    status: isHealthy ? 'healthy' : 'unhealthy',
+  res.status(isDbConnected ? 200 : 503).json({
+    status: isDbConnected ? 'healthy' : 'unhealthy',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV,
     database: dbStatus,
+    readyState: mongoose.connection.readyState,
   });
 });
 
@@ -165,6 +165,29 @@ app.get('/', (req: Request, res: Response) => {
     documentation: '/api-docs',
     health: '/health',
   });
+});
+
+// Global Database Availability Guard: Short-circuits non-health routes with 503 if DB is down
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (
+    req.path === '/' ||
+    req.path.startsWith('/health') ||
+    req.path.startsWith('/api-docs')
+  ) {
+    return next();
+  }
+
+  // Fail-closed in any environment (except during automated isolated tests that mock DB)
+  if (mongoose.connection.readyState !== 1 && env.NODE_ENV !== 'test') {
+    return res.status(503).json({
+      success: false,
+      error: 'Service Unavailable',
+      message: 'Database connection is currently offline. Please try again shortly or contact system administrator.',
+      databaseStatus: 'disconnected',
+    });
+  }
+
+  next();
 });
 
 // Canonical API Router (supports both /api/v1 and legacy /api)

@@ -1,3 +1,8 @@
+/**
+ * Canonical Frontend Role-Based Access Control (RBAC) System
+ * Perfectly aligned with backend/src/config/permissions.ts
+ */
+
 export type UserRole =
   | "SUPERADMIN"
   | "ADMIN"
@@ -6,147 +11,178 @@ export type UserRole =
   | "ACCOUNTANT"
   | "RECEPTIONIST"
   | "STAFF"
-  | "PARENT";
+  | "PARENT"
+  | "RESTRICTED";
 
-export type Permission =
-  | "students.read"
-  | "students.create"
-  | "students.update"
-  | "students.delete"
-  | "attendance.read"
-  | "attendance.mark"
-  | "fees.read"
-  | "fees.create"
-  | "fees.collect"
-  | "reports.read"
-  | "reports.export"
-  | "users.read"
-  | "users.manage"
-  | "settings.read"
-  | "settings.manage"
-  | "admissions.read"
-  | "admissions.manage"
-  | "academics.read"
-  | "academics.manage"
-  | "homework.read"
-  | "homework.create"
-  | "homework.review"
-  | "diary.read"
-  | "diary.create"
-  | "communication.read"
-  | "communication.send";
+export type Permission = string;
 
-export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  SUPERADMIN: [
-    "students.read", "students.create", "students.update", "students.delete",
-    "attendance.read", "attendance.mark",
-    "fees.read", "fees.create", "fees.collect",
-    "reports.read", "reports.export",
-    "users.read", "users.manage",
-    "settings.read", "settings.manage",
-    "admissions.read", "admissions.manage",
-    "academics.read", "academics.manage",
-    "homework.read", "homework.create", "homework.review",
-    "diary.read", "diary.create",
-    "communication.read", "communication.send",
-  ],
+export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
+  SUPERADMIN: ["*"],
   ADMIN: [
-    "students.read", "students.create", "students.update", "students.delete",
-    "attendance.read", "attendance.mark",
-    "fees.read", "fees.create", "fees.collect",
-    "reports.read", "reports.export",
-    "users.read", "users.manage",
-    "settings.read", "settings.manage",
-    "admissions.read", "admissions.manage",
-    "academics.read", "academics.manage",
-    "homework.read", "homework.create", "homework.review",
-    "diary.read", "diary.create",
-    "communication.read", "communication.send",
+    "students:*",
+    "teachers:*",
+    "parents:*",
+    "academics:*",
+    "attendance:*",
+    "admissions:*",
+    "finance:*",
+    "fees:*",
+    "payroll:*",
+    "reports:*",
+    "settings:*",
+    "announcements:*",
+    "notifications:*",
+    "messages:*",
+    "activities:*",
+    "diary:*",
+    "homework:*",
+    "assessments:*",
+    "timetable:*",
+    "visitors:*",
   ],
   PRINCIPAL: [
-    "students.read", "students.create", "students.update",
-    "attendance.read", "attendance.mark",
-    "fees.read",
-    "reports.read", "reports.export",
-    "users.read",
-    "settings.read",
-    "admissions.read", "admissions.manage",
-    "academics.read", "academics.manage",
-    "homework.read", "homework.review",
-    "diary.read",
-    "communication.read", "communication.send",
+    "students:read",
+    "teachers:read",
+    "parents:read",
+    "academics:*",
+    "attendance:read",
+    "admissions:read",
+    "reports:*",
+    "announcements:*",
+    "notifications:*",
+    "messages:*",
+    "assessments:*",
+    "timetable:read",
   ],
   TEACHER: [
-    "students.read",
-    "attendance.read", "attendance.mark",
-    "academics.read", "academics.manage",
-    "homework.read", "homework.create", "homework.review",
-    "diary.read", "diary.create",
-    "reports.read",
-    "communication.read", "communication.send",
-  ],
-  ACCOUNTANT: [
-    "students.read",
-    "fees.read", "fees.create", "fees.collect",
-    "reports.read", "reports.export",
-  ],
-  RECEPTIONIST: [
-    "students.read", "students.create",
-    "attendance.read",
-    "admissions.read", "admissions.manage",
-    "communication.read", "communication.send",
-  ],
-  STAFF: [
-    "students.read",
-    "attendance.read",
-    "communication.read", "communication.send",
+    "students:read",
+    "attendance:read",
+    "attendance:mark",
+    "diary:create",
+    "diary:read",
+    "homework:create",
+    "homework:read",
+    "homework:review",
+    "activities:create",
+    "activities:read",
+    "assessments:create",
+    "assessments:read",
+    "academics:read",
+    "timetable:read",
+    "messages:*",
+    "announcements:read",
+    "notifications:read",
   ],
   PARENT: [
-    "students.read",
-    "attendance.read",
-    "fees.read",
-    "homework.read",
-    "diary.read",
-    "communication.read", "communication.send",
+    "child:read",
+    "students:read",
+    "attendance:read",
+    "diary:read",
+    "homework:read",
+    "activities:read",
+    "fees:read",
+    "fees:pay",
+    "assessments:read",
+    "announcements:read",
+    "messages:*",
+    "notifications:read",
   ],
+  ACCOUNTANT: [
+    "finance:*",
+    "fees:*",
+    "payroll:*",
+    "reports:read",
+    "reports:export",
+    "students:read",
+    "announcements:read",
+  ],
+  RECEPTIONIST: [
+    "visitors:*",
+    "admissions:read",
+    "admissions:create",
+    "announcements:read",
+    "notifications:read",
+  ],
+  STAFF: [
+    "announcements:read",
+    "notifications:read",
+    "profile:read",
+    "profile:update",
+  ],
+  RESTRICTED: [],
 };
 
+/**
+ * Normalizes input role string to canonical UserRole.
+ * Fails closed: unrecognized or empty roles log a warning and return "RESTRICTED" (0 permissions).
+ */
 export function normalizeRole(role?: string | null): UserRole {
-  if (!role) return "PARENT";
+  if (!role) {
+    console.warn("[RBAC] normalizeRole: Missing role provided, defaulting to RESTRICTED (fail-closed)");
+    return "RESTRICTED";
+  }
   const clean = role.replace(/[\s_-]+/g, "").toUpperCase();
   if (clean === "SUPERADMIN") return "SUPERADMIN";
   if (clean in ROLE_PERMISSIONS) {
     return clean as UserRole;
   }
-  return "PARENT";
+  console.warn(`[RBAC] normalizeRole: Unrecognized role "${role}", defaulting to RESTRICTED (fail-closed)`);
+  return "RESTRICTED";
 }
 
-export function hasPermission(role: string | null | undefined, permission: Permission): boolean {
-  const normRole = normalizeRole(role);
-  const permissions = ROLE_PERMISSIONS[normRole] || [];
-  return permissions.includes(permission);
+/**
+ * Validates whether a user role or explicit permission set contains the required permission,
+ * supporting wildcards (e.g. "students:*" satisfies "students:read").
+ */
+export function hasPermission(
+  userRoleOrPermissions: string | string[] | null | undefined,
+  requiredPermission: string
+): boolean {
+  if (!userRoleOrPermissions) return false;
+
+  let permissions: string[] = [];
+  if (Array.isArray(userRoleOrPermissions)) {
+    permissions = userRoleOrPermissions;
+  } else {
+    const norm = normalizeRole(userRoleOrPermissions);
+    permissions = ROLE_PERMISSIONS[norm] || [];
+  }
+
+  if (permissions.includes("*")) return true;
+  if (permissions.includes(requiredPermission)) return true;
+
+  // Colon or dot wildcard check
+  const colonParts = requiredPermission.split(":");
+  if (colonParts.length === 2 && permissions.includes(`${colonParts[0]}:*`)) {
+    return true;
+  }
+  const dotParts = requiredPermission.split(".");
+  if (dotParts.length === 2 && (permissions.includes(`${dotParts[0]}:*`) || permissions.includes(`${dotParts[0]}.*`))) {
+    return true;
+  }
+  return false;
 }
 
-export function hasAnyPermission(role: string | null | undefined, permissions: Permission[]): boolean {
+export function hasAnyPermission(role: string | null | undefined, permissions: string[]): boolean {
   return permissions.some((perm) => hasPermission(role, perm));
 }
 
-export function hasAllPermissions(role: string | null | undefined, permissions: Permission[]): boolean {
+export function hasAllPermissions(role: string | null | undefined, permissions: string[]): boolean {
   return permissions.every((perm) => hasPermission(role, perm));
 }
 
 export function canAccessRoute(pathname: string, role?: string | null): boolean {
   const normRole = normalizeRole(role);
+  if (normRole === "RESTRICTED") return false;
 
   // Parent route guard
   if (pathname.startsWith("/parent")) {
-    return normRole === "PARENT" || normRole === "ADMIN";
+    return normRole === "PARENT" || normRole === "ADMIN" || normRole === "SUPERADMIN";
   }
 
   // Dashboard route guard
   if (pathname.startsWith("/dashboard")) {
     if (normRole === "PARENT") return false; // Parents should use /parent
-    // Teacher specific routes or general admin routes
     return true;
   }
 

@@ -13,81 +13,8 @@ import {
   clearAuthCookies,
 } from '../services/tokenService';
 
-// Capability permission matrix per role
-export const ROLE_PERMISSIONS: Record<string, string[]> = {
-  SuperAdmin: ['*'],
-  Admin: [
-    'students:*',
-    'teachers:*',
-    'parents:*',
-    'academics:*',
-    'attendance:*',
-    'admissions:*',
-    'finance:*',
-    'reports:*',
-    'settings:*',
-    'announcements:*',
-    'notifications:*',
-    'messages:*',
-  ],
-  Principal: [
-    'students:read',
-    'teachers:read',
-    'academics:*',
-    'reports:*',
-    'attendance:read',
-    'announcements:*',
-    'notifications:*',
-    'messages:*',
-  ],
-  Teacher: [
-    'attendance:read',
-    'attendance:mark',
-    'students:read',
-    'diary:create',
-    'diary:read',
-    'homework:create',
-    'homework:read',
-    'activities:create',
-    'activities:read',
-    'assessments:create',
-    'assessments:read',
-    'academics:read',
-    'timetable:read',
-    'messages:*',
-  ],
-  Parent: [
-    'child:read',
-    'students:read',
-    'attendance:read',
-    'diary:read',
-    'homework:read',
-    'homework:update',
-    'activities:read',
-    'fees:read',
-    'fees:pay',
-    'assessments:read',
-    'announcements:read',
-    'messages:*',
-  ],
-  Accountant: [
-    'finance:*',
-    'fees:*',
-    'payroll:*',
-    'reports:read',
-  ],
-  Receptionist: [
-    'visitors:*',
-    'admissions:read',
-    'admissions:create',
-    'announcements:read',
-  ],
-  Staff: [
-    'announcements:read',
-    'profile:read',
-    'profile:update',
-  ],
-};
+import { ROLE_PERMISSIONS } from '../config/permissions';
+export { ROLE_PERMISSIONS };
 
 // @desc    Register new user (Self-registration strictly creates Parent account)
 // @route   POST /api/auth/register

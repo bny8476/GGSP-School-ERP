@@ -20,6 +20,7 @@ import Section from './models/Section';
 import Fee from './models/Fee';
 import Assessment from './models/Assessment';
 import Payroll from './models/Payroll';
+import { ROLE_PERMISSIONS } from './config/permissions';
 
 dotenv.config();
 
@@ -34,107 +35,23 @@ const seedDB = async () => {
 
     const options = { upsert: true, new: true, runValidators: true };
 
-    // 1. Initialize Roles with Capability-based RBAC permissions
+    // 1. Initialize Roles with Canonical Capability-based RBAC permissions
     console.log('Seeding Roles...');
-    const adminRole = await Role.findOneAndUpdate(
-      { name: 'SuperAdmin' },
-      { name: 'SuperAdmin', permissions: ['*'] },
-      options
-    );
-
-    const principalRole = await Role.findOneAndUpdate(
-      { name: 'Principal' },
-      {
-        name: 'Principal',
-        permissions: [
-          'students:*',
-          'attendance:*',
-          'academics:*',
-          'teachers:*',
-          'assessments:*',
-          'reports:*',
-          'announcements:*',
-        ],
-      },
-      options
-    );
-
-    const teacherRole = await Role.findOneAndUpdate(
-      { name: 'Teacher' },
-      {
-        name: 'Teacher',
-        permissions: [
-          'students:read',
-          'attendance:read',
-          'attendance:view',
-          'attendance:mark',
-          'diary:create',
-          'diary:read',
-          'homework:create',
-          'homework:read',
-          'activities:create',
-          'activities:read',
-          'assessments:create',
-          'assessments:read',
-          'assessments:manage',
-          'academics:read',
-          'curriculum:read',
-          'timetable:read',
-          'messages:*',
-        ],
-      },
-      options
-    );
-
-    const accountantRole = await Role.findOneAndUpdate(
-      { name: 'Accountant' },
-      {
-        name: 'Accountant',
-        permissions: [
-          'finance:*',
-          'fees:*',
-          'fees:collect',
-          'fees:view',
-          'payroll:*',
-          'reports:*',
-          'reports:finance',
-          'reports:read',
-        ],
-      },
-      options
-    );
-
-    const parentRole = await Role.findOneAndUpdate(
-      { name: 'Parent' },
-      {
-        name: 'Parent',
-        permissions: [
-          'portal:access',
-          'child:read',
-          'children:view',
-          'students:read',
-          'attendance:read',
-          'attendance:view-child',
-          'diary:read',
-          'diary:view-child',
-          'homework:read',
-          'homework:update',
-          'activities:read',
-          'fees:read',
-          'fees:view-child',
-          'fees:pay',
-          'assessments:read',
-          'announcements:read',
-          'messages:*',
-        ],
-      },
-      options
-    );
-
-    if (!adminRole || !teacherRole || !parentRole || !accountantRole || !principalRole) {
-      throw new Error('Failed to initialize roles');
+    const seededRoles: Record<string, any> = {};
+    for (const [roleName, permissions] of Object.entries(ROLE_PERMISSIONS)) {
+      const r = await Role.findOneAndUpdate(
+        { name: roleName },
+        { name: roleName, permissions },
+        options
+      );
+      seededRoles[roleName] = r;
     }
-    console.log('✓ Roles seeded (SuperAdmin, Principal, Teacher, Accountant, Parent)');
+    const adminRole = seededRoles['Admin'] || seededRoles['SuperAdmin'];
+    const principalRole = seededRoles['Principal'];
+    const teacherRole = seededRoles['Teacher'];
+    const accountantRole = seededRoles['Accountant'];
+    const parentRole = seededRoles['Parent'];
+    console.log('✓ Canonical Roles seeded from ROLE_PERMISSIONS configuration');
 
     // 2. Hash default credentials
     const salt = await bcrypt.genSalt(10);

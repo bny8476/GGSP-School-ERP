@@ -24,30 +24,32 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
-let refreshPromise: Promise<string | null> | null = null;
+let refreshPromise: Promise<boolean> | null = null;
 
-async function attemptTokenRefresh(): Promise<string | null> {
+async function attemptTokenRefresh(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
     try {
       const baseUrl = getApiBaseUrl();
-      const res = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+      // Try /api/auth/refresh first, then fallback to /api/v1/auth/refresh
+      let res = await fetch(`${baseUrl}/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!res.ok) return null;
-      const data = await res.json();
-      const newToken = data?.token || data?.data?.token;
-      if (newToken && typeof window !== "undefined") {
-        localStorage.setItem("token", newToken);
-        return newToken;
+      if (!res.ok) {
+        res = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        });
       }
-      return null;
+
+      return res.ok;
     } catch {
-      return null;
+      return false;
     } finally {
       refreshPromise = null;
     }
@@ -113,21 +115,20 @@ class ApiClient {
 
     // Attempt silent token refresh on 401 before giving up
     if (response.status === 401 && !path.includes("/auth/login") && !path.includes("/auth/refresh")) {
-      const newToken = await attemptTokenRefresh();
-      if (newToken) {
-        const retryHeaders = this.getHeaders(customHeaders);
-        retryHeaders.set("Authorization", `Bearer ${newToken}`);
-        const retryInit = { ...init, headers: retryHeaders };
+      const refreshed = await attemptTokenRefresh();
+      if (refreshed) {
         try {
-          response = await fetch(url, retryInit);
+          // Retry original request once with fresh httpOnly cookie
+          response = await fetch(url, init);
         } catch {
-          // If network error during retry, let standard handling follow
+          // Fall through to error handler
         }
       }
     }
 
     if (response.status === 401) {
       if (typeof window !== "undefined") {
+        localStorage.removeItem("user_profile");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         if (!window.location.pathname.startsWith("/login")) {
