@@ -1,5 +1,11 @@
 import express from 'express';
-import { getFeeDefaulters, getAdmissionAnalytics, getAttendanceSummary } from '../controllers/reportController';
+import { 
+  getFeeDefaulters, 
+  getAdmissionAnalytics, 
+  getAttendanceSummary,
+  getAcademicReport,
+  getStaffReport
+} from '../controllers/reportController';
 import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
@@ -7,9 +13,12 @@ const router = express.Router();
 router.use(protect);
 
 const adminStaffAuth = authorize('SuperAdmin', 'Admin', 'Principal', 'Accountant');
+const generalStaffAuth = authorize('SuperAdmin', 'Admin', 'Principal', 'Accountant', 'Teacher');
 
 router.get('/fee-defaulters', adminStaffAuth, getFeeDefaulters);
 router.get('/admissions', adminStaffAuth, getAdmissionAnalytics);
-router.get('/attendance', authorize('SuperAdmin', 'Admin', 'Principal', 'Accountant', 'Teacher'), getAttendanceSummary);
+router.get('/attendance', generalStaffAuth, getAttendanceSummary);
+router.get('/academic', generalStaffAuth, getAcademicReport);
+router.get('/staff', adminStaffAuth, getStaffReport);
 
 export default router;

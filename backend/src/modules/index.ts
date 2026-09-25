@@ -8,6 +8,7 @@ import { attendanceRoutes } from './attendance';
 import { parentRoutes } from './parents';
 import { userRoutes, payrollRoutes, leaveRoutes, recruitmentRoutes } from './hr';
 import { admissionRoutes } from './admissions';
+import enrollmentRoutes from '../routes/enrollmentRoutes';
 import { financeRoutes } from './finance';
 import {
   dailyDiaryRoutes,
@@ -78,6 +79,7 @@ export function registerDomainModules(apiRouter: Router): void {
 
   // Students & Academics
   apiRouter.use('/students', studentRoutes);
+  apiRouter.use('/enrollment', enrollmentRoutes);
   apiRouter.use('/academic', academicRoutes);
   apiRouter.use('/classes', classRoutes);
   apiRouter.use('/curriculum', curriculumRoutes);

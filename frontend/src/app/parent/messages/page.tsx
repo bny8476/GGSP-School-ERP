@@ -604,6 +604,7 @@ export default function ParentMessagesPage() {
                   src={selectedChild.studentPhoto || "/aarav-profile-avatar.png"}
                   alt={selectedChild.firstName}
                   fill
+                  sizes="32px"
                   className="object-cover"
                 />
               </div>
@@ -1270,6 +1271,7 @@ export default function ParentMessagesPage() {
                           src={contact.avatar || "/teacher-ananya-roy.jpg"}
                           alt={contact.name}
                           fill
+                          sizes="36px"
                           className="object-cover"
                         />
                       </div>

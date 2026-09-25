@@ -984,6 +984,7 @@ export default function TeacherMessagesPage() {
                           src={contact.avatar || "/aarav-profile-avatar.png"}
                           alt={contact.name}
                           fill
+                          sizes="36px"
                           className="object-cover"
                         />
                       </div>

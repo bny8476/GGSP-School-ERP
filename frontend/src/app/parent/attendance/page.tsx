@@ -187,6 +187,7 @@ export default function AttendancePage() {
                   src={child.studentPhoto || "/aarav-profile-avatar.png"}
                   alt={child.firstName}
                   fill
+                  sizes="32px"
                   className="object-cover"
                 />
               </div>
@@ -218,7 +219,7 @@ export default function AttendancePage() {
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full overflow-hidden relative">
-                          <Image src={c.studentPhoto || "/aarav-profile-avatar.png"} alt={c.firstName} fill className="object-cover" />
+                          <Image src={c.studentPhoto || "/aarav-profile-avatar.png"} alt={c.firstName} fill sizes="24px" className="object-cover" />
                         </div>
                         <div>
                           <p className="font-bold text-slate-800 dark:text-white">{c.firstName} {c.lastName}</p>

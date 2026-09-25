@@ -513,6 +513,7 @@ export default function ActivitiesPage() {
                 src={selectedActivity.image}
                 alt={selectedActivity.title}
                 fill
+                sizes="(max-width: 640px) 90vw, 512px"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

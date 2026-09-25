@@ -767,6 +767,7 @@ export default function Home() {
                 src="/hero-kids-banner.png"
                 alt="Happy Students"
                 fill
+                sizes="(max-width: 640px) 100vw, 66vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20" />
@@ -817,6 +818,7 @@ export default function Home() {
                 src="/mother-daughter-study.png"
                 alt="Mother Daughter Study"
                 fill
+                sizes="(max-width: 640px) 100vw, 33vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0050CB]/80 via-transparent to-transparent" />
@@ -958,6 +960,7 @@ export default function Home() {
                       src="/hero-girl-student.png"
                       alt="Intelligent Operations Student"
                       fill
+                      sizes="(max-width: 768px) 40vw, 15vw"
                       className="object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
@@ -1025,6 +1028,7 @@ export default function Home() {
                       src="/student-raising-hand.png"
                       alt="Performance & Rubrics Student"
                       fill
+                      sizes="(max-width: 768px) 40vw, 15vw"
                       className="object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
@@ -1092,6 +1096,7 @@ export default function Home() {
                       src="/mother-daughter-study.png"
                       alt="Secure & Connected"
                       fill
+                      sizes="(max-width: 768px) 40vw, 15vw"
                       className="object-contain object-bottom group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
@@ -1124,6 +1129,7 @@ export default function Home() {
               src="/student-raising-hand.png"
               alt="Student raising hand"
               fill
+              sizes="(max-width: 1024px) 100vw, 42vw"
               className="object-cover object-top"
             />
             {/* Floating Pill Badge */}
@@ -1288,6 +1294,7 @@ export default function Home() {
                       src="/avatar-priya.png"
                       alt="Priya Sharma"
                       fill
+                      sizes="56px"
                       className="object-cover"
                     />
                   </div>
@@ -1375,6 +1382,7 @@ export default function Home() {
                       src="/avatar-rajesh.png"
                       alt="Rajesh Kumar"
                       fill
+                      sizes="56px"
                       className="object-cover"
                     />
                   </div>
@@ -1458,6 +1466,7 @@ export default function Home() {
                       src="/avatar-anjali.png"
                       alt="Anjali Verma"
                       fill
+                      sizes="56px"
                       className="object-cover"
                     />
                   </div>
@@ -1633,6 +1642,7 @@ export default function Home() {
               alt="GGPS School Students"
               fill
               priority
+              sizes="(max-width: 768px) 0px, 28vw"
               className="object-cover object-bottom"
             />
             {/* Soft blue gradient blend overlay */}

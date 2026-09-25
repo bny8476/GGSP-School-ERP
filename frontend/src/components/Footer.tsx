@@ -175,7 +175,7 @@ export default function Footer() {
                   <Mail className="w-4 h-4" />
                 </div>
                 <span className="text-slate-300 group-hover:text-white transition-colors">
-                  admin@easacademy.com
+                  admin@ggpsschool.com
                 </span>
               </li>
             </ul>

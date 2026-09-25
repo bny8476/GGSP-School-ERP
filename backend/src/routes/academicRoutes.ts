@@ -1,5 +1,15 @@
 import express from 'express';
-import { getSubjects, createSubject, deleteSubject, getTimeTables, saveTimeTable, getTodaySchedule } from '../controllers/academicController';
+import { 
+  getSubjects, 
+  createSubject, 
+  deleteSubject, 
+  getTimeTables, 
+  saveTimeTable, 
+  getTodaySchedule,
+  getAcademicYears,
+  createAcademicYear,
+  setCurrentAcademicYear
+} from '../controllers/academicController';
 import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
@@ -7,8 +17,15 @@ const router = express.Router();
 router.use(protect);
 
 const staffManageAuth = authorize('SuperAdmin', 'Admin', 'Principal', 'Teacher');
+const adminOnlyAuth = authorize('SuperAdmin', 'Admin', 'Principal');
 
 router.get('/timetables/today', getTodaySchedule);
+
+router.route('/years')
+  .get(getAcademicYears)
+  .post(adminOnlyAuth, createAcademicYear);
+
+router.put('/years/:id/set-current', adminOnlyAuth, setCurrentAcademicYear);
 
 router.route('/subjects')
   .get(getSubjects)

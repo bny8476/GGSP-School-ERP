@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { 
   BookOpen, Plus, Edit2, Trash2, Search, Phone, Mail, Award, Clock, DollarSign,
   ChevronRight, MoreVertical, FileText, Users, Sparkles, Check, X, ArrowRight,
@@ -10,7 +11,8 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { Card, StatCard, ProfileCard, ActionCard, EmptyStateCard } from "@/components/ui/Card";
 
-export default function TeachersPage() {
+function TeachersContent() {
+  const searchParams = useSearchParams();
   const [teachers, setTeachers] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
@@ -24,6 +26,12 @@ export default function TeachersPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setShowModal(true);
+    }
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -771,3 +779,16 @@ export default function TeachersPage() {
     </div>
   );
 }
+
+export default function TeachersPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-8 text-center text-slate-500 font-bold">
+        Loading GGPS School Faculty Directory...
+      </div>
+    }>
+      <TeachersContent />
+    </Suspense>
+  );
+}
+

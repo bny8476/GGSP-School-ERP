@@ -239,6 +239,7 @@ export default function DailyDiaryPage() {
                 src={activeChild.studentPhoto || "/aarav-profile-avatar.png"}
                 alt={activeChild.firstName}
                 fill
+                sizes="32px"
                 className="object-cover"
               />
             </div>
@@ -276,6 +277,7 @@ export default function DailyDiaryPage() {
                       src={c.studentPhoto || "/aarav-profile-avatar.png"}
                       alt={c.firstName}
                       fill
+                      sizes="28px"
                       className="object-cover"
                     />
                   </div>
@@ -515,6 +517,7 @@ export default function DailyDiaryPage() {
                 src={selectedEntry.image}
                 alt={selectedEntry.title}
                 fill
+                sizes="(max-width: 640px) 90vw, 500px"
                 className="object-cover"
               />
             </div>

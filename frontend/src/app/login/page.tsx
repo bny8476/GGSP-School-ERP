@@ -424,6 +424,7 @@ export default function LoginPage() {
                 alt="GGPS School Campus Exterior"
                 fill
                 priority
+                sizes="(max-width: 1024px) 100vw, 58vw"
                 className="object-cover object-center"
               />
             </div>

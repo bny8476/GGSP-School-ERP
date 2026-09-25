@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Subject from '../models/Subject';
 import TimeTable from '../models/TimeTable';
+import AcademicYear from '../models/AcademicYear';
 
 // --- SUBJECTS ---
 
@@ -186,3 +187,80 @@ export const getTodaySchedule = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Failed to fetch today schedule', error });
   }
 };
+
+// --- ACADEMIC YEARS ---
+
+// @desc    Get all academic years
+// @route   GET /api/academic/years
+export const getAcademicYears = async (req: Request, res: Response) => {
+  try {
+    let years = await AcademicYear.find().sort({ startDate: -1 });
+    if (years.length === 0) {
+      // Seed default AY 2025-2026 and 2026-2027 if empty
+      const created = await AcademicYear.create([
+        {
+          name: 'AY 2025 - 2026',
+          startDate: new Date('2025-04-01'),
+          endDate: new Date('2026-03-31'),
+          status: 'active',
+          isCurrent: true,
+        },
+        {
+          name: 'AY 2026 - 2027',
+          startDate: new Date('2026-04-01'),
+          endDate: new Date('2027-03-31'),
+          status: 'active',
+          isCurrent: false,
+        }
+      ]);
+      years = created;
+    }
+    res.json(years);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error fetching academic years', error });
+  }
+};
+
+// @desc    Create a new academic year
+// @route   POST /api/academic/years
+export const createAcademicYear = async (req: Request, res: Response) => {
+  try {
+    const { name, startDate, endDate, isCurrent } = req.body;
+    if (!name || !startDate || !endDate) {
+      return res.status(400).json({ success: false, message: 'Name, startDate, and endDate are required' });
+    }
+
+    if (isCurrent) {
+      await AcademicYear.updateMany({}, { isCurrent: false });
+    }
+
+    const year = await AcademicYear.create({
+      name,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      isCurrent: Boolean(isCurrent),
+      status: 'active',
+    });
+
+    res.status(201).json(year);
+  } catch (error) {
+    res.status(400).json({ success: false, message: 'Failed to create academic year', error });
+  }
+};
+
+// @desc    Set academic year as current active
+// @route   PUT /api/academic/years/:id/set-current
+export const setCurrentAcademicYear = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await AcademicYear.updateMany({}, { isCurrent: false });
+    const year = await AcademicYear.findByIdAndUpdate(id, { isCurrent: true }, { new: true });
+    if (!year) {
+      return res.status(404).json({ success: false, message: 'Academic year not found' });
+    }
+    res.json({ success: true, message: `${year.name} is now the active academic year`, data: year });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to set current academic year', error });
+  }
+};
+

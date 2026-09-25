@@ -888,6 +888,7 @@ export default function TimetablePage() {
                 src={child.studentPhoto || "/aarav-profile-avatar.png"}
                 alt={child.firstName}
                 fill
+                sizes="32px"
                 className="object-cover"
               />
             </div>
@@ -928,6 +929,7 @@ export default function TimetablePage() {
                           src={c.studentPhoto || "/aarav-profile-avatar.png"}
                           alt={c.firstName}
                           fill
+                          sizes="24px"
                           className="object-cover"
                         />
                       </div>
@@ -1400,6 +1402,7 @@ export default function TimetablePage() {
                 src="/timetable-plant-books.png"
                 alt="Plant on books"
                 fill
+                sizes="112px"
                 className="object-contain object-right"
               />
             </div>

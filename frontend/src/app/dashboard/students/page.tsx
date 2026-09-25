@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { 
   Users, Plus, Search, Filter, Download, MoreVertical, 
   Eye, Edit3, Trash2, Shield, HeartPulse, Phone,
@@ -33,7 +34,8 @@ interface StudentRecord {
   parentId?: any;
 }
 
-export default function StudentsDirectoryPage() {
+function StudentsDirectoryContent() {
+  const searchParams = useSearchParams();
   const [students, setStudents] = useState<StudentRecord[]>([]);
   const [parents, setParents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,6 +43,12 @@ export default function StudentsDirectoryPage() {
   const [selectedGrade, setSelectedGrade] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setIsAddModalOpen(true);
+    }
+  }, [searchParams]);
 
   const fetchStudents = async () => {
     setIsLoading(true);
@@ -538,3 +546,16 @@ export default function StudentsDirectoryPage() {
     </div>
   );
 }
+
+export default function StudentsDirectoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-8 text-center text-slate-500 font-bold">
+        Loading GGPS School Students Directory...
+      </div>
+    }>
+      <StudentsDirectoryContent />
+    </Suspense>
+  );
+}
+

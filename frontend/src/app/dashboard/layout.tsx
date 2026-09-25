@@ -134,22 +134,22 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const isTeacher = r === 'teacher' || isSuperAdmin;
   const isAccountant = r === 'accountant' || isSuperAdmin;
 
-  // The 10 Major Enterprise Modules Specification
+  // The 10 Major Enterprise Admin Modules Specification
   const adminNavCategories: NavCategory[] = useMemo(() => [
     {
-      category: '1. CORE DASHBOARD',
+      category: '1. DASHBOARD',
       items: [
         { 
           href: '/dashboard', 
-          label: 'Dashboard', 
+          label: 'Dashboard Overview', 
           icon: LayoutDashboard, 
           show: true,
           subItems: [
             { href: '/dashboard', label: 'Executive Overview' },
             { href: '/dashboard/calendar', label: 'Institutional Calendar' },
-            { href: '/dashboard/todo', label: 'Admin Tasks' },
+            { href: '/dashboard/todo', label: 'Admin Tasks & Shortcuts' },
             { href: '/dashboard/notes', label: 'Executive Notes' },
-            { href: '/dashboard/file-manager', label: 'File Archive' },
+            { href: '/dashboard/file-manager', label: 'Document Archive' },
           ]
         },
       ],
@@ -162,18 +162,37 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           label: 'Admissions Desk', 
           icon: Sparkles, 
           show: isSuperAdmin || isPrincipal,
-          badge: '42 New',
+          badge: 'Live',
           subItems: [
-            { href: '/dashboard/admissions', label: 'Pipeline Command' },
-            { href: '/dashboard/admissions?tab=inquiries', label: 'New Enquiries' },
-            { href: '/dashboard/admissions?tab=interviews', label: 'Interviews & Demo' },
-            { href: '/dashboard/admissions?tab=confirmed', label: 'Confirmed Enrolled' },
+            { href: '/dashboard/admissions?tab=inquiries', label: 'Enquiries' },
+            { href: '/dashboard/admissions?tab=applications', label: 'Application Forms' },
+            { href: '/dashboard/admissions?tab=documents', label: 'Document Verification' },
+            { href: '/dashboard/admissions?tab=pipeline', label: 'Admission Pipeline Status' },
+            { href: '/dashboard/admissions?tab=confirmed', label: 'Fee Payment & Confirmation' },
           ]
         },
       ],
     },
     {
-      category: '3. STUDENTS',
+      category: '3. TEACHERS & EMPLOYEES',
+      items: [
+        { 
+          href: '/dashboard/teachers', 
+          label: 'Teachers & Employees', 
+          icon: Briefcase, 
+          show: isSuperAdmin || isPrincipal,
+          subItems: [
+            { href: '/dashboard/teachers', label: 'Teacher Directory' },
+            { href: '/dashboard/teachers?action=new', label: 'Add / Edit Teacher' },
+            { href: '/dashboard/classes', label: 'Assign Class & Subjects' },
+            { href: '/dashboard/attendance?tab=teachers', label: 'Staff Attendance' },
+            { href: '/dashboard/leaves', label: 'Staff Leaves & Permissions' },
+          ]
+        },
+      ],
+    },
+    {
+      category: '4. STUDENTS',
       items: [
         { 
           href: '/dashboard/students', 
@@ -182,15 +201,33 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           show: true,
           subItems: [
             { href: '/dashboard/students', label: 'Student Directory' },
-            { href: '/dashboard/parents', label: 'Parents & Guardians' },
+            { href: '/dashboard/students?action=new', label: 'Add Student' },
+            { href: '/dashboard/enrollment', label: 'Student Promotion / Roll-over' },
+            { href: '/dashboard/discipline', label: 'Behavioral & Discipline Logs' },
             { href: '/dashboard/growth-profile', label: 'Growth Profiles' },
-            { href: '/dashboard/discipline', label: 'Behavioral Logs' },
           ]
         },
       ],
     },
     {
-      category: '4. ACADEMICS',
+      category: '5. ENROLLMENT',
+      items: [
+        { 
+          href: '/dashboard/enrollment', 
+          label: 'Enrollment', 
+          icon: Layers, 
+          show: isSuperAdmin || isPrincipal,
+          subItems: [
+            { href: '/dashboard/enrollment', label: 'Class & Section Assignment' },
+            { href: '/dashboard/enrollment?tab=rollover', label: 'Academic Year Roll-over' },
+            { href: '/dashboard/enrollment?tab=capacity', label: 'Section Capacity & Limits' },
+            { href: '/dashboard/id-cards', label: 'Student ID Card Generation' },
+          ]
+        },
+      ],
+    },
+    {
+      category: '6. ACADEMICS',
       items: [
         { 
           href: '/dashboard/academic', 
@@ -198,115 +235,88 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           icon: BookOpen, 
           show: true,
           subItems: [
-            { href: '/dashboard/classes', label: 'Classes & Sections' },
-            { href: '/dashboard/curriculum', label: 'Curriculum & Units' },
-            { href: '/dashboard/academic', label: 'Timetable Matrix' },
-            { href: '/dashboard/assessments', label: 'Examinations & Marks' },
+            { href: '/dashboard/academic?tab=years', label: 'Academic Year Setup' },
+            { href: '/dashboard/academic?tab=terms', label: 'Terms & Semesters' },
+            { href: '/dashboard/classes', label: 'Class & Section Management' },
+            { href: '/dashboard/academic?tab=subjects', label: 'Subject Management' },
+            { href: '/dashboard/curriculum', label: 'Curriculum & Syllabus' },
+            { href: '/dashboard/assessments', label: 'Examination Setup & Marks' },
             { href: '/dashboard/online-exams', label: 'Online Exam Engine' },
-            { href: '/dashboard/lesson-planner', label: 'Lesson Planner' },
+            { href: '/dashboard/academic?tab=timetable', label: 'Timetable Management' },
           ]
         },
       ],
     },
     {
-      category: '5. FINANCE & LEDGER',
+      category: '7. PARENTS',
       items: [
         { 
-          href: '/dashboard/fees', 
-          label: 'Finance Command', 
-          icon: DollarSign, 
-          show: isAccountant || isSuperAdmin,
-          subItems: [
-            { href: '/dashboard/fees', label: 'Fee Collections' },
-            { href: '/dashboard/financial-audit', label: 'Financial Audit' },
-            { href: '/dashboard/procurement', label: 'Procurement & Vendors' },
-            { href: '/dashboard/payroll', label: 'Staff Payroll Ledger' },
-          ]
-        },
-      ],
-    },
-    {
-      category: '6. OPERATIONS & LOGISTICS',
-      items: [
-        { 
-          href: '/dashboard/inventory', 
-          label: 'Operations & Logistics', 
-          icon: Package, 
-          show: isSuperAdmin || isPrincipal,
-          subItems: [
-            { href: '/dashboard/inventory', label: 'Supplies & Inventory' },
-            { href: '/dashboard/asset-qr', label: 'Asset QR Codes' },
-            { href: '/dashboard/visitors', label: 'Campus Visitor Logs' },
-            { href: '/dashboard/daycare', label: 'Daycare Management' },
-            { href: '/dashboard/sports', label: 'Sports & Houses' },
-          ]
-        },
-      ],
-    },
-    {
-      category: '7. STAFF & HR',
-      items: [
-        { 
-          href: '/dashboard/teachers', 
-          label: 'Staff & Human Resources', 
+          href: '/dashboard/parents', 
+          label: 'Parents Hub', 
           icon: Users, 
           show: isSuperAdmin || isPrincipal,
           subItems: [
-            { href: '/dashboard/teachers', label: 'Faculty Directory' },
-            { href: '/dashboard/leaves', label: 'Leave Requests' },
-            { href: '/dashboard/attendance', label: 'Attendance Roll-Call' },
+            { href: '/dashboard/parents', label: 'Parent Directory' },
+            { href: '/dashboard/parents?tab=linked', label: 'Linked Students' },
+            { href: '/dashboard/parents?tab=logs', label: 'Communication Logs' },
+            { href: '/dashboard/parent-booking', label: 'Parent Meeting Requests' },
           ]
         },
       ],
     },
     {
-      category: '8. COMMUNICATION',
+      category: '8. ATTENDANCE',
       items: [
         { 
-          href: '/dashboard/communication', 
-          label: 'Communication Hub', 
-          icon: Megaphone, 
+          href: '/dashboard/attendance', 
+          label: 'Attendance Console', 
+          icon: CheckCircle2, 
           show: true,
           subItems: [
-            { href: '/dashboard/communication', label: 'Circulars & Broadcasts' },
-            { href: '/dashboard/chat', label: 'Staff Chat' },
-            { href: '/dashboard/email', label: 'Institutional Email' },
-            { href: '/dashboard/emergency-center', label: 'Emergency Broadcast' },
+            { href: '/dashboard/attendance', label: 'Daily Student Attendance' },
+            { href: '/dashboard/attendance?tab=teachers', label: 'Daily Teacher Attendance' },
+            { href: '/dashboard/attendance?tab=reports', label: 'Class-wise Attendance Reports' },
+            { href: '/dashboard/attendance?tab=summary', label: 'Monthly Attendance Summaries' },
+            { href: '/dashboard/leaves', label: 'Leave Applications' },
           ]
         },
       ],
     },
     {
-      category: '9. REPORTS & AUDITS',
+      category: '9. FEES & FINANCE',
+      items: [
+        { 
+          href: '/dashboard/fees', 
+          label: 'Fees & Finance Ledger', 
+          icon: DollarSign, 
+          show: isAccountant || isSuperAdmin,
+          subItems: [
+            { href: '/dashboard/fees?tab=structure', label: 'Fee Structure Setup' },
+            { href: '/dashboard/fees?tab=invoices', label: 'Student Fee Invoices' },
+            { href: '/dashboard/fees?tab=collect', label: 'Payment Collection' },
+            { href: '/dashboard/fees?tab=receipts', label: 'Fee Receipts Generation' },
+            { href: '/dashboard/fees?tab=dues', label: 'Outstanding / Dues Tracking' },
+            { href: '/dashboard/fees?tab=scholarships', label: 'Concessions & Scholarships' },
+            { href: '/dashboard/fees?tab=refunds', label: 'Refund Processing' },
+            { href: '/dashboard/financial-audit', label: 'Financial Audit & Ledger' },
+          ]
+        },
+      ],
+    },
+    {
+      category: '10. REPORTS',
       items: [
         { 
           href: '/dashboard/reports', 
-          label: 'Reports & Analytics', 
+          label: 'Executive Reports Hub', 
           icon: BarChart3, 
           show: true,
           subItems: [
-            { href: '/dashboard/reports', label: 'Executive Reports' },
-            { href: '/dashboard/audit-logs', label: 'Security Audit Logs' },
-          ]
-        },
-      ],
-    },
-    {
-      category: '10. MORE / SYSTEM',
-      items: [
-        { 
-          href: '/dashboard/settings', 
-          label: 'System Administration', 
-          icon: Settings, 
-          show: isSuperAdmin || isPrincipal,
-          subItems: [
-            { href: '/dashboard/settings', label: 'General Settings' },
-            { href: '/dashboard/campuses', label: 'Branches & Campuses' },
-            { href: '/dashboard/master-data', label: 'Master Data Config' },
-            { href: '/dashboard/workflows', label: 'Workflow Automations' },
-            { href: '/dashboard/form-builder', label: 'Form Builder' },
-            { href: '/dashboard/ai-assistant', label: 'GGPS AI Assistant' },
-            { href: '/dashboard/security', label: 'Security & Access' },
+            { href: '/dashboard/reports?tab=academic', label: 'Academic Reports' },
+            { href: '/dashboard/reports?tab=attendance', label: 'Attendance Reports' },
+            { href: '/dashboard/reports?tab=finance', label: 'Financial & Fee Reports' },
+            { href: '/dashboard/reports?tab=staff', label: 'Staff Performance Reports' },
+            { href: '/dashboard/reports?tab=export', label: 'Export Data (PDF/Excel/CSV)' },
           ]
         },
       ],
