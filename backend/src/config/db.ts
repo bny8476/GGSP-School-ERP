@@ -6,17 +6,53 @@ import { seedDatabase } from '../services/seedService';
 mongoose.set('bufferCommands', false);
 
 let memoryServerInstance: any = null;
+let reconnectTimer: NodeJS.Timeout | null = null;
+let isConnecting = false;
 
-const connectDB = async () => {
-  // 1. Attempt connection to primary configured MONGODB_URI
+// Connection status listeners
+mongoose.connection.on('connected', () => {
+  console.log(`✓ [DB] Mongoose connected to ${mongoose.connection.host}`);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️  [DB] Mongoose disconnected from database.');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✓ [DB] Mongoose reconnected to database.');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('⚠️  [DB] Mongoose connection error:', err?.message || err);
+});
+
+const attemptPrimaryConnect = async (): Promise<boolean> => {
+  if (mongoose.connection.readyState === 1) return true;
+
+  const mongoUri = env.MONGODB_URI;
+  if (!mongoUri) {
+    console.warn('[DB] No MONGODB_URI configured.');
+    return false;
+  }
+
+  // Mask credentials for safe logging
+  const maskedUri = mongoUri.replace(/(:\/\/)(.*?)(@)/, '$1***:***$3');
+  console.log(`[DB] Connecting to MongoDB (${maskedUri})...`);
+
   try {
-    console.log(`[DB] Attempting connection to MongoDB at ${env.MONGODB_URI}...`);
-    const conn = await mongoose.connect(env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 2500,
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 20000, // 20s for cloud Atlas DNS & TLS handshakes
+      connectTimeoutMS: 20000,
+      socketTimeoutMS: 45000,
     });
-    console.log(`✓ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`✓ MongoDB Connected successfully: ${conn.connection.host}`);
 
-    // If development and database is brand new, seed initial data
+    if (reconnectTimer) {
+      clearInterval(reconnectTimer);
+      reconnectTimer = null;
+    }
+
+    // Seed on fresh database if needed
     if (env.NODE_ENV !== 'production') {
       const collections = await mongoose.connection.db?.listCollections().toArray();
       if (!collections || collections.length === 0) {
@@ -24,52 +60,94 @@ const connectDB = async () => {
         await seedDatabase();
       }
     }
-    return;
+    return true;
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.warn(`[DB] Primary MongoDB connection failed (${errMsg}).`);
+    console.error(`[DB] Primary MongoDB connection failed: ${errMsg}`);
+    if (errMsg.includes('whitelist') || errMsg.includes('timed out') || errMsg.includes('ServerSelectionError')) {
+      console.warn('⚠️  TIP: If using MongoDB Atlas, verify:');
+      console.warn('   1. IP Access List allows "0.0.0.0/0" (Allow Access from Anywhere for Render).');
+      console.warn('   2. Database username and password in MONGODB_URI are correct.');
+      console.warn('   3. Database name is specified in the connection string.');
+    }
+    return false;
+  }
+};
+
+const connectDB = async () => {
+  if (isConnecting) return;
+  isConnecting = true;
+
+  // 1. Try initial connection with retries
+  let connected = false;
+  const maxInitialAttempts = env.NODE_ENV === 'production' ? 3 : 1;
+
+  for (let attempt = 1; attempt <= maxInitialAttempts; attempt++) {
+    if (attempt > 1) {
+      console.log(`[DB] Retrying connection attempt ${attempt}/${maxInitialAttempts} in 3 seconds...`);
+      await new Promise((res) => setTimeout(res, 3000));
+    }
+    connected = await attemptPrimaryConnect();
+    if (connected) break;
   }
 
-  // 2. If in production, fail hard
-  if (env.NODE_ENV === 'production') {
-    console.error('FATAL: Database connection failed in production. Terminating process.');
-    process.exit(1);
+  // 2. Production handling: Keep service alive & retry periodically in background
+  if (!connected && env.NODE_ENV === 'production') {
+    console.warn('⚠️  [DB] Database is currently unreachable in production. Starting background auto-reconnector every 10s...');
+    console.warn('⚠️  API server will stay ALIVE to serve health checks. Database-dependent endpoints will return 503 until connection is established.');
+
+    if (!reconnectTimer) {
+      reconnectTimer = setInterval(async () => {
+        console.log('[DB] Background reconnection attempt...');
+        const ok = await attemptPrimaryConnect();
+        if (ok) {
+          console.log('✓ [DB] Background reconnection succeeded!');
+        }
+      }, 10000);
+      reconnectTimer.unref();
+    }
+    isConnecting = false;
+    return;
   }
 
   // 3. In development / testing: Fallback to embedded in-memory MongoDB
-  try {
-    console.log('⚡ Launching embedded in-memory MongoDB for local development...');
-    // @ts-ignore
-    const { MongoMemoryServer } = await import('mongodb-memory-server');
-    memoryServerInstance = await MongoMemoryServer.create({
-      binary: {
-        version: '4.4.29',
-      },
-      instance: {
-        dbName: 'global_international_erp',
-        launchTimeout: 60000,
-      },
-    });
+  if (!connected) {
+    try {
+      console.log('⚡ Launching embedded in-memory MongoDB for local development...');
+      // @ts-ignore
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      memoryServerInstance = await MongoMemoryServer.create({
+        binary: {
+          version: '4.4.29',
+        },
+        instance: {
+          dbName: 'global_international_erp',
+          launchTimeout: 60000,
+        },
+      });
 
-    const memoryUri = memoryServerInstance.getUri();
-    const conn = await mongoose.connect(memoryUri);
-    console.log(`✓ Embedded in-memory MongoDB connected: ${memoryUri}`);
+      const memoryUri = memoryServerInstance.getUri();
+      const conn = await mongoose.connect(memoryUri);
+      console.log(`✓ Embedded in-memory MongoDB connected: ${memoryUri}`);
 
-    // Seed default administrative roles and login credentials
-    console.log('[DB] Seeding default development accounts...');
-    await seedDatabase();
-    console.log('✓ Development database ready! You can log in with:');
-    console.log('   • Admin:      admin@school.com / password123');
-    console.log('   • Teacher:    teacher@school.com / password123');
-    console.log('   • Parent:     parent@school.com / password123');
-  } catch (memErr) {
-    console.error('[DB] CRITICAL: Failed to launch embedded in-memory MongoDB fallback:', memErr);
-    console.warn('⚠️  Database is offline. Non-health HTTP endpoints will return 503 Service Unavailable.');
+      console.log('[DB] Seeding default development accounts...');
+      await seedDatabase();
+      console.log('✓ Development database ready! You can log in with:');
+      console.log('   • Admin:      admin@school.com / password123');
+      console.log('   • Teacher:    teacher@school.com / password123');
+      console.log('   • Parent:     parent@school.com / password123');
+    } catch (memErr) {
+      console.error('[DB] CRITICAL: Failed to launch embedded in-memory MongoDB fallback:', memErr);
+      console.warn('⚠️  Database is offline. Non-health HTTP endpoints will return 503 Service Unavailable.');
+    }
   }
+
+  isConnecting = false;
 };
 
 // Graceful cleanup on shutdown
 process.on('SIGINT', async () => {
+  if (reconnectTimer) clearInterval(reconnectTimer);
   if (memoryServerInstance) {
     await memoryServerInstance.stop();
   }
@@ -78,6 +156,7 @@ process.on('SIGINT', async () => {
 });
 
 process.on('SIGTERM', async () => {
+  if (reconnectTimer) clearInterval(reconnectTimer);
   if (memoryServerInstance) {
     await memoryServerInstance.stop();
   }
