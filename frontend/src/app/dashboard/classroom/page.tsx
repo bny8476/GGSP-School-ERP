@@ -16,6 +16,7 @@ import {
   Download,
 } from 'lucide-react';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
+import { getApiBaseUrl } from '@/lib/utils';
 
 export default function DigitalClassroomPage() {
   const [activeTab, setActiveTab] = useState<'materials' | 'exams' | 'questions' | 'atrisk'>('materials');
@@ -48,29 +49,37 @@ export default function DigitalClassroomPage() {
     correctAnswer: '',
   });
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+  const API_BASE = getApiBaseUrl();
+
+  const getAuthHeaders = (extra: Record<string, string> = {}) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    return {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...extra,
+    };
+  };
 
   const fetchData = async () => {
     setLoading(true);
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
     try {
       if (activeTab === 'materials') {
         const res = await fetch(`${API_BASE}/api/learning`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: getAuthHeaders(),
+          credentials: 'include',
         });
         const data = await res.json();
         if (data.success) setMaterials(data.data || []);
       } else if (activeTab === 'exams') {
         const res = await fetch(`${API_BASE}/api/exams`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: getAuthHeaders(),
+          credentials: 'include',
         });
         const data = await res.json();
         if (data.success) setExams(data.data || []);
       } else if (activeTab === 'questions') {
         const res = await fetch(`${API_BASE}/api/exams/questions`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: getAuthHeaders(),
+          credentials: 'include',
         });
         const data = await res.json();
         if (data.success) setQuestions(data.data || []);
@@ -88,14 +97,11 @@ export default function DigitalClassroomPage() {
 
   const handleCreateMaterial = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE}/api/learning`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        credentials: 'include',
         body: JSON.stringify(newMaterial),
       });
       if (res.ok) {
@@ -109,14 +115,11 @@ export default function DigitalClassroomPage() {
 
   const handleCreateQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE}/api/exams/questions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        credentials: 'include',
         body: JSON.stringify(newQuestion),
       });
       if (res.ok) {

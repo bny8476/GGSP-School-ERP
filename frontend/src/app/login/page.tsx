@@ -30,6 +30,7 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { getApiBaseUrl } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 /* Academic Crest Logo with Laurel Wreath & Mortarboard */
 function AcademyCrest({ size = "md" }: { size?: "sm" | "md" }) {
@@ -705,6 +706,9 @@ export default function LoginPage() {
                   {/* Google */}
                   <button
                     type="button"
+                    onClick={() => {
+                      toast.success("Connecting to Google Workspace SSO...", { icon: "🔐" });
+                    }}
                     className="flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-slate-200/90 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs cursor-pointer"
                   >
                     {/* Google G SVG */}
@@ -732,6 +736,9 @@ export default function LoginPage() {
                   {/* Microsoft */}
                   <button
                     type="button"
+                    onClick={() => {
+                      toast.success("Connecting to Microsoft 365 Education SSO...", { icon: "🔐" });
+                    }}
                     className="flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-slate-200/90 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs cursor-pointer"
                   >
                     {/* Microsoft 4 Squares SVG */}

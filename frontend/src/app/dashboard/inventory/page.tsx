@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, ShoppingBag, Plus, Search, AlertCircle, CheckCircle, Clock, DollarSign, Filter } from 'lucide-react';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
+import { getApiBaseUrl } from '@/lib/utils';
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<'stock' | 'orders'>('stock');
@@ -30,23 +31,30 @@ export default function InventoryPage() {
     estimatedPrice: 20,
   });
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+  const API_BASE = getApiBaseUrl();
+
+  const getAuthHeaders = (extra: Record<string, string> = {}) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    return {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...extra,
+    };
+  };
 
   const fetchData = async () => {
     setLoading(true);
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
     try {
       if (activeTab === 'stock') {
         const res = await fetch(`${API_BASE}/api/inventory/items`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: getAuthHeaders(),
+          credentials: 'include',
         });
         const data = await res.json();
         if (data.success) setItems(data.data || []);
       } else {
         const res = await fetch(`${API_BASE}/api/inventory/orders`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: getAuthHeaders(),
+          credentials: 'include',
         });
         const data = await res.json();
         if (data.success) setOrders(data.data || []);
@@ -64,14 +72,11 @@ export default function InventoryPage() {
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE}/api/inventory/items`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        credentials: 'include',
         body: JSON.stringify(newItem),
       });
       if (res.ok) {
@@ -85,14 +90,11 @@ export default function InventoryPage() {
 
   const handleCreatePO = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE}/api/inventory/orders`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        credentials: 'include',
         body: JSON.stringify({
           vendorName: newPO.vendorName,
           items: [{ itemName: newPO.itemName, quantity: Number(newPO.quantity), estimatedPrice: Number(newPO.estimatedPrice) }],

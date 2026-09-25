@@ -115,6 +115,8 @@ export default function CurriculumPage() {
     setShowCreateModal(false);
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   const filteredPlans = plans.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -130,6 +132,11 @@ export default function CurriculumPage() {
     
     return matchesSearch && matchesTab && matchesClassFilter && matchesSubjectFilter && matchesStatusFilter;
   });
+
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(filteredPlans.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedPlans = filteredPlans.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="space-y-6 font-sans text-[#000E28] dark:text-white pb-16">
@@ -356,9 +363,9 @@ export default function CurriculumPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {filteredPlans.map((plan, idx) => (
+                {paginatedPlans.map((plan, idx) => (
                   <tr key={plan.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                    <td className="p-4 text-center font-bold text-slate-400">{idx + 1}</td>
+                    <td className="p-4 text-center font-bold text-slate-400">{startIndex + idx + 1}</td>
                     
                     {/* Plan Name */}
                     <td className="p-4">
@@ -439,22 +446,37 @@ export default function CurriculumPage() {
 
           {/* TABLE FOOTER & PAGINATION */}
           <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
-            <span>Showing 1 to {filteredPlans.length} of 12 plans</span>
+            <span>Showing {filteredPlans.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + pageSize, filteredPlans.length)} of {filteredPlans.length} plans</span>
 
             <div className="flex items-center gap-1.5">
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+              >
                 &lt;
               </button>
-              <button className="w-8 h-8 rounded-lg bg-[#0050CB] text-white font-bold flex items-center justify-center shadow-xs">
-                1
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">
-                2
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">
-                3
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-8 h-8 rounded-lg font-bold flex items-center justify-center transition-colors cursor-pointer ${
+                    currentPage === i + 1
+                      ? 'bg-[#0050CB] text-white shadow-xs'
+                      : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+              >
                 &gt;
               </button>
             </div>
@@ -543,10 +565,10 @@ export default function CurriculumPage() {
           <div className="bg-white dark:bg-[#000E28] rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-sm font-black text-[#000E28] dark:text-white">Recent Activity</h3>
-              <button className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline flex items-center gap-0.5">
+              <Link href="/dashboard/audit-logs" className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline flex items-center gap-0.5 cursor-pointer">
                 <span>View All</span>
                 <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
 
             <div className="space-y-3 text-xs">

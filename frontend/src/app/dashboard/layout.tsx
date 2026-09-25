@@ -26,6 +26,7 @@ import {
   Package, 
   ShieldCheck, 
   CheckCircle2, 
+  Check,
   Lock, 
   Menu, 
   X,
@@ -82,6 +83,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [campusDropdownOpen, setCampusDropdownOpen] = useState(false);
+  const [academicYearDropdownOpen, setAcademicYearDropdownOpen] = useState(false);
+  const [selectedCampus, setSelectedCampus] = useState('GGPS Main Campus');
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState('AY 2025 - 2026');
 
   const { theme, toggleTheme, direction, setDirection } = useTheme();
   const { t } = useLanguage();
@@ -661,25 +666,100 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
             {/* Campus Selector Pill */}
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/80 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
-              >
-                <Building2 className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#E5EEFF]" />
-                <span className="hidden sm:inline">GGPS Main Campus</span>
-                <span className="sm:hidden">GGPS</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCampusDropdownOpen(!campusDropdownOpen);
+                    setAcademicYearDropdownOpen(false);
+                    setProfileDropdownOpen(false);
+                  }}
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/80 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#E5EEFF]" />
+                  <span className="hidden sm:inline">{selectedCampus}</span>
+                  <span className="sm:hidden">{selectedCampus.replace('GGPS ', '')}</span>
+                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${campusDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {campusDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1.5 w-56 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 py-1.5">
+                      Switch Campus
+                    </div>
+                    {['GGPS Main Campus', 'GGPS North Wing', 'GGPS South Branch'].map((campus) => (
+                      <button
+                        key={campus}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCampus(campus);
+                          setCampusDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-between cursor-pointer ${
+                          selectedCampus === campus
+                            ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
+                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{campus}</span>
+                        {selectedCampus === campus && <Check className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#38BDF8]" />}
+                      </button>
+                    ))}
+                    <div className="border-t border-slate-100 dark:border-slate-800 mt-1.5 pt-1.5">
+                      <Link
+                        href="/dashboard/campuses"
+                        onClick={() => setCampusDropdownOpen(false)}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>Manage Campuses →</span>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Academic Year Selector Pill */}
-              <button
-                type="button"
-                className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/80 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
-              >
-                <Calendar className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#E5EEFF]" />
-                <span>AY 2025 - 2026</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAcademicYearDropdownOpen(!academicYearDropdownOpen);
+                    setCampusDropdownOpen(false);
+                    setProfileDropdownOpen(false);
+                  }}
+                  className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/80 dark:border-slate-700 text-[#000E28] dark:text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#E5EEFF]" />
+                  <span>{selectedAcademicYear}</span>
+                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${academicYearDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {academicYearDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1.5 w-48 bg-white dark:bg-[#000E28] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 py-1.5">
+                      Academic Year
+                    </div>
+                    {['AY 2025 - 2026', 'AY 2024 - 2025', 'AY 2026 - 2027'].map((ay) => (
+                      <button
+                        key={ay}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAcademicYear(ay);
+                          setAcademicYearDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-between cursor-pointer ${
+                          selectedAcademicYear === ay
+                            ? 'bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8]'
+                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{ay}</span>
+                        {selectedAcademicYear === ay && <Check className="w-3.5 h-3.5 text-[#0050CB] dark:text-[#38BDF8]" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

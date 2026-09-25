@@ -176,7 +176,10 @@ export default function PaperGeneratorPage() {
                   <Printer className="h-3.5 w-3.5" />
                   <span>Print Paper</span>
                 </button>
-                <button className="px-3 py-1.5 bg-[#0050CB] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
                   <Download className="h-3.5 w-3.5" />
                   <span>Export PDF</span>
                 </button>

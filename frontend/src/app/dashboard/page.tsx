@@ -297,9 +297,12 @@ export default function DashboardOverview() {
                             <p className="font-black text-[#000E28] dark:text-white text-base">
                               ₹{(fee.totalAmount - fee.amountPaid).toLocaleString()}
                             </p>
-                            <button className="bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold px-3 py-1.5 rounded-full transition-all shadow-xs cursor-pointer">
+                            <Link
+                              href="/dashboard/fees"
+                              className="bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold px-3 py-1.5 rounded-full transition-all shadow-xs cursor-pointer inline-block"
+                            >
                               Pay Now
-                            </button>
+                            </Link>
                           </div>
                         </div>
                       ))}

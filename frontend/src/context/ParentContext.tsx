@@ -351,15 +351,14 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
   const refreshUnreadCounts = useCallback(async () => {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      if (!token) return;
       const apiBase = getApiBaseUrl();
-      const headers = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
       // 1. Unread Messages
-      fetch(`${apiBase}/api/v1/messages/unread-count`, { headers })
+      fetch(`${apiBase}/api/v1/messages/unread-count`, { headers, credentials: 'include' })
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data && typeof data.unreadCount === 'number') {
@@ -369,7 +368,7 @@ export function ParentProvider({ children: reactChildren }: { children: React.Re
         .catch(() => {});
 
       // 2. Unread Notifications
-      fetch(`${apiBase}/api/v1/notifications?read=false&limit=1`, { headers })
+      fetch(`${apiBase}/api/v1/notifications?read=false&limit=1`, { headers, credentials: 'include' })
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data && typeof data.unreadCount === 'number') {

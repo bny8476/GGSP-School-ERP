@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getChatMessages, sendChatMessage } from '../controllers/chatController';
+import { getMessages, sendMessage } from '../controllers/messageController';
 import {
   getTasks,
   getStaffMembers,
@@ -20,9 +20,9 @@ const router = Router();
 // Secure all productivity apps endpoints
 router.use(protect);
 
-// Chat routes
-router.get('/chat/messages', getChatMessages);
-router.post('/chat/send', sendChatMessage);
+// Unified Chat / Messaging routes
+router.get('/chat/messages', getMessages);
+router.post('/chat/send', sendMessage);
 
 // Task routes (Administrative Delegation & Tracking)
 router.get('/tasks', getTasks);

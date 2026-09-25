@@ -38,6 +38,7 @@ import {
 } from './communication';
 import messageRoutes from '../routes/messageRoutes';
 import reportRoutes from '../routes/reportRoutes';
+import roleRoutes from '../routes/roleRoutes';
 import {
   healthRoutes,
   dashboardRoutes,
@@ -62,6 +63,7 @@ export function registerDomainModules(apiRouter: Router): void {
   apiRouter.use('/dashboard', dashboardRoutes);
   apiRouter.use('/audit', auditRoutes);
   apiRouter.use('/settings', settingsRoutes);
+  apiRouter.use('/roles', roleRoutes);
   apiRouter.use('/campuses', campusRoutes);
   apiRouter.use('/enterprise', enterpriseRoutes);
   apiRouter.use('/apps', appsRoutes);

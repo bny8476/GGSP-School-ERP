@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, X, ShieldAlert, BellRing } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/utils';
 
 interface IBroadcast {
   _id: string;
@@ -18,11 +19,13 @@ export function EmergencyBanner() {
 
   const fetchActiveBroadcasts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/broadcasts/active`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
       });
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Megaphone, Users, CheckCircle2, Play, Plus, RefreshCw, BarChart2, Radio, Edit3, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Megaphone, Users, CheckCircle2, Play, Plus, RefreshCw, BarChart2, Radio, Edit3, Image as ImageIcon, Sparkles, Download } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function DigitalBoardPage() {
   const [activeTab, setActiveTab] = useState<"whiteboard" | "polls">("polls");
@@ -9,6 +10,14 @@ export default function DigitalBoardPage() {
   const [pollOptions, setPollOptions] = useState(["4", "7", "4/7", "-4"]);
   const [isPollActive, setIsPollActive] = useState(true);
   const [votes, setVotes] = useState({ 0: 18, 1: 3, 2: 2, 3: 1 });
+
+  // Whiteboard canvas state
+  const [activeTool, setActiveTool] = useState<"pencil" | "highlighter" | "formula">("pencil");
+  const [canvasNotes, setCanvasNotes] = useState<string[]>([
+    "# Interactive Digital Canvas - Live Stream",
+    "Equation: f(x) = ax² + bx + c",
+    "Vertex V = (-b/2a, f(-b/2a)) = (2, -9)",
+  ]);
 
   const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
 
@@ -20,6 +29,19 @@ export default function DigitalBoardPage() {
     e.preventDefault();
     setIsPollActive(true);
     setVotes({ 0: 0, 1: 0, 2: 0, 3: 0 });
+    toast.success("New instant poll broadcasted!");
+  };
+
+  const handleExportSnapshot = () => {
+    const textContent = canvasNotes.join("\n");
+    const blob = new Blob([`DIGITAL WHITEBOARD SNAPSHOT\n${textContent}\nExported: ${new Date().toLocaleString()}`], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `whiteboard_snapshot_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Snapshot exported successfully!");
   };
 
   return (
@@ -190,23 +212,80 @@ export default function DigitalBoardPage() {
               </h2>
             </div>
             <div className="flex gap-2">
-              <button className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-xs font-bold rounded-lg">Pencil</button>
-              <button className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-xs font-bold rounded-lg">Highlighter</button>
-              <button className="px-3 py-1.5 bg-[#E5EEFF] text-[#0050CB] text-xs font-bold rounded-lg">Formula Insert</button>
-              <button className="px-3 py-1.5 bg-rose-100 text-rose-700 text-xs font-bold rounded-lg">Clear Canvas</button>
+              <button 
+                onClick={() => { setActiveTool("pencil"); toast.success("Pencil tool activated"); }}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-colors ${
+                  activeTool === "pencil" 
+                    ? "bg-[#0050CB] text-white shadow-xs" 
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                Pencil
+              </button>
+              <button 
+                onClick={() => { setActiveTool("highlighter"); toast.success("Highlighter tool activated"); }}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-colors ${
+                  activeTool === "highlighter" 
+                    ? "bg-amber-500 text-white shadow-xs" 
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                Highlighter
+              </button>
+              <button 
+                onClick={() => { 
+                  setCanvasNotes(prev => [...prev, `Formula [${new Date().toLocaleTimeString()}]: Δ = b² - 4ac (Discriminant Formula)`]); 
+                  toast.success("Formula inserted into canvas"); 
+                }}
+                className="px-3 py-1.5 bg-[#E5EEFF] dark:bg-[#0050CB]/20 text-[#0050CB] dark:text-[#38BDF8] text-xs font-bold rounded-lg hover:bg-blue-200 transition-colors cursor-pointer"
+              >
+                Formula Insert
+              </button>
+              <button 
+                onClick={() => { 
+                  setCanvasNotes([]); 
+                  toast.success("Canvas cleared"); 
+                }}
+                className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+              >
+                Clear Canvas
+              </button>
             </div>
           </div>
 
           <div className="h-[450px] w-full bg-slate-900 text-slate-100 rounded-xl p-6 relative overflow-hidden font-mono flex flex-col justify-between border border-slate-800 shadow-inner">
-            <div className="space-y-2">
-              <div className="text-emerald-400 font-bold text-sm"># Interactive Digital Canvas - Live Stream</div>
-              <div className="text-slate-300 text-xs">Equation: f(x) = ax² + bx + c</div>
-              <div className="text-amber-400 text-xs">Vertex V = (-b/2a, f(-b/2a)) = (2, -9)</div>
+            <div className="space-y-2 overflow-y-auto max-h-[360px] pr-2">
+              {canvasNotes.length === 0 ? (
+                <div className="text-slate-500 italic text-xs py-10 text-center">
+                  Canvas is empty. Select a tool or click Formula Insert to annotate.
+                </div>
+              ) : (
+                canvasNotes.map((note, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`text-xs ${
+                      note.startsWith("#") 
+                        ? "text-emerald-400 font-bold text-sm" 
+                        : note.startsWith("Formula") 
+                        ? "text-purple-400 font-semibold"
+                        : "text-slate-300"
+                    }`}
+                  >
+                    {note}
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="border-t border-slate-800 pt-3 flex justify-between items-center text-xs text-slate-400 font-sans">
-              <span>Canvas Sync: Real-time 60fps • 28 Viewers connected</span>
-              <button className="px-3 py-1 bg-[#0050CB] text-white text-xs font-bold rounded-lg">Export Snapshot (PNG)</button>
+              <span>Canvas Sync: Real-time 60fps • 28 Viewers connected • Mode: <strong className="text-white capitalize">{activeTool}</strong></span>
+              <button 
+                onClick={handleExportSnapshot}
+                className="px-3 py-1.5 bg-[#0050CB] hover:bg-[#0041A8] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Snapshot (PNG)</span>
+              </button>
             </div>
           </div>
         </div>

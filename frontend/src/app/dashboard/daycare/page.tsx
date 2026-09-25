@@ -16,6 +16,9 @@ export default function DaycarePage() {
   const [selectedClass, setSelectedClass] = useState("All Classes");
   const [selectedRoom, setSelectedRoom] = useState("All Rooms");
   const [showModal, setShowModal] = useState(false);
+  const [selectedLogDetails, setSelectedLogDetails] = useState<any | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 4;
 
   // Form states for new daycare log
   const [studentName, setStudentName] = useState("");
@@ -153,6 +156,10 @@ export default function DaycarePage() {
     const matchesRoom = selectedRoom === "All Rooms" || log.room === selectedRoom;
     return matchesSearch && matchesClass && matchesRoom;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedLogs = filteredLogs.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   return (
     <div className="space-y-6 font-sans text-[#000E28] dark:text-white pb-16">
@@ -311,9 +318,19 @@ export default function DaycarePage() {
         </select>
 
         {/* Filter Button */}
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors shrink-0">
+        <button 
+          onClick={() => {
+            setSelectedClass("All Classes");
+            setSelectedRoom("All Rooms");
+            setSearchQuery("");
+            setCurrentPage(1);
+            toast.success("Filters reset to default");
+          }}
+          title="Reset all filters"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shrink-0 cursor-pointer"
+        >
           <Filter className="w-3.5 h-3.5 text-slate-500" />
-          <span>Filter</span>
+          <span>Reset Filters</span>
         </button>
       </div>
 
@@ -342,7 +359,7 @@ export default function DaycarePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {filteredLogs.map((log) => (
+                {paginatedLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
                     <td className="p-4 text-center">
                       <input type="checkbox" className="rounded-md border-slate-300" />
@@ -411,7 +428,11 @@ export default function DaycarePage() {
 
                     {/* Actions */}
                     <td className="p-4 text-center">
-                      <button className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg">
+                      <button 
+                        onClick={() => setSelectedLogDetails(log)}
+                        title="View & Edit Status"
+                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer transition-colors"
+                      >
                         <MoreVertical className="w-4 h-4 mx-auto" />
                       </button>
                     </td>
@@ -423,25 +444,34 @@ export default function DaycarePage() {
 
           {/* TABLE FOOTER & PAGINATION */}
           <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
-            <span>Showing 1 to {filteredLogs.length} of 24 students</span>
+            <span>Showing {filteredLogs.length > 0 ? (safePage - 1) * pageSize + 1 : 0} to {Math.min(safePage * pageSize, filteredLogs.length)} of {filteredLogs.length} students</span>
 
             <div className="flex items-center gap-1.5">
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
                 &lt;
               </button>
-              <button className="w-8 h-8 rounded-lg bg-[#0050CB] text-white font-bold flex items-center justify-center shadow-xs">
-                1
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">
-                2
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">
-                3
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">
-                4
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-8 h-8 rounded-lg font-bold flex items-center justify-center cursor-pointer transition-colors ${
+                    safePage === pageNum 
+                      ? "bg-[#0050CB] text-white shadow-xs" 
+                      : "border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
                 &gt;
               </button>
             </div>
@@ -733,6 +763,97 @@ export default function DaycarePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* STUDENT LOG DETAILS & STATUS TOGGLE MODAL */}
+      {selectedLogDetails && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-[#000E28] w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-3">
+                <img
+                  src={selectedLogDetails.avatar}
+                  alt={selectedLogDetails.name}
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-100"
+                />
+                <div>
+                  <h2 className="text-base font-black text-[#000E28] dark:text-white leading-tight">
+                    {selectedLogDetails.name}
+                  </h2>
+                  <p className="text-[10px] text-slate-400 font-semibold">
+                    {selectedLogDetails.studentCode} • Class {selectedLogDetails.class} ({selectedLogDetails.room})
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedLogDetails(null)} 
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 block">Check-in Time</span>
+                  <span className="font-extrabold text-slate-800 dark:text-slate-200">{selectedLogDetails.checkIn}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 block">Check-out Time</span>
+                  <span className="font-extrabold text-slate-800 dark:text-slate-200">{selectedLogDetails.checkOut || "-"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 block">Meals Status</span>
+                  <span className="font-extrabold text-emerald-600">Served ({selectedLogDetails.meals})</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 block">Nap Status</span>
+                  <span className="font-extrabold text-slate-800 dark:text-slate-200">{selectedLogDetails.nap}</span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-100 dark:border-blue-900/50">
+                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 block">Current Care Status</span>
+                <span className="text-sm font-black text-[#0050CB] dark:text-[#38BDF8]">{selectedLogDetails.status}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedLogs = logs.map(l => {
+                    if (l.id === selectedLogDetails.id) {
+                      const newStatus = l.status === "In Care" ? "Checked Out" : "In Care";
+                      const newCheckOut = newStatus === "Checked Out" ? "04:30 PM" : "-";
+                      return { ...l, status: newStatus, checkOut: newCheckOut };
+                    }
+                    return l;
+                  });
+                  setLogs(updatedLogs);
+                  toast.success(`Updated status for ${selectedLogDetails.name}`);
+                  setSelectedLogDetails(null);
+                }}
+                className={`px-4 py-2 text-white font-bold rounded-xl shadow-xs cursor-pointer text-xs ${
+                  selectedLogDetails.status === "In Care" 
+                    ? "bg-emerald-600 hover:bg-emerald-700" 
+                    : "bg-[#0050CB] hover:bg-[#0041A8]"
+                }`}
+              >
+                {selectedLogDetails.status === "In Care" ? "Check Out Student" : "Mark Back In Care"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedLogDetails(null)}
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-200 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -145,7 +145,11 @@ export default function AssetQRPage() {
             </div>
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
-              <button className="text-[#0050CB] dark:text-[#38BDF8] font-bold hover:underline cursor-pointer flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="text-[#0050CB] dark:text-[#38BDF8] font-bold hover:underline cursor-pointer flex items-center gap-1"
+              >
                 <Printer className="h-3.5 w-3.5" />
                 <span>Print QR Code Label</span>
               </button>

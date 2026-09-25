@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Building2, Plus, ShieldCheck, MapPin, Phone, Mail, Users, CheckCircle2, Search } from "lucide-react";
 
 export default function CampusesPage() {
@@ -14,9 +15,10 @@ export default function CampusesPage() {
   const fetchCampuses = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
       const res = await fetch("/api/campuses", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
       });
       if (res.ok) {
         const data = await res.json();
@@ -161,9 +163,9 @@ export default function CampusesPage() {
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
               <span className="text-slate-400 font-semibold">Hours: {c.workingHours}</span>
-              <button className="text-[#0050CB] dark:text-[#38BDF8] font-bold hover:underline cursor-pointer">
+              <Link href="/dashboard/settings" className="text-[#0050CB] dark:text-[#38BDF8] font-bold hover:underline cursor-pointer">
                 Manage Campus Settings →
-              </button>
+              </Link>
             </div>
           </div>
         ))}

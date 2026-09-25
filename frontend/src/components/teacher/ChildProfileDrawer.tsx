@@ -57,6 +57,7 @@ export default function ChildProfileDrawer({
   onMessageParent,
 }: ChildProfileDrawerProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("Overview");
+  const [previewDoc, setPreviewDoc] = useState<string | null>(null);
 
   if (!student) return null;
 
@@ -361,7 +362,10 @@ export default function ChildProfileDrawer({
                         <FileText className="w-4 h-4 text-blue-600" />
                         <span className="font-bold text-slate-700 dark:text-slate-200 text-xs">{doc}</span>
                       </div>
-                      <button className="text-blue-600 hover:underline font-bold text-[11px] cursor-pointer">
+                      <button 
+                        onClick={() => setPreviewDoc(doc)}
+                        className="text-blue-600 hover:underline font-bold text-[11px] cursor-pointer"
+                      >
                         View
                       </button>
                     </div>
@@ -390,6 +394,63 @@ export default function ChildProfileDrawer({
               </button>
             </div>
           </motion.div>
+        </div>
+      )}
+
+      {/* Document Preview Modal */}
+      {previewDoc && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-[9999]">
+          <div className="bg-white dark:bg-[#111827] w-full max-w-lg p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                <h3 className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
+                  {previewDoc}
+                </h3>
+              </div>
+              <button
+                onClick={() => setPreviewDoc(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-8 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mx-auto">
+                <FileText className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="font-extrabold text-xs text-slate-800 dark:text-white">Official Student Record</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Verified document on file for student: <strong className="text-slate-800 dark:text-slate-200">{student.name}</strong> ({student.rollNo})
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => {
+                  const blob = new Blob([`Official Record: ${previewDoc}\nStudent: ${student.name} (${student.rollNo})\nSchool: GGPS School ERP`], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = previewDoc;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
+              >
+                Download Document
+              </button>
+              <button
+                onClick={() => setPreviewDoc(null)}
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-200 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </AnimatePresence>

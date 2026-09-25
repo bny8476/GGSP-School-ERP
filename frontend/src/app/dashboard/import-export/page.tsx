@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Database, Upload, Download, FileSpreadsheet, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
+import toast from 'react-hot-toast';
 
 export default function ImportExportPage() {
   const [selectedEntity, setSelectedEntity] = useState('students');
@@ -45,6 +46,37 @@ export default function ImportExportPage() {
     a.href = url;
     a.download = `${selectedEntity}_import_template.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleExportReport = (title: string) => {
+    let csvData = "";
+    let filename = "";
+
+    if (title.includes("Student Roster")) {
+      csvData = "ID,Name,Grade,Section,RollNo,ParentEmail,Status\n101,Aarav Sharma,10,A,1001,sharma.parent@example.com,Active\n102,Diya Patel,10,B,1002,diya.parent@example.com,Active\n103,Vihaan Mehta,9,A,901,vihaan.parent@example.com,Active";
+      filename = "Student_Roster_Export.csv";
+    } else if (title.includes("Fee Collection")) {
+      csvData = "InvoiceID,StudentName,Amount,Term,PaymentStatus,DueDate\nINV-2026-001,Aarav Sharma,$1200,Term 1,Paid,2026-09-01\nINV-2026-002,Diya Patel,$1200,Term 1,Pending,2026-10-01";
+      filename = "Fee_Collection_Ledger.csv";
+    } else if (title.includes("Staff Payroll")) {
+      csvData = "EmpID,Name,Department,BasicSalary,TaxDeduction,NetPay,Status\nEMP-01,Sarah Smith,Science,$4500,$450,$4050,Disbursed\nEMP-02,David Miller,Math,$4800,$480,$4320,Disbursed";
+      filename = "Staff_Payroll_Register.csv";
+    } else {
+      csvData = "Timestamp,User,Action,IPAddress,Status\n2026-09-25T10:00:00Z,admin@ggps.edu,USER_LOGIN,192.168.1.10,SUCCESS\n2026-09-25T10:15:00Z,teacher@ggps.edu,MARKS_UPDATE,192.168.1.25,SUCCESS";
+      filename = "System_Audit_Log.csv";
+    }
+
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    toast.success(`Exported ${title} successfully!`);
   };
 
   return (
@@ -156,8 +188,8 @@ export default function ImportExportPage() {
                   <span className="text-xs text-slate-400">{exp.format}</span>
                 </div>
                 <button
-                  onClick={() => alert(`Exporting ${exp.title}...`)}
-                  className="flex items-center gap-1.5 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg hover:border-indigo-500 transition-colors"
+                  onClick={() => handleExportReport(exp.title)}
+                  className="flex items-center gap-1.5 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5 text-indigo-600" /> Export
                 </button>

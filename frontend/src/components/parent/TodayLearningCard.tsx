@@ -51,7 +51,7 @@ export default function TodayLearningCard({ className = "" }: { className?: stri
             </div>
 
             <Link
-              href="/parent/classwork"
+              href="/parent/homework"
               className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline flex items-center gap-0.5"
             >
               All Lessons <ChevronRight className="w-3.5 h-3.5" />

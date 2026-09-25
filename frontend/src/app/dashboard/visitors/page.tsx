@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserCheck, ShieldCheck, Plus, Clock, Phone, FileText, CheckCircle, LogOut } from 'lucide-react';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
+import { getApiBaseUrl } from '@/lib/utils';
 
 export default function VisitorsPage() {
   const [visitors, setVisitors] = useState<any[]>([]);
@@ -17,16 +18,22 @@ export default function VisitorsPage() {
     idProofNumber: '',
   });
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+  const API_BASE = getApiBaseUrl();
+
+  const getAuthHeaders = (extra: Record<string, string> = {}) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    return {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...extra,
+    };
+  };
 
   const fetchVisitors = async () => {
     setLoading(true);
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
     try {
       const res = await fetch(`${API_BASE}/api/visitors`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: getAuthHeaders(),
+        credentials: 'include',
       });
       const data = await res.json();
       if (data.success) setVisitors(data.data || []);
@@ -43,14 +50,11 @@ export default function VisitorsPage() {
 
   const handleCreatePass = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE}/api/visitors`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        credentials: 'include',
         body: JSON.stringify(newVisitor),
       });
       if (res.ok) {
@@ -63,11 +67,11 @@ export default function VisitorsPage() {
   };
 
   const handleCheckout = async (id: string) => {
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE}/api/visitors/${id}/checkout`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: getAuthHeaders(),
+        credentials: 'include',
       });
       if (res.ok) fetchVisitors();
     } catch (err) {

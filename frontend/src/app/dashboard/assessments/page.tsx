@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Search, ChevronDown, CheckCircle2, Award, User, Calendar, BookOpen } from 'lucide-react';
+import { FileText, Plus, Search, ChevronDown, CheckCircle2, Award, User, Calendar, BookOpen, X, Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiBaseUrl } from '@/lib/utils';
 
 const RUBRIC_TEMPLATE = [
   { category: 'Motor Skills', skill: 'Holds pencil correctly and traces lines' },
@@ -22,6 +23,7 @@ export default function AssessmentsPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedReportCard, setSelectedReportCard] = useState<any | null>(null);
 
   // Form State
   const [selectedStudent, setSelectedStudent] = useState('');
@@ -32,15 +34,18 @@ export default function AssessmentsPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const headers = { 'Authorization': `Bearer ${token}` };
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiBase = getApiBaseUrl();
+      const headers = {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
 
       // Fetch Assessments
-      const assmRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assessments`, { headers });
+      const assmRes = await fetch(`${apiBase}/api/assessments`, { headers, credentials: 'include' });
       if (assmRes.ok) setAssessments(await assmRes.json());
 
       // Fetch Students for dropdown
-      const stuRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/students`, { headers });
+      const stuRes = await fetch(`${apiBase}/api/students`, { headers, credentials: 'include' });
       if (stuRes.ok) setStudents(await stuRes.json());
       
     } catch (error) {
@@ -225,8 +230,12 @@ export default function AssessmentsPage() {
                         </div>
                         {assessment.rubrics.length > 4 && (
                           <div className="text-center mt-4">
-                            <button className="text-indigo-600 hover:text-indigo-800 text-sm font-bold bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors w-full">
-                              View Full Report Card
+                            <button
+                              type="button"
+                              onClick={() => setSelectedReportCard(assessment)}
+                              className="text-indigo-600 hover:text-indigo-800 text-sm font-bold bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors w-full cursor-pointer"
+                            >
+                              View Full Report Card ({assessment.rubrics.length} Rubrics)
                             </button>
                           </div>
                         )}
@@ -365,6 +374,76 @@ export default function AssessmentsPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+      {/* Full Report Card Modal */}
+      {selectedReportCard && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in duration-200">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">
+                  {selectedReportCard.student?.firstName} {selectedReportCard.student?.lastName} — Full Report Card
+                </h3>
+                <p className="text-xs font-bold text-slate-400 mt-0.5">
+                  {selectedReportCard.term} • Grade: {selectedReportCard.student?.grade || 'Pre-K'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedReportCard(null)}
+                  className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">All Developmental Rubrics</h4>
+                <div className="space-y-3">
+                  {selectedReportCard.rubrics?.map((rubric: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center text-sm border-b border-slate-100 pb-2.5">
+                      <span className="text-slate-700 font-medium">
+                        <span className="font-bold text-slate-500 mr-2">[{rubric.category}]</span> {rubric.skill}
+                      </span>
+                      <div className="shrink-0">{getScoreBadge(rubric.score)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {selectedReportCard.teacherComments && (
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Teacher's Observations</h4>
+                  <p className="text-sm text-slate-700 font-medium whitespace-pre-wrap">{selectedReportCard.teacherComments}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedReportCard(null)}
+                className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

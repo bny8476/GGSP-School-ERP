@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import env from './config/env';
 import logger from './utils/logger';
 import Conversation from './models/Conversation';
+import Notification from './models/Notification';
 
 let io: SocketIOServer;
 const onlineUserSockets = new Map<string, Set<string>>();
@@ -112,6 +113,39 @@ export const initSocket = (httpServer: HttpServer): SocketIOServer => {
     if (user.campusId) socket.join(`campus:${user.campusId}`);
     if (user.schoolId) socket.join(`school:${user.schoolId}`);
     if (user.parentId) socket.join(`parent:${user.parentId}`);
+
+    // Durable Outbox On-Connect Replay: Deliver unread pending notifications missed while offline
+    if (mongoose.connection.readyState === 1) {
+      Notification.find({
+        $or: [
+          { recipient: user.id },
+          { userId: user.id },
+          { targetRole: user.role },
+          { targetRole: 'all' },
+        ],
+        read: false,
+        deliveryStatus: { $in: ['Pending', 'Sent'] },
+      })
+        .sort({ createdAt: -1 })
+        .limit(25)
+        .then(async (pendingNotifications) => {
+          if (pendingNotifications && pendingNotifications.length > 0) {
+            socket.emit('notification:replay', pendingNotifications);
+            const ids = pendingNotifications.map((n) => n._id);
+            await Notification.updateMany(
+              { _id: { $in: ids } },
+              { $set: { deliveryStatus: 'Delivered', deliveredAt: new Date() } }
+            );
+            logger.debug(
+              { userId: user.id, count: pendingNotifications.length },
+              'Replayed pending notifications to newly connected user'
+            );
+          }
+        })
+        .catch((err) => {
+          logger.warn({ err, userId: user.id }, 'Error during on-connect notification replay');
+        });
+    }
 
     // Room subscription handler supporting both 'join_room' and 'join-room'
     const handleJoinRoom = async (roomId: string) => {
@@ -257,7 +291,18 @@ export const getIO = (): SocketIOServer => {
 // Safe scoped emission helpers
 export const emitToUser = (userId: string, event: string, payload: any): void => {
   try {
-    if (io) io.to(`user:${userId}`).emit(event, payload);
+    if (io) {
+      io.to(`user:${userId}`).emit(event, payload);
+
+      if (event === 'notification:new' && payload?._id && mongoose.connection.readyState === 1) {
+        const isOnline = (onlineUserSockets.get(userId)?.size || 0) > 0;
+        if (isOnline) {
+          Notification.findByIdAndUpdate(payload._id, {
+            $set: { deliveryStatus: 'Delivered', deliveredAt: new Date() },
+          }).catch(() => null);
+        }
+      }
+    }
   } catch (err) {
     logger.warn({ userId, event }, 'Failed to emit to user socket room');
   }

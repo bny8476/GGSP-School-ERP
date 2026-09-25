@@ -231,11 +231,20 @@ export default function TeachersPage() {
     }
   };
 
-  const filteredTeachers = teachers.filter(t => 
-    (t.firstName + " " + t.lastName).toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (t.designation || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredTeachers = teachers.filter(t => {
+    const matchesSearch = (t.firstName + " " + t.lastName).toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          t.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (t.designation || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = selectedRole === "All Roles" || (t.role || 'Teacher') === selectedRole || (t.designation || '').toLowerCase().includes(selectedRole.toLowerCase());
+    return matchesSearch && matchesRole;
+  });
+
+  const pageSize = 6;
+  const totalPages = Math.max(1, Math.ceil(filteredTeachers.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedTeachers = filteredTeachers.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="space-y-6 font-sans text-[#000E28] dark:text-white pb-16">
@@ -359,9 +368,14 @@ export default function TeachersPage() {
                 <option value="Staff">Staff</option>
               </select>
 
-              <button className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => { setSelectedRole("All Roles"); setSearchQuery(""); setCurrentPage(1); }}
+                className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                title="Reset Filters"
+              >
                 <Filter className="w-3.5 h-3.5 text-slate-400" />
-                <span>Filter</span>
+                <span>Reset</span>
               </button>
 
               <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
@@ -410,7 +424,7 @@ export default function TeachersPage() {
             ) : filteredTeachers.length === 0 ? (
               <div className="py-12 text-center text-xs font-bold text-slate-400">No teachers found matching search.</div>
             ) : (
-              filteredTeachers.map((t) => (
+              paginatedTeachers.map((t) => (
                 <div
                   key={t._id}
                   className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#000E28] hover:border-[#0050CB] transition-all flex items-center justify-between gap-4"
@@ -472,13 +486,39 @@ export default function TeachersPage() {
 
           {/* LIST FOOTER & PAGINATION */}
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
-            <span>Showing 1 to {filteredTeachers.length} of {teachers.length} teachers</span>
+            <span>Showing {filteredTeachers.length > 0 ? startIndex + 1 : 0} to {Math.min(startIndex + pageSize, filteredTeachers.length)} of {filteredTeachers.length} teachers</span>
 
             <div className="flex items-center gap-1.5">
-              <button className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">&lt;</button>
-              <button className="w-7 h-7 rounded-lg bg-[#0050CB] text-white font-bold flex items-center justify-center shadow-xs">1</button>
-              <button className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50">2</button>
-              <button className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-50">&gt;</button>
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+              >
+                &lt;
+              </button>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-7 h-7 rounded-lg font-bold flex items-center justify-center transition-colors cursor-pointer ${
+                    currentPage === i + 1
+                      ? 'bg-[#0050CB] text-white shadow-xs'
+                      : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+              >
+                &gt;
+              </button>
             </div>
           </div>
 
@@ -578,9 +618,13 @@ export default function TeachersPage() {
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-300">
                 Track workloads, foster academic growth.
               </p>
-              <button className="mt-2 w-7 h-7 rounded-full bg-[#0050CB] text-white flex items-center justify-center cursor-pointer shadow-xs">
+              <Link
+                href="/dashboard/lesson-planner"
+                className="mt-2 w-7 h-7 rounded-full bg-[#0050CB] hover:bg-[#0041A8] text-white flex items-center justify-center cursor-pointer shadow-xs transition-colors"
+                title="Open Lesson Planner"
+              >
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
 
             <div className="w-16 h-16 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md flex items-center justify-center text-3xl shadow-sm shrink-0">

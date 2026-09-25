@@ -13,6 +13,8 @@ export interface INotification extends Document {
   priority: 'low' | 'normal' | 'high' | 'urgent';
   read: boolean;
   readAt?: Date;
+  deliveryStatus: 'Pending' | 'Sent' | 'Delivered' | 'Read';
+  deliveredAt?: Date;
   link?: string;
   metadata?: Record<string, any>;
   schoolId?: mongoose.Types.ObjectId;
@@ -78,6 +80,15 @@ const NotificationSchema: Schema = new Schema(
     readAt: {
       type: Date,
     },
+    deliveryStatus: {
+      type: String,
+      enum: ['Pending', 'Sent', 'Delivered', 'Read'],
+      default: 'Pending',
+      index: true,
+    },
+    deliveredAt: {
+      type: Date,
+    },
     link: {
       type: String,
     },
@@ -100,13 +111,18 @@ NotificationSchema.pre('save', function () {
   } else if (this.userId && !this.recipient) {
     this.recipient = this.userId;
   }
-  if (this.read && !this.readAt) {
-    this.readAt = new Date();
+  if (this.read) {
+    if (!this.readAt) {
+      this.readAt = new Date();
+    }
+    this.deliveryStatus = 'Read';
   }
 });
 
 NotificationSchema.index({ recipient: 1, read: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, read: 1, createdAt: -1 });
+NotificationSchema.index({ recipient: 1, deliveryStatus: 1, createdAt: -1 });
+NotificationSchema.index({ targetRole: 1, deliveryStatus: 1, createdAt: -1 });
 NotificationSchema.index({ targetRole: 1, createdAt: -1 });
 
 export default mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);

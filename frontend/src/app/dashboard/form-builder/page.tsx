@@ -8,11 +8,13 @@ import {
   TrendingUp, Edit3, Award, AlertCircle, FilePlus
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 let formIdCounter = 100;
 const getFormId = () => ++formIdCounter;
 
 export default function FormBuilderPage() {
+  const router = useRouter();
   const [forms, setForms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -313,9 +315,9 @@ export default function FormBuilderPage() {
                   My Classes Today
                 </h3>
               </div>
-              <button className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline cursor-pointer">
+              <Link href="/dashboard/classes" className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline cursor-pointer">
                 View All
-              </button>
+              </Link>
             </div>
 
             {/* Class Items */}
@@ -479,7 +481,7 @@ export default function FormBuilderPage() {
               </Link>
 
               <Link
-                href="/dashboard/assignments"
+                href="/dashboard/curriculum"
                 className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-[#E5EEFF] dark:hover:bg-[#0050CB]/20 text-xs font-bold text-[#000E28] dark:text-white transition-all border border-slate-100 dark:border-slate-800 group"
               >
                 <div className="flex items-center gap-3">
@@ -589,7 +591,7 @@ export default function FormBuilderPage() {
           <div className="bg-white dark:bg-[#000E28] rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-sm font-black text-[#000E28] dark:text-white">Recent Activity</h3>
-              <button className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline">View All</button>
+              <Link href="/dashboard/audit-logs" className="text-xs font-bold text-[#0050CB] dark:text-[#38BDF8] hover:underline cursor-pointer">View All</Link>
             </div>
 
             <div className="space-y-3 text-xs">
@@ -665,7 +667,16 @@ export default function FormBuilderPage() {
             </div>
           </div>
 
-          <div className="flex-1 max-w-xl w-full flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = aiPrompt.trim();
+              if (q) {
+                router.push(`/dashboard/ai-assistant?q=${encodeURIComponent(q)}`);
+              }
+            }}
+            className="flex-1 max-w-xl w-full flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2"
+          >
             <Search className="w-4 h-4 text-blue-200 shrink-0" />
             <input
               type="text"
@@ -674,10 +685,14 @@ export default function FormBuilderPage() {
               placeholder="Ask anything about your classes, students, or school..."
               className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-blue-200/70"
             />
-            <button className="w-7 h-7 rounded-full bg-[#0050CB] hover:bg-blue-600 flex items-center justify-center text-white shrink-0 cursor-pointer">
+            <button
+              type="submit"
+              className="w-7 h-7 rounded-full bg-[#0050CB] hover:bg-blue-600 flex items-center justify-center text-white shrink-0 cursor-pointer transition-colors"
+              title="Submit Query"
+            >
               <Send className="w-3.5 h-3.5" />
             </button>
-          </div>
+          </form>
 
           <span className="hidden xl:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 text-[11px] font-bold text-[#38BDF8] border border-white/10">
             Powered by AI ✦
