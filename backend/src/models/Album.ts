@@ -25,4 +25,4 @@ const AlbumSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IAlbum>('Album', AlbumSchema);
+export default mongoose.models.Album || mongoose.model<IAlbum>('Album', AlbumSchema);

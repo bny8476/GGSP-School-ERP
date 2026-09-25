@@ -31,4 +31,4 @@ const VisitorLogSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IVisitorLog>('VisitorLog', VisitorLogSchema);
+export default mongoose.models.VisitorLog || mongoose.model<IVisitorLog>('VisitorLog', VisitorLogSchema);

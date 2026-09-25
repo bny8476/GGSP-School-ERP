@@ -47,4 +47,4 @@ InventoryItemSchema.pre<IInventoryItem>('save', function () {
 
 
 
-export default mongoose.model<IInventoryItem>('InventoryItem', InventoryItemSchema);
+export default mongoose.models.InventoryItem || mongoose.model<IInventoryItem>('InventoryItem', InventoryItemSchema);

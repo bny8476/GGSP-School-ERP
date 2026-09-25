@@ -1,14 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 
-// Check if a single granted permission pattern satisfies the required permission
+// Check if a single granted permission pattern satisfies the required permission (supports both colon and dot notation)
 export const matchesPermission = (granted: string, required: string): boolean => {
   if (granted === '*' || granted === 'all') return true;
-  if (granted === required) return true;
+  const normGranted = granted.replace(/\./g, ':').toLowerCase();
+  const normRequired = required.replace(/\./g, ':').toLowerCase();
+
+  if (normGranted === normRequired) return true;
 
   // Check resource wildcard (e.g. 'students:*' matches 'students:read' and 'students:create')
-  if (granted.endsWith(':*')) {
-    const grantedResource = granted.slice(0, -2);
-    const [requiredResource] = required.split(':');
+  if (normGranted.endsWith(':*')) {
+    const grantedResource = normGranted.slice(0, -2);
+    const [requiredResource] = normRequired.split(':');
     return grantedResource === requiredResource;
   }
 
@@ -31,8 +34,8 @@ export const requirePermissions = (...requiredPermissions: string[]) => {
       return;
     }
 
-    // Role SuperAdmin always bypasses permission restrictions
-    if (req.user.role === 'SuperAdmin') {
+    // Role SuperAdmin always bypasses permission restrictions (case-insensitive)
+    if (String(req.user.role || '').toLowerCase() === 'superadmin') {
       next();
       return;
     }
@@ -65,7 +68,7 @@ export const requireAnyPermission = (...allowedPermissions: string[]) => {
       return;
     }
 
-    if (req.user.role === 'SuperAdmin') {
+    if (String(req.user.role || '').toLowerCase() === 'superadmin') {
       next();
       return;
     }

@@ -72,4 +72,4 @@ const TicketSchema: Schema = new Schema(
 
 TicketSchema.index({ status: 1, userId: 1 });
 
-export default mongoose.model<ITicket>('Ticket', TicketSchema);
+export default mongoose.models.Ticket || mongoose.model<ITicket>('Ticket', TicketSchema);

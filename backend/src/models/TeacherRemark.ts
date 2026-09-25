@@ -83,4 +83,4 @@ const TeacherRemarkSchema: Schema = new Schema(
 
 TeacherRemarkSchema.index({ studentId: 1, date: -1 });
 
-export default mongoose.model<ITeacherRemark>('TeacherRemark', TeacherRemarkSchema);
+export default mongoose.models.TeacherRemark || mongoose.model<ITeacherRemark>('TeacherRemark', TeacherRemarkSchema);

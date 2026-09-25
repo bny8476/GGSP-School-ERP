@@ -78,4 +78,4 @@ const DailyDiarySchema: Schema = new Schema(
 
 DailyDiarySchema.index({ classId: 1, sectionId: 1, date: -1 });
 
-export default mongoose.model<IDailyDiary>('DailyDiary', DailyDiarySchema);
+export default mongoose.models.DailyDiary || mongoose.model<IDailyDiary>('DailyDiary', DailyDiarySchema);

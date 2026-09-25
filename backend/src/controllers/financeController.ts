@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 import Fee from '../models/Fee';
 import Expense from '../models/Expense';
 import Parent from '../models/Parent';
 import StudentParent from '../models/StudentParent';
 import Student from '../models/Student';
 import Notification from '../models/Notification';
+import env from '../config/env';
+import paymentGatewayService from '../services/paymentGatewayService';
 import {
   generateNextReceiptNumber,
   generateNextInvoiceNumber,
@@ -160,11 +163,27 @@ export const createExpense = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Update a fee record
+// @desc    Update a fee record (strict whitelist to prevent unauthorized mass-assignment)
 // @route   PUT /api/finance/fees/:id
 export const updateFee = async (req: Request, res: Response) => {
   try {
-    const fee = await Fee.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const allowedFields = ['feeType', 'dueDate', 'discount', 'fine', 'remarks', 'academicYearId'];
+    const sanitizedUpdates: Record<string, any> = {};
+
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        sanitizedUpdates[key] = req.body[key];
+      }
+    }
+
+    if (Object.keys(sanitizedUpdates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid updateable fee fields provided. (Allowed: ' + allowedFields.join(', ') + ')',
+      });
+    }
+
+    const fee = await Fee.findByIdAndUpdate(req.params.id, sanitizedUpdates, { new: true, runValidators: true });
     if (!fee) return res.status(404).json({ success: false, message: 'Fee record not found' });
     res.status(200).json(fee);
   } catch (error) {
@@ -172,11 +191,71 @@ export const updateFee = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Pay / settle fee invoice (Idempotent, strictly validates amounts and authorization)
+// @desc    Initiate/create payment gateway order for parent fee payment
+// @route   POST /api/finance/fees/:id/create-payment-order
+export const createPaymentOrder = async (req: Request, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const feeId = Array.isArray(rawId) ? rawId[0] : rawId;
+
+    if (!feeId || !mongoose.Types.ObjectId.isValid(feeId)) {
+      return res.status(400).json({ success: false, message: 'Invalid fee invoice ID format' });
+    }
+
+    const fee = await Fee.findById(feeId);
+    if (!fee) {
+      return res.status(404).json({ success: false, message: 'Fee invoice not found' });
+    }
+
+    // Role-based child ownership verification for parent
+    if (req.user?.role === 'Parent') {
+      const parent = await Parent.findOne({ userId: req.user.id });
+      if (parent) {
+        const isDirectChild = await Student.findOne({ _id: fee.studentId, parentId: parent._id });
+        const isJunctionChild = await StudentParent.findOne({ studentId: fee.studentId, parentId: parent._id });
+        if (!isDirectChild && !isJunctionChild) {
+          return res.status(403).json({ success: false, message: 'Access denied: You cannot create orders for other students' });
+        }
+      }
+    }
+
+    if (fee.status === 'Paid') {
+      return res.status(400).json({ success: false, message: 'This fee invoice has already been fully settled' });
+    }
+
+    const remainingBalance = Math.max(0, fee.totalAmount - (fee.amountPaid || 0));
+    const orderAmount = req.body.amount ? Math.min(Number(req.body.amount), remainingBalance) : remainingBalance;
+
+    const gatewayOrderId = `ORD_${Date.now()}_${Math.floor(Math.random() * 9000 + 1000)}`;
+    const orderTimestamp = Date.now();
+
+    // Generate cryptographic order signature
+    const orderSignature = crypto
+      .createHmac('sha256', env.PAYMENT_GATEWAY_SECRET)
+      .update(`${feeId}:${gatewayOrderId}:${orderAmount}`)
+      .digest('hex');
+
+    return res.json({
+      success: true,
+      data: {
+        feeId: fee._id,
+        gatewayOrderId,
+        amount: orderAmount,
+        currency: 'INR',
+        orderTimestamp,
+        orderSignature,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: 'Failed to create payment order', error: error.message });
+  }
+};
+
+// @desc    Pay / settle fee invoice (Idempotent, strictly validates amounts, payment gateway verification, and authorization)
 // @route   POST /api/finance/fees/:id/pay
 export const payFee = async (req: Request, res: Response) => {
   try {
-    const { amount, paymentMethod = 'Online / UPI', transactionId } = req.body;
+    const { amount, paymentMethod = 'Online / UPI', transactionId, gatewayOrderId, gatewaySignature, gatewayPaymentId } = req.body;
 
     const rawId = req.params.id;
     const feeId = Array.isArray(rawId) ? rawId[0] : rawId;
@@ -210,7 +289,30 @@ export const payFee = async (req: Request, res: Response) => {
       });
     }
 
-    // Calculate remaining amount
+    // SECURITY TRUST BOUNDARY: Check payment origin & enforce gateway verification
+    const isStaff = ['Admin', 'SuperAdmin', 'Accountant'].includes(req.user?.role || '');
+    const sig = req.body.signature || gatewaySignature;
+
+    if (!isStaff) {
+      // Parent online payments strictly require payment gateway verification
+      if (!gatewayOrderId || !gatewayPaymentId || !sig) {
+        return res.status(400).json({
+          success: false,
+          message:
+            'Missing required payment gateway verification parameters (gatewayOrderId, gatewayPaymentId, signature).',
+        });
+      }
+
+      const isGatewayVerified = await paymentGatewayService.verifyPayment(gatewayOrderId, gatewayPaymentId, sig);
+      if (!isGatewayVerified) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment verification failed: Invalid cryptographic payment signature from payment gateway.',
+        });
+      }
+    }
+
+    // Apply amount-clamping/idempotency AFTER verification succeeds
     const remainingBalance = Math.max(0, fee.totalAmount - (fee.amountPaid || 0));
     const payAmount = Number(amount) > 0 ? Math.min(Number(amount), remainingBalance) : remainingBalance;
 
@@ -221,7 +323,10 @@ export const payFee = async (req: Request, res: Response) => {
     // Concurrency-safe atomic generation of receipt number
     const yearStr = new Date().getFullYear().toString();
     const receiptNumber = await generateNextReceiptNumber(yearStr);
-    const resolvedTxnId = transactionId || `TXN-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 900 + 100)}`;
+    const resolvedTxnId =
+      transactionId ||
+      gatewayPaymentId ||
+      `TXN-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 900 + 100)}`;
 
     const newAmountPaid = (fee.amountPaid || 0) + payAmount;
     fee.amountPaid = newAmountPaid;
@@ -282,3 +387,114 @@ export const payFee = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Failed to process fee payment', error });
   }
 };
+
+// @desc    Record manual payment (Admin / Accountant only, for Cash / Cheque / Bank Transfer)
+// @route   POST /api/finance/fees/:id/record-manual-payment
+export const recordManualPayment = async (req: Request, res: Response) => {
+  try {
+    const { amount, paymentMethod = 'Cash', transactionId, note, reason } = req.body;
+    const auditNote = note || reason;
+
+    if (!auditNote || typeof auditNote !== 'string' || !auditNote.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'A mandatory audit note/reason is required to record manual fee payments.',
+      });
+    }
+
+    const rawId = req.params.id;
+    const feeId = Array.isArray(rawId) ? rawId[0] : rawId;
+
+    if (!feeId || !mongoose.Types.ObjectId.isValid(feeId)) {
+      return res.status(400).json({ success: false, message: 'Invalid fee invoice ID format' });
+    }
+
+    const fee = await Fee.findById(feeId);
+    if (!fee) {
+      return res.status(404).json({ success: false, message: 'Fee invoice not found' });
+    }
+
+    if (fee.status === 'Paid') {
+      return res.status(400).json({
+        success: false,
+        message: 'This fee invoice has already been fully settled.',
+      });
+    }
+
+    const remainingBalance = Math.max(0, fee.totalAmount - (fee.amountPaid || 0));
+    const payAmount = Number(amount) > 0 ? Math.min(Number(amount), remainingBalance) : remainingBalance;
+
+    if (payAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Payment amount must be greater than zero' });
+    }
+
+    const yearStr = new Date().getFullYear().toString();
+    const receiptNumber = await generateNextReceiptNumber(yearStr);
+    const resolvedTxnId =
+      transactionId ||
+      `MANUAL-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 900 + 100)}`;
+
+    const newAmountPaid = (fee.amountPaid || 0) + payAmount;
+    fee.amountPaid = newAmountPaid;
+    fee.status = newAmountPaid >= fee.totalAmount ? 'Paid' : 'Partial';
+    fee.paidAt = new Date();
+    fee.paymentMethod = paymentMethod;
+    fee.transactionId = resolvedTxnId;
+    fee.receiptNumber = receiptNumber;
+
+    const paymentRecord = {
+      receiptNumber,
+      amount: payAmount,
+      paymentMethod,
+      transactionId: resolvedTxnId,
+      paidAt: new Date(),
+      paidBy: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : undefined,
+      note: auditNote.trim(),
+    };
+
+    fee.paymentHistory.push(paymentRecord);
+    await fee.save();
+
+    // Send receipt notification
+    const student = await Student.findById(fee.studentId).select('firstName lastName parentId');
+    if (student?.parentId) {
+      const parentUser = await Parent.findById(student.parentId).select('userId');
+      if (parentUser?.userId) {
+        const notif = await Notification.create({
+          recipient: parentUser.userId,
+          userId: parentUser.userId,
+          studentId: fee.studentId,
+          targetRole: 'Parent',
+          title: 'Manual Fee Payment Recorded',
+          message: `Manual payment of ₹${payAmount.toLocaleString('en-IN')} recorded for ${student?.firstName || 'Student'}. Receipt No: ${receiptNumber}.`,
+          type: 'fee',
+          priority: 'normal',
+          link: '/parent/fees',
+          metadata: { feeId: fee._id, receiptNumber, amount: payAmount, transactionId: resolvedTxnId, note: auditNote.trim() },
+        });
+        emitToUser(parentUser.userId.toString(), 'notification:new', notif);
+      }
+    }
+
+    emitToRole('Accountant', 'fee:updated', { feeId: fee._id, receiptNumber, amount: payAmount });
+    emitToRole('Admin', 'fee:updated', { feeId: fee._id, receiptNumber, amount: payAmount });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Manual payment recorded successfully',
+      fee,
+      receipt: {
+        receiptNumber,
+        paidAmount: payAmount,
+        paymentMethod,
+        transactionId: resolvedTxnId,
+        date: new Date(),
+        status: 'Completed',
+        note: auditNote.trim(),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to record manual fee payment', error });
+  }
+};
+

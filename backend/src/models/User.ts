@@ -22,6 +22,8 @@ export interface IUser extends Document {
     classId: mongoose.Types.ObjectId;
     subjectId: mongoose.Types.ObjectId;
   }[];
+  passwordResetCode?: string;
+  passwordResetExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -109,6 +111,14 @@ const UserSchema: Schema = new Schema(
         subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject' },
       },
     ],
+    passwordResetCode: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true }
 );

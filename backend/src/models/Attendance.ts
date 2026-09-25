@@ -48,4 +48,4 @@ const AttendanceSchema: Schema = new Schema(
 // Compound index to ensure one attendance record per entity per day
 AttendanceSchema.index({ date: 1, entityId: 1, entityType: 1 }, { unique: true });
 
-export default mongoose.model<IAttendance>('Attendance', AttendanceSchema);
+export default mongoose.models.Attendance || mongoose.model<IAttendance>('Attendance', AttendanceSchema);

@@ -8,6 +8,8 @@ import {
   updateSelfProfile,
   changePassword,
   forgotPassword,
+  verifyResetCode,
+  resetPassword,
 } from '../controllers/authController';
 import { protect } from '../middleware/auth';
 
@@ -17,6 +19,8 @@ import {
   loginSchema,
   changePasswordSchema,
   forgotPasswordSchema,
+  verifyResetCodeSchema,
+  resetPasswordSchema,
 } from '../validators/authValidator';
 
 const router = express.Router();
@@ -29,5 +33,7 @@ router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, updateSelfProfile);
 router.put('/change-password', protect, validate(changePasswordSchema), changePassword);
 router.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
+router.post('/verify-reset-code', validate(verifyResetCodeSchema), verifyResetCode);
+router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
 
 export default router;

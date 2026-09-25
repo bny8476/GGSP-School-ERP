@@ -33,7 +33,19 @@ export const createBook = async (req: Request, res: Response) => {
 
 export const updateBook = async (req: Request, res: Response) => {
   try {
-    const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const { isbn, title, author, publisher, category, quantity, availableQuantity, shelfLocation, price } = req.body;
+    const allowedUpdates: Record<string, any> = {};
+    if (isbn !== undefined) allowedUpdates.isbn = isbn;
+    if (title !== undefined) allowedUpdates.title = title;
+    if (author !== undefined) allowedUpdates.author = author;
+    if (publisher !== undefined) allowedUpdates.publisher = publisher;
+    if (category !== undefined) allowedUpdates.category = category;
+    if (quantity !== undefined) allowedUpdates.quantity = quantity;
+    if (availableQuantity !== undefined) allowedUpdates.availableQuantity = availableQuantity;
+    if (shelfLocation !== undefined) allowedUpdates.shelfLocation = shelfLocation;
+    if (price !== undefined) allowedUpdates.price = price;
+
+    const book = await Book.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
     if (!book) return res.status(404).json({ message: 'Book not found' });
     res.json(book);
   } catch (error) {

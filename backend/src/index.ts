@@ -30,6 +30,7 @@ const rawAllowedOrigins = [
   'https://schoolerp-livid.vercel.app',
   'https://school-erp-bny2.vercel.app',
   env.CLIENT_URL,
+  ...(env.CORS_ORIGINS ? env.CORS_ORIGINS.split(',').map((s) => s.trim()) : []),
 ].filter(Boolean) as string[];
 
 const normalizeUrl = (url?: string) => (url ? url.replace(/\/+$/, '').toLowerCase() : '');
@@ -39,10 +40,9 @@ const isOriginAllowed = (origin: string | undefined): boolean => {
   if (!origin) return true;
   const cleanOrigin = normalizeUrl(origin);
   if (allowedOrigins.includes(cleanOrigin)) return true;
-  if (cleanOrigin.endsWith('.vercel.app')) return true;
   if (
     env.NODE_ENV !== 'production' &&
-    (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))
+    (cleanOrigin.startsWith('http://localhost:') || cleanOrigin.startsWith('http://127.0.0.1:'))
   ) {
     return true;
   }
@@ -71,7 +71,7 @@ app.use(
   })
 );
 
-// Rate limiting
+// Global rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -79,6 +79,25 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use(limiter);
+
+// Dedicated strict rate limiter for authentication endpoints against brute force
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many authentication attempts, please try again after 15 minutes.',
+    code: 'AUTH_RATE_LIMIT_EXCEEDED',
+  },
+});
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/v1/auth/forgot-password', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/v1/auth/reset-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
 
 // OPTIONS preflight
 app.options(
@@ -105,11 +124,14 @@ app.use(requestLogger);
 // API Documentation via Swagger / OpenAPI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Root Health Check routes
+// Root Health Check routes (fail-safe status reporting)
 app.get('/health', (req: Request, res: Response) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  res.status(200).json({
-    status: 'healthy',
+  const isDbConnected = mongoose.connection.readyState === 1;
+  const dbStatus = isDbConnected ? 'connected' : 'disconnected';
+  const isHealthy = env.NODE_ENV !== 'production' || isDbConnected;
+
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'healthy' : 'unhealthy',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV,

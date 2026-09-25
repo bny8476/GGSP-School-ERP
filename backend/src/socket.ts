@@ -39,10 +39,14 @@ export const initSocket = (httpServer: HttpServer): SocketIOServer => {
         if (!origin) return callback(null, true);
         const clean = origin.replace(/\/+$/, '').toLowerCase();
         const isMatched = allowedOrigins.some((o) => o && clean === o.replace(/\/+$/, '').toLowerCase());
-        if (isMatched || clean.endsWith('.vercel.app')) {
+        const isDevLocal =
+          env.NODE_ENV !== 'production' &&
+          (clean.startsWith('http://localhost:') || clean.startsWith('http://127.0.0.1:'));
+
+        if (isMatched || isDevLocal) {
           return callback(null, true);
         }
-        return callback(null, true); // Dev resilient
+        return callback(new Error(`CORS origin denied: ${origin}`));
       },
       methods: ['GET', 'POST'],
       credentials: true,
@@ -71,7 +75,7 @@ export const initSocket = (httpServer: HttpServer): SocketIOServer => {
     }
 
     try {
-      const secret = process.env.JWT_SECRET || env.JWT_ACCESS_SECRET;
+      const secret = env.JWT_ACCESS_SECRET;
       const decoded = jwt.verify(token, secret) as any;
       if (!decoded || !decoded.user || !decoded.user.id) {
         logger.warn({ socketId: socket.id }, 'Socket connection rejected: Invalid token payload');

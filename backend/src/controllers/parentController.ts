@@ -101,7 +101,34 @@ export const updateParent = async (req: Request, res: Response): Promise<void> =
   try {
     const rawId = req.params.id;
     const parentId = Array.isArray(rawId) ? rawId[0] : rawId;
-    const parent = await Parent.findByIdAndUpdate(parentId, req.body, { new: true, runValidators: true });
+    const {
+      fatherName,
+      fatherOccupation,
+      fatherContact,
+      motherName,
+      motherOccupation,
+      motherContact,
+      guardianName,
+      guardianContact,
+      primaryEmail,
+      address,
+      whatsappNumber,
+    } = req.body;
+
+    const allowedUpdates: Record<string, any> = {};
+    if (fatherName !== undefined) allowedUpdates.fatherName = fatherName;
+    if (fatherOccupation !== undefined) allowedUpdates.fatherOccupation = fatherOccupation;
+    if (fatherContact !== undefined) allowedUpdates.fatherContact = fatherContact;
+    if (motherName !== undefined) allowedUpdates.motherName = motherName;
+    if (motherOccupation !== undefined) allowedUpdates.motherOccupation = motherOccupation;
+    if (motherContact !== undefined) allowedUpdates.motherContact = motherContact;
+    if (guardianName !== undefined) allowedUpdates.guardianName = guardianName;
+    if (guardianContact !== undefined) allowedUpdates.guardianContact = guardianContact;
+    if (primaryEmail !== undefined) allowedUpdates.primaryEmail = primaryEmail;
+    if (address !== undefined) allowedUpdates.address = address;
+    if (whatsappNumber !== undefined) allowedUpdates.whatsappNumber = whatsappNumber;
+
+    const parent = await Parent.findByIdAndUpdate(parentId, allowedUpdates, { new: true, runValidators: true });
     if (!parent) {
       res.status(404).json({ success: false, message: 'Parent not found' });
       return;

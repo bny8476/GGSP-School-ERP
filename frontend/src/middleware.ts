@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Strictly block any /student portal routes - there is NO student portal
@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
   const tokenCookie = request.cookies.get("token")?.value;
   const roleCookie = request.cookies.get("user_role")?.value?.toUpperCase();
 
-  const isProtectedPath = pathname.startsWith("/dashboard") || pathname.startsWith("/parent");
+  const isProtectedPath = pathname.startsWith("/dashboard") || pathname.startsWith("/parent") || pathname.startsWith("/teacher");
   const isLoginPage = pathname === "/login";
 
   // If visiting login page while already authenticated with cookies, redirect to their portal
@@ -41,21 +41,25 @@ export function proxy(request: NextRequest) {
   // If visiting protected route
   if (isProtectedPath) {
     // If not authenticated (cookie check)
-    // Note: If user logged in before cookies were introduced, client-side hydration in authStore will check localStorage
+    // Note: If user logged in before cookies were introduced, client-side hydration in authStore checks localStorage
     if (!tokenCookie) {
-      // In Next.js App Router, if client has localStorage token it can handle client hydration.
-      // But if there's no cookie, we allow the page to load and client-side AuthGuard can verify localStorage.
       return NextResponse.next();
     }
 
-    // Role-based boundary enforcement
+    // Role-based boundary UX redirection
     if (pathname.startsWith("/dashboard") && roleCookie === "PARENT") {
       const parentUrl = request.nextUrl.clone();
       parentUrl.pathname = "/parent";
       return NextResponse.redirect(parentUrl);
     }
 
-    if (pathname.startsWith("/parent") && roleCookie && roleCookie !== "PARENT" && roleCookie !== "ADMIN") {
+    if (
+      pathname.startsWith("/parent") &&
+      roleCookie &&
+      roleCookie !== "PARENT" &&
+      roleCookie !== "ADMIN" &&
+      roleCookie !== "SUPERADMIN"
+    ) {
       const dashUrl = request.nextUrl.clone();
       dashUrl.pathname = "/dashboard";
       return NextResponse.redirect(dashUrl);
@@ -69,6 +73,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/parent/:path*",
+    "/teacher/:path*",
     "/student/:path*",
     "/login",
   ],

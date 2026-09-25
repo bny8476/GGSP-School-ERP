@@ -82,7 +82,16 @@ export const createTransportLog = async (req: Request, res: Response) => {
 
 export const updateTransportLog = async (req: Request, res: Response) => {
   try {
-    const log = await Transport.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { routeNumber, pickupTime, dropOffTime, authorizedPerson, status, date } = req.body;
+    const allowedUpdates: Record<string, any> = {};
+    if (routeNumber !== undefined) allowedUpdates.routeNumber = routeNumber;
+    if (pickupTime !== undefined) allowedUpdates.pickupTime = pickupTime;
+    if (dropOffTime !== undefined) allowedUpdates.dropOffTime = dropOffTime;
+    if (authorizedPerson !== undefined) allowedUpdates.authorizedPerson = authorizedPerson;
+    if (status !== undefined) allowedUpdates.status = status;
+    if (date !== undefined) allowedUpdates.date = date;
+
+    const log = await Transport.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
     if (!log) return res.status(404).json({ message: 'Log not found' });
     res.json(log);
   } catch (error) {
@@ -154,7 +163,16 @@ export const createHealthLog = async (req: Request, res: Response) => {
 
 export const updateHealthLog = async (req: Request, res: Response) => {
   try {
-    const log = await HealthLog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { date, temperature, symptoms, medicationAdministered, allergiesAlert, notes } = req.body;
+    const allowedUpdates: Record<string, any> = {};
+    if (date !== undefined) allowedUpdates.date = date;
+    if (temperature !== undefined) allowedUpdates.temperature = temperature;
+    if (symptoms !== undefined) allowedUpdates.symptoms = symptoms;
+    if (medicationAdministered !== undefined) allowedUpdates.medicationAdministered = medicationAdministered;
+    if (allergiesAlert !== undefined) allowedUpdates.allergiesAlert = allergiesAlert;
+    if (notes !== undefined) allowedUpdates.notes = notes;
+
+    const log = await HealthLog.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
     if (!log) return res.status(404).json({ message: 'Log not found' });
     res.json(log);
   } catch (error) {

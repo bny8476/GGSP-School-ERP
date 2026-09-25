@@ -8,7 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', getVisitors);
-router.post('/', authorizeRoles('Super Admin', 'Admin', 'Receptionist', 'Security'), createVisitorPass);
-router.patch('/:id/checkout', authorizeRoles('Super Admin', 'Admin', 'Receptionist', 'Security'), checkoutVisitor);
+router.post('/', authorizeRoles('SuperAdmin', 'Admin', 'Receptionist', 'Security'), createVisitorPass);
+router.patch('/:id/checkout', authorizeRoles('SuperAdmin', 'Admin', 'Receptionist', 'Security'), checkoutVisitor);
 
 export default router;

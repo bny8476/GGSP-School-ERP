@@ -57,4 +57,4 @@ const EmailSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IEmail>('Email', EmailSchema);
+export default mongoose.models.Email || mongoose.model<IEmail>('Email', EmailSchema);

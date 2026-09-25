@@ -49,4 +49,4 @@ const TransportSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ITransport>('Transport', TransportSchema);
+export default mongoose.models.Transport || mongoose.model<ITransport>('Transport', TransportSchema);

@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
+import env from './env';
 
 // Disable Mongoose command buffering so queries fail or fallback immediately instead of hanging for 10s
 mongoose.set('bufferCommands', false);
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/global_international_erp', {
+    const conn = await mongoose.connect(env.MONGODB_URI, {
       serverSelectionTimeoutMS: 2000,
     });
     console.log(`✓ MongoDB Connected: ${conn.connection.host}`);
@@ -18,6 +19,12 @@ const connectDB = async () => {
     } else {
       console.warn('⚠️  An unknown error occurred during database connection');
     }
+
+    if (env.NODE_ENV === 'production') {
+      console.error('FATAL: Database connection failed in production. Refusing to start in fallback mode.');
+      process.exit(1);
+    }
+
     console.log('⚡ Running in resilient fallback demo mode for seamless dev & testing.');
   }
 };

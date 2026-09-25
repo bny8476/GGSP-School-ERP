@@ -344,7 +344,44 @@ export const createStudent = async (req: Request, res: Response) => {
 // @route   PUT /api/students/:id / PATCH /api/students/:id
 export const updateStudent = async (req: Request, res: Response) => {
   try {
-    const student = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const {
+      firstName,
+      lastName,
+      gender,
+      dateOfBirth,
+      grade,
+      classId,
+      sectionId,
+      bloodGroup,
+      medicalNotes,
+      emergencyContact,
+      studentPhoto,
+      transportId,
+      transportStopId,
+      parentId,
+      enrollmentDate,
+      status,
+    } = req.body;
+
+    const allowedUpdates: Record<string, any> = {};
+    if (firstName !== undefined) allowedUpdates.firstName = firstName;
+    if (lastName !== undefined) allowedUpdates.lastName = lastName;
+    if (gender !== undefined) allowedUpdates.gender = gender;
+    if (dateOfBirth !== undefined) allowedUpdates.dateOfBirth = dateOfBirth;
+    if (grade !== undefined) allowedUpdates.grade = grade;
+    if (classId !== undefined) allowedUpdates.classId = classId;
+    if (sectionId !== undefined) allowedUpdates.sectionId = sectionId;
+    if (bloodGroup !== undefined) allowedUpdates.bloodGroup = bloodGroup;
+    if (medicalNotes !== undefined) allowedUpdates.medicalNotes = medicalNotes;
+    if (emergencyContact !== undefined) allowedUpdates.emergencyContact = emergencyContact;
+    if (studentPhoto !== undefined) allowedUpdates.studentPhoto = studentPhoto;
+    if (transportId !== undefined) allowedUpdates.transportId = transportId;
+    if (transportStopId !== undefined) allowedUpdates.transportStopId = transportStopId;
+    if (parentId !== undefined) allowedUpdates.parentId = parentId;
+    if (enrollmentDate !== undefined) allowedUpdates.enrollmentDate = enrollmentDate;
+    if (status !== undefined) allowedUpdates.status = status;
+
+    const student = await Student.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }

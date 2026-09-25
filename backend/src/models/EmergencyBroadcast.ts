@@ -29,4 +29,4 @@ const EmergencyBroadcastSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IEmergencyBroadcast>('EmergencyBroadcast', EmergencyBroadcastSchema);
+export default mongoose.models.EmergencyBroadcast || mongoose.model<IEmergencyBroadcast>('EmergencyBroadcast', EmergencyBroadcastSchema);

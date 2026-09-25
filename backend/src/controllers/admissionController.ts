@@ -328,7 +328,50 @@ export const approveAdmission = async (req: Request, res: Response) => {
 // @route   PUT /api/admissions/:id
 export const updateAdmission = async (req: Request, res: Response) => {
   try {
-    const admission = await Admission.findByIdAndUpdate(req.params.id, req.body, {
+    const {
+      childFirstName,
+      childLastName,
+      dateOfBirth,
+      gender,
+      parentName,
+      contactNumber,
+      parentPhone,
+      email,
+      parentEmail,
+      address,
+      gradeAppliedFor,
+      status,
+      stage,
+      interviewDate,
+      interviewNotes,
+      admissionScore,
+      waitlistPosition,
+      notes,
+      documents,
+    } = req.body;
+
+    const allowedUpdates: Record<string, any> = {};
+    if (childFirstName !== undefined) allowedUpdates.childFirstName = childFirstName;
+    if (childLastName !== undefined) allowedUpdates.childLastName = childLastName;
+    if (dateOfBirth !== undefined) allowedUpdates.dateOfBirth = dateOfBirth;
+    if (gender !== undefined) allowedUpdates.gender = gender;
+    if (parentName !== undefined) allowedUpdates.parentName = parentName;
+    if (contactNumber !== undefined) allowedUpdates.contactNumber = contactNumber;
+    if (parentPhone !== undefined) allowedUpdates.parentPhone = parentPhone;
+    if (email !== undefined) allowedUpdates.email = email;
+    if (parentEmail !== undefined) allowedUpdates.parentEmail = parentEmail;
+    if (address !== undefined) allowedUpdates.address = address;
+    if (gradeAppliedFor !== undefined) allowedUpdates.gradeAppliedFor = gradeAppliedFor;
+    if (status !== undefined) allowedUpdates.status = status;
+    if (stage !== undefined) allowedUpdates.stage = stage;
+    if (interviewDate !== undefined) allowedUpdates.interviewDate = interviewDate;
+    if (interviewNotes !== undefined) allowedUpdates.interviewNotes = interviewNotes;
+    if (admissionScore !== undefined) allowedUpdates.admissionScore = admissionScore;
+    if (waitlistPosition !== undefined) allowedUpdates.waitlistPosition = waitlistPosition;
+    if (notes !== undefined) allowedUpdates.notes = notes;
+    if (documents !== undefined) allowedUpdates.documents = documents;
+
+    const admission = await Admission.findByIdAndUpdate(req.params.id, allowedUpdates, {
       new: true,
       runValidators: true,
     });
@@ -338,7 +381,7 @@ export const updateAdmission = async (req: Request, res: Response) => {
     }
 
     // Auto-approve if stage changed to 'Approved' or 'Enrolled' and studentId not yet created
-    if ((req.body.stage === 'Approved' || req.body.status === 'Admission Confirmed') && !admission.studentId) {
+    if ((allowedUpdates.stage === 'Approved' || allowedUpdates.status === 'Admission Confirmed') && !admission.studentId) {
       return approveAdmission(req, res);
     }
 

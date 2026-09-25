@@ -8,8 +8,8 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/jobs', getJobs);
-router.post('/jobs', authorizeRoles('Super Admin', 'Admin', 'HR'), createJob);
+router.post('/jobs', authorizeRoles('SuperAdmin', 'Admin', 'HR'), createJob);
 router.post('/jobs/:id/apply', applyForJob);
-router.patch('/jobs/:id/applicants/:applicantId', authorizeRoles('Super Admin', 'Admin', 'HR'), updateApplicantStatus);
+router.patch('/jobs/:id/applicants/:applicantId', authorizeRoles('SuperAdmin', 'Admin', 'HR'), updateApplicantStatus);
 
 export default router;

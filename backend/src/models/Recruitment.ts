@@ -49,4 +49,4 @@ const RecruitmentSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IRecruitment>('Recruitment', RecruitmentSchema);
+export default mongoose.models.Recruitment || mongoose.model<IRecruitment>('Recruitment', RecruitmentSchema);

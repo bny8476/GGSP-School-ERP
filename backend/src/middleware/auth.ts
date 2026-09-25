@@ -47,7 +47,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
   }
 
   try {
-    const secret = process.env.JWT_SECRET || env.JWT_ACCESS_SECRET;
+    const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || env.JWT_ACCESS_SECRET;
     const decoded = jwt.verify(token, secret) as JwtPayload;
 
     if (!decoded || !decoded.user || !decoded.user.id) {

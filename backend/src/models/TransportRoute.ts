@@ -35,4 +35,4 @@ const TransportRouteSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ITransportRoute>('TransportRoute', TransportRouteSchema);
+export default mongoose.models.TransportRoute || mongoose.model<ITransportRoute>('TransportRoute', TransportRouteSchema);

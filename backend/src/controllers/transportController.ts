@@ -29,7 +29,15 @@ export const createRoute = async (req: Request, res: Response) => {
 // @route   PUT /api/transport/:id
 export const updateRoute = async (req: Request, res: Response) => {
   try {
-    const route = await TransportRoute.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { routeName, vehicleNumber, driverName, driverPhone, stops } = req.body;
+    const allowedUpdates: Record<string, any> = {};
+    if (routeName !== undefined) allowedUpdates.routeName = routeName;
+    if (vehicleNumber !== undefined) allowedUpdates.vehicleNumber = vehicleNumber;
+    if (driverName !== undefined) allowedUpdates.driverName = driverName;
+    if (driverPhone !== undefined) allowedUpdates.driverPhone = driverPhone;
+    if (stops !== undefined) allowedUpdates.stops = stops;
+
+    const route = await TransportRoute.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
     if (!route) return res.status(404).json({ message: 'Route not found' });
     res.json(route);
   } catch (error) {

@@ -55,4 +55,4 @@ const HostelRoomSchema: Schema = new Schema(
 
 HostelRoomSchema.index({ hostelName: 1, roomNumber: 1 }, { unique: true });
 
-export default mongoose.model<IHostelRoom>('HostelRoom', HostelRoomSchema);
+export default mongoose.models.HostelRoom || mongoose.model<IHostelRoom>('HostelRoom', HostelRoomSchema);

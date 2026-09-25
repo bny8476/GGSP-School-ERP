@@ -26,4 +26,4 @@ const CounterSchema: Schema = new Schema(
 
 CounterSchema.index({ key: 1 }, { unique: true });
 
-export default mongoose.model<ICounter>('Counter', CounterSchema);
+export default mongoose.models.Counter || mongoose.model<ICounter>('Counter', CounterSchema);

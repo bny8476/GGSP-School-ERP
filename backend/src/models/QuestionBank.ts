@@ -27,4 +27,4 @@ const QuestionBankSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IQuestionBank>('QuestionBank', QuestionBankSchema);
+export default mongoose.models.QuestionBank || mongoose.model<IQuestionBank>('QuestionBank', QuestionBankSchema);

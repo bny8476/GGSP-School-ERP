@@ -40,4 +40,4 @@ const TimeTableSchema: Schema = new Schema(
 // Ensure one timetable per class per day
 TimeTableSchema.index({ classId: 1, dayOfWeek: 1 }, { unique: true });
 
-export default mongoose.model<ITimeTable>('TimeTable', TimeTableSchema);
+export default mongoose.models.TimeTable || mongoose.model<ITimeTable>('TimeTable', TimeTableSchema);

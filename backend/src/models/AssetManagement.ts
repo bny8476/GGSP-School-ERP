@@ -47,4 +47,4 @@ const AssetManagementSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IAssetManagement>('AssetManagement', AssetManagementSchema);
+export default mongoose.models.AssetManagement || mongoose.model<IAssetManagement>('AssetManagement', AssetManagementSchema);

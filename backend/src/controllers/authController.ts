@@ -187,133 +187,59 @@ export const loginUser = async (req: Request, res: Response) => {
     const normalizedEmail = String(email).trim().toLowerCase();
 
     // 1. Try MongoDB database authentication
-    if (mongoose.connection.readyState === 1) {
-      try {
-        const user = await User.findOne({ email: normalizedEmail, isDeleted: { $ne: true } }).populate('role');
-        if (user && (await bcrypt.compare(password, user.passwordHash))) {
-          // Enforce active / not suspended check
-          if (user.isActive === false || user.status === 'Suspended') {
-            return res.status(403).json({
-              success: false,
-              message: 'Your account is currently suspended or inactive. Please contact school administration.',
-            });
-          }
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database service is currently unavailable. Please verify database connectivity.',
+      });
+    }
 
-          const roleName = (user.role as any)?.name || 'Parent';
-
-          // BUSINESS RULE: Students cannot authenticate
-          if (roleName.toLowerCase() === 'student') {
-            return res.status(403).json({
-              success: false,
-              message: 'Students do not have direct portal access. Please access via the Parent Portal.',
-            });
-          }
-
-          const permissions = (user.role as any)?.permissions?.length > 0
-            ? (user.role as any).permissions
-            : (ROLE_PERMISSIONS[roleName] || []);
-
-          const token = generateAccessToken({
-            id: user.id,
-            role: roleName,
-            permissions,
-            campusId: user.campusId?.toString(),
-            schoolId: user.schoolId?.toString(),
-          });
-          const refreshToken = await generateRefreshToken(user.id, req);
-
-          setAuthCookies(res, token, refreshToken);
-
-          return res.json({
-            success: true,
-            message: 'Signed in successfully',
-            _id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            role: roleName,
-            permissions,
-            token,
-            refreshToken,
-          });
-        }
-      } catch (dbErr) {
-        console.warn('MongoDB query notice, trying fallback authentication:', dbErr);
+    const user = await User.findOne({ email: normalizedEmail, isDeleted: { $ne: true } }).populate('role');
+    if (user && (await bcrypt.compare(password, user.passwordHash))) {
+      // Enforce active / not suspended check
+      if (user.isActive === false || user.status === 'Suspended') {
+        return res.status(403).json({
+          success: false,
+          message: 'Your account is currently suspended or inactive. Please contact school administration.',
+        });
       }
-    }
 
-    // 2. Fallback authentication for seeded accounts (enables dev & demo use when MongoDB is offline or unseeded)
-    const seedAccounts: Record<string, { id: string; firstName: string; lastName: string; role: string }> = {
-      'admin@easacademy.com': { id: '66789abcdef0123456789000', firstName: 'System', lastName: 'Admin', role: 'SuperAdmin' },
-      'admin@schoolerp.com': { id: '66789abcdef0123456789000', firstName: 'System', lastName: 'Admin', role: 'SuperAdmin' },
-      'teacher@school.com': { id: '66789abcdef0123456789001', firstName: 'Tom', lastName: 'Teacher', role: 'Teacher' },
-      'parent@school.com': { id: '66789abcdef0123456789002', firstName: 'Patty', lastName: 'Parent', role: 'Parent' },
-      'accountant@school.com': { id: '66789abcdef0123456789004', firstName: 'Alice', lastName: 'Accountant', role: 'Accountant' },
-      'principal@school.com': { id: '66789abcdef0123456789005', firstName: 'Peter', lastName: 'Principal', role: 'Principal' },
-      'receptionist@school.com': { id: '66789abcdef0123456789006', firstName: 'Rachel', lastName: 'Receptionist', role: 'Receptionist' },
-    };
+      const roleName = (user.role as any)?.name || 'Parent';
 
-    const seedUser = seedAccounts[normalizedEmail];
-    if (seedUser && (password === 'password123' || password === 'admin123' || password === 'demo123')) {
-      const dummyId = seedUser.id;
-      const permissions = ROLE_PERMISSIONS[seedUser.role] || [];
+      // BUSINESS RULE: Students cannot authenticate
+      if (roleName.toLowerCase() === 'student') {
+        return res.status(403).json({
+          success: false,
+          message: 'Students do not have direct portal access. Please access via the Parent Portal.',
+        });
+      }
+
+      const permissions = (user.role as any)?.permissions?.length > 0
+        ? (user.role as any).permissions
+        : (ROLE_PERMISSIONS[roleName] || []);
+
       const token = generateAccessToken({
-        id: dummyId,
-        role: seedUser.role,
+        id: user.id,
+        role: roleName,
         permissions,
+        campusId: user.campusId?.toString(),
+        schoolId: user.schoolId?.toString(),
       });
-      const refreshToken = await generateRefreshToken(dummyId, req);
+      const refreshToken = await generateRefreshToken(user.id, req);
 
       setAuthCookies(res, token, refreshToken);
 
       return res.json({
         success: true,
-        message: 'Signed in successfully (Demo Mode)',
-        _id: dummyId,
-        firstName: seedUser.firstName,
-        lastName: seedUser.lastName,
-        email: normalizedEmail,
-        role: seedUser.role,
+        message: 'Signed in successfully',
+        _id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: roleName,
         permissions,
         token,
         refreshToken,
-        isDemoMode: true,
-      });
-    }
-
-    // General development fallback for any email with standard development password
-    if (password === 'password123' || password === 'admin123') {
-      let inferredRole = 'Parent';
-      if (normalizedEmail.includes('admin')) inferredRole = 'SuperAdmin';
-      else if (normalizedEmail.includes('teacher')) inferredRole = 'Teacher';
-      else if (normalizedEmail.includes('account')) inferredRole = 'Accountant';
-      else if (normalizedEmail.includes('principal')) inferredRole = 'Principal';
-
-      const namePart = normalizedEmail.split('@')[0];
-      const capitalizedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-      const dummyId = '66789abcdef0123456789abc';
-      const permissions = ROLE_PERMISSIONS[inferredRole] || [];
-      const token = generateAccessToken({
-        id: dummyId,
-        role: inferredRole,
-        permissions,
-      });
-      const refreshToken = await generateRefreshToken(dummyId, req);
-
-      setAuthCookies(res, token, refreshToken);
-
-      return res.json({
-        success: true,
-        message: 'Signed in successfully (Demo Mode)',
-        _id: dummyId,
-        firstName: capitalizedName,
-        lastName: 'User',
-        email: normalizedEmail,
-        role: inferredRole,
-        permissions,
-        token,
-        refreshToken,
-        isDemoMode: true,
       });
     }
 
@@ -516,6 +442,10 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     if (user) {
+      user.passwordResetCode = resetCode;
+      user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
+      await user.save();
+
       try {
         const { emailService } = await import('../services/emailService');
         await emailService.sendEmail({
@@ -536,5 +466,89 @@ export const forgotPassword = async (req: Request, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Failed to process password reset request', error });
+  }
+};
+
+// @desc    Verify password reset code
+// @route   POST /api/auth/verify-reset-code
+export const verifyResetCode = async (req: Request, res: Response) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ success: false, message: 'Both registered email and 6-digit reset code are required' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({
+      email: normalizedEmail,
+      isDeleted: { $ne: true },
+      passwordResetCode: String(code).trim(),
+      passwordResetExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification code. Please request a new code.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Verification code validated successfully. You may now reset your password.',
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to verify reset code', error });
+  }
+};
+
+// @desc    Reset password using verified code
+// @route   POST /api/auth/reset-password
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registered email, 6-digit verification code, and new password are required',
+      });
+    }
+
+    if (String(newPassword).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long',
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({
+      email: normalizedEmail,
+      isDeleted: { $ne: true },
+      passwordResetCode: String(code).trim(),
+      passwordResetExpires: { $gt: new Date() },
+    }).select('+passwordResetCode +passwordResetExpires');
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification code. Please request a new code.',
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(String(newPassword), salt);
+    user.passwordResetCode = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: 'Your password has been reset successfully. Please sign in with your new credentials.',
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to reset password', error });
   }
 };

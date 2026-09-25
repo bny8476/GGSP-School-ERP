@@ -37,4 +37,4 @@ const CustomFieldSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ICustomField>('CustomField', CustomFieldSchema);
+export default mongoose.models.CustomField || mongoose.model<ICustomField>('CustomField', CustomFieldSchema);

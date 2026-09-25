@@ -9,11 +9,11 @@ router.use(authenticate);
 
 // Questions
 router.get('/questions', getQuestions);
-router.post('/questions', authorizeRoles('Super Admin', 'Admin', 'Teacher'), createQuestion);
+router.post('/questions', authorizeRoles('SuperAdmin', 'Admin', 'Teacher'), createQuestion);
 
 // Exams
 router.get('/', getExams);
-router.post('/', authorizeRoles('Super Admin', 'Admin', 'Teacher'), createExam);
+router.post('/', authorizeRoles('SuperAdmin', 'Admin', 'Teacher'), createExam);
 router.post('/:id/submit', submitExamAttempt);
 
 export default router;

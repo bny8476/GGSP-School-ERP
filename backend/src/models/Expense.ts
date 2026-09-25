@@ -29,4 +29,4 @@ const ExpenseSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IExpense>('Expense', ExpenseSchema);
+export default mongoose.models.Expense || mongoose.model<IExpense>('Expense', ExpenseSchema);

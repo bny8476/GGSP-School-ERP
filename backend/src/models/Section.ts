@@ -21,4 +21,4 @@ const SectionSchema: Schema = new Schema(
 
 SectionSchema.index({ name: 1, classId: 1 }, { unique: true });
 
-export default mongoose.model<ISection>('Section', SectionSchema);
+export default mongoose.models.Section || mongoose.model<ISection>('Section', SectionSchema);

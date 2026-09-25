@@ -1,9 +1,11 @@
 export type UserRole =
+  | "SUPERADMIN"
   | "ADMIN"
   | "PRINCIPAL"
   | "TEACHER"
   | "ACCOUNTANT"
   | "RECEPTIONIST"
+  | "STAFF"
   | "PARENT";
 
 export type Permission =
@@ -35,6 +37,19 @@ export type Permission =
   | "communication.send";
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  SUPERADMIN: [
+    "students.read", "students.create", "students.update", "students.delete",
+    "attendance.read", "attendance.mark",
+    "fees.read", "fees.create", "fees.collect",
+    "reports.read", "reports.export",
+    "users.read", "users.manage",
+    "settings.read", "settings.manage",
+    "admissions.read", "admissions.manage",
+    "academics.read", "academics.manage",
+    "homework.read", "homework.create", "homework.review",
+    "diary.read", "diary.create",
+    "communication.read", "communication.send",
+  ],
   ADMIN: [
     "students.read", "students.create", "students.update", "students.delete",
     "attendance.read", "attendance.mark",
@@ -81,6 +96,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "admissions.read", "admissions.manage",
     "communication.read", "communication.send",
   ],
+  STAFF: [
+    "students.read",
+    "attendance.read",
+    "communication.read", "communication.send",
+  ],
   PARENT: [
     "students.read",
     "attendance.read",
@@ -93,9 +113,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
 export function normalizeRole(role?: string | null): UserRole {
   if (!role) return "PARENT";
-  const upper = role.toUpperCase();
-  if (upper in ROLE_PERMISSIONS) {
-    return upper as UserRole;
+  const clean = role.replace(/[\s_-]+/g, "").toUpperCase();
+  if (clean === "SUPERADMIN") return "SUPERADMIN";
+  if (clean in ROLE_PERMISSIONS) {
+    return clean as UserRole;
   }
   return "PARENT";
 }

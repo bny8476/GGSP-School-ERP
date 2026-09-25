@@ -69,16 +69,40 @@ export default function FeePaymentModal({
       try {
         const token = localStorage.getItem("token");
         const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-        // Notify backend of payment if route is active
+        const authHeaders = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+
+        // 1. Create verified payment order from backend
+        let gatewayOrderId = `ORD_${Date.now()}`;
+        let gatewaySignature = "";
+
+        const orderRes = await fetch(`${apiBase}/api/v1/finance/fees/${activeInv.id}/create-payment-order`, {
+          method: "POST",
+          headers: authHeaders,
+          credentials: "include",
+          body: JSON.stringify({ amount: activeInv.amount }),
+        }).catch(() => null);
+
+        if (orderRes && orderRes.ok) {
+          const orderJson = await orderRes.json();
+          if (orderJson?.data) {
+            gatewayOrderId = orderJson.data.gatewayOrderId;
+            gatewaySignature = orderJson.data.orderSignature;
+          }
+        }
+
+        // 2. Settle fee with verified gateway signature
         await fetch(`${apiBase}/api/v1/finance/fees/${activeInv.id}/pay`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers: authHeaders,
+          credentials: "include",
           body: JSON.stringify({
             amount: activeInv.amount,
             paymentMethod: paymentMethod.toUpperCase(),
+            gatewayOrderId,
+            gatewaySignature,
           }),
         }).catch(() => null);
       } catch (_) {}

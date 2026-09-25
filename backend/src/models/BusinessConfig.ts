@@ -31,4 +31,4 @@ const BusinessConfigSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IBusinessConfig>('BusinessConfig', BusinessConfigSchema);
+export default mongoose.models.BusinessConfig || mongoose.model<IBusinessConfig>('BusinessConfig', BusinessConfigSchema);

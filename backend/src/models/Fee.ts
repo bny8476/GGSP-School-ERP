@@ -7,6 +7,7 @@ export interface IFeePaymentRecord {
   transactionId?: string;
   paidAt: Date;
   paidBy?: mongoose.Types.ObjectId;
+  note?: string;
 }
 
 export interface IFee extends Document {
@@ -39,6 +40,7 @@ const FeePaymentRecordSchema = new Schema(
     transactionId: { type: String },
     paidAt: { type: Date, default: Date.now },
     paidBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    note: { type: String, trim: true },
   },
   { _id: false }
 );

@@ -16,12 +16,12 @@ router.use(authenticate);
 
 // Inventory Items
 router.get('/items', getInventoryItems);
-router.post('/items', authorizeRoles('Super Admin', 'Admin', 'Accountant'), createInventoryItem);
-router.patch('/items/:id/stock', authorizeRoles('Super Admin', 'Admin', 'Accountant'), updateStockQuantity);
+router.post('/items', authorizeRoles('SuperAdmin', 'Admin', 'Accountant'), createInventoryItem);
+router.patch('/items/:id/stock', authorizeRoles('SuperAdmin', 'Admin', 'Accountant'), updateStockQuantity);
 
 // Purchase Orders
 router.get('/orders', getPurchaseOrders);
-router.post('/orders', authorizeRoles('Super Admin', 'Admin', 'Accountant'), createPurchaseOrder);
-router.patch('/orders/:id/status', authorizeRoles('Super Admin', 'Admin'), updatePurchaseOrderStatus);
+router.post('/orders', authorizeRoles('SuperAdmin', 'Admin', 'Accountant'), createPurchaseOrder);
+router.patch('/orders/:id/status', authorizeRoles('SuperAdmin', 'Admin'), updatePurchaseOrderStatus);
 
 export default router;

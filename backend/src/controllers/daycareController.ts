@@ -17,9 +17,19 @@ export const create = async (req: Request, res: Response) => {
 
 export const update = async (req: Request, res: Response) => {
   try {
-    const item = await DayCareLog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { date, checkInTime, checkOutTime, foodTracking, sleepTracking, notes } = req.body;
+    const allowedUpdates: Record<string, any> = {};
+    if (date !== undefined) allowedUpdates.date = date;
+    if (checkInTime !== undefined) allowedUpdates.checkInTime = checkInTime;
+    if (checkOutTime !== undefined) allowedUpdates.checkOutTime = checkOutTime;
+    if (foodTracking !== undefined) allowedUpdates.foodTracking = foodTracking;
+    if (sleepTracking !== undefined) allowedUpdates.sleepTracking = sleepTracking;
+    if (notes !== undefined) allowedUpdates.notes = notes;
+
+    const item = await DayCareLog.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
+    if (!item) return res.status(404).json({ message: 'DayCare log not found' });
     res.json(item);
-  } catch (error) { res.status(400).json({ message: 'Invalid data' }); }
+  } catch (error) { res.status(400).json({ message: 'Invalid data', error }); }
 };
 
 export const remove = async (req: Request, res: Response) => {

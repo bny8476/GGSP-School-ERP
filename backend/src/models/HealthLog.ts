@@ -35,4 +35,4 @@ const HealthLogSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IHealthLog>('HealthLog', HealthLogSchema);
+export default mongoose.models.HealthLog || mongoose.model<IHealthLog>('HealthLog', HealthLogSchema);

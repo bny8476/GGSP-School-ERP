@@ -29,4 +29,4 @@ const DocumentTemplateSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IDocumentTemplate>('DocumentTemplate', DocumentTemplateSchema);
+export default mongoose.models.DocumentTemplate || mongoose.model<IDocumentTemplate>('DocumentTemplate', DocumentTemplateSchema);

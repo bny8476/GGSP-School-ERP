@@ -31,4 +31,4 @@ const DelegationSLASchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IDelegationSLA>('DelegationSLA', DelegationSLASchema);
+export default mongoose.models.DelegationSLA || mongoose.model<IDelegationSLA>('DelegationSLA', DelegationSLASchema);

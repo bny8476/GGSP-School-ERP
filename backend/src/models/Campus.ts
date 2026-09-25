@@ -46,4 +46,4 @@ const CampusSchema: Schema = new Schema(
 
 CampusSchema.index({ code: 1 });
 
-export default mongoose.model<ICampus>('Campus', CampusSchema);
+export default mongoose.models.Campus || mongoose.model<ICampus>('Campus', CampusSchema);

@@ -17,9 +17,21 @@ export const create = async (req: Request, res: Response) => {
 
 export const update = async (req: Request, res: Response) => {
   try {
-    const item = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { title, type, date, time, audience, description } = req.body;
+    const allowedUpdates: Record<string, any> = {};
+    if (title !== undefined) allowedUpdates.title = title;
+    if (type !== undefined) allowedUpdates.type = type;
+    if (date !== undefined) allowedUpdates.date = date;
+    if (time !== undefined) allowedUpdates.time = time;
+    if (audience !== undefined) allowedUpdates.audience = audience;
+    if (description !== undefined) allowedUpdates.description = description;
+
+    const item = await Event.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
+    if (!item) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
     res.json(item);
-  } catch (error) { res.status(400).json({ message: 'Invalid data' }); }
+  } catch (error) { res.status(400).json({ message: 'Invalid data', error }); }
 };
 
 export const remove = async (req: Request, res: Response) => {

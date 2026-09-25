@@ -24,6 +24,38 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
+let refreshPromise: Promise<string | null> | null = null;
+
+async function attemptTokenRefresh(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) return null;
+      const data = await res.json();
+      const newToken = data?.token || data?.data?.token;
+      if (newToken && typeof window !== "undefined") {
+        localStorage.setItem("token", newToken);
+        return newToken;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 class ApiClient {
   private getHeaders(customHeaders?: HeadersInit): Headers {
     const headers = new Headers(customHeaders);
@@ -77,6 +109,21 @@ class ApiClient {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Network error occurred";
       throw new ApiError(msg, 0);
+    }
+
+    // Attempt silent token refresh on 401 before giving up
+    if (response.status === 401 && !path.includes("/auth/login") && !path.includes("/auth/refresh")) {
+      const newToken = await attemptTokenRefresh();
+      if (newToken) {
+        const retryHeaders = this.getHeaders(customHeaders);
+        retryHeaders.set("Authorization", `Bearer ${newToken}`);
+        const retryInit = { ...init, headers: retryHeaders };
+        try {
+          response = await fetch(url, retryInit);
+        } catch {
+          // If network error during retry, let standard handling follow
+        }
+      }
     }
 
     if (response.status === 401) {

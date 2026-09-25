@@ -1,5 +1,5 @@
 import express from 'express';
-import { getFees, createFee, updateFee, getExpenses, createExpense, payFee } from '../controllers/financeController';
+import { getFees, createFee, updateFee, getExpenses, createExpense, payFee, createPaymentOrder, recordManualPayment } from '../controllers/financeController';
 import { protect, authorize } from '../middleware/auth';
 
 import { validate } from '../middleware/validate';
@@ -14,7 +14,9 @@ const feeViewAuth = [protect, authorize('Admin', 'SuperAdmin', 'Accountant', 'Pa
 router.get('/fees', feeViewAuth, getFees);
 router.post('/fees', adminAuth, validate(createFeeSchema), createFee);
 router.put('/fees/:id', adminAuth, updateFee);
+router.post('/fees/:id/create-payment-order', feeViewAuth, createPaymentOrder);
 router.post('/fees/:id/pay', feeViewAuth, payFee);
+router.post('/fees/:id/record-manual-payment', adminAuth, recordManualPayment);
 
 router.get('/expenses', adminAuth, getExpenses);
 router.post('/expenses', adminAuth, validate(createExpenseSchema), createExpense);

@@ -72,4 +72,4 @@ EnrollmentSchema.index(
   { unique: true, sparse: true }
 );
 
-export default mongoose.model<IEnrollment>('Enrollment', EnrollmentSchema);
+export default mongoose.models.Enrollment || mongoose.model<IEnrollment>('Enrollment', EnrollmentSchema);

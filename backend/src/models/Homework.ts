@@ -89,4 +89,4 @@ const HomeworkSchema: Schema = new Schema(
 
 HomeworkSchema.index({ classId: 1, sectionId: 1, dueDate: 1 });
 
-export default mongoose.model<IHomework>('Homework', HomeworkSchema);
+export default mongoose.models.Homework || mongoose.model<IHomework>('Homework', HomeworkSchema);

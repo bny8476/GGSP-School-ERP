@@ -29,4 +29,4 @@ const LearningMaterialSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ILearningMaterial>('LearningMaterial', LearningMaterialSchema);
+export default mongoose.models.LearningMaterial || mongoose.model<ILearningMaterial>('LearningMaterial', LearningMaterialSchema);

@@ -51,4 +51,4 @@ const VendorPOSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IVendorPO>('VendorPO', VendorPOSchema);
+export default mongoose.models.VendorPO || mongoose.model<IVendorPO>('VendorPO', VendorPOSchema);

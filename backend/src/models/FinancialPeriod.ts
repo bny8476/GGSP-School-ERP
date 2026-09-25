@@ -27,4 +27,4 @@ const FinancialPeriodSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IFinancialPeriod>('FinancialPeriod', FinancialPeriodSchema);
+export default mongoose.models.FinancialPeriod || mongoose.model<IFinancialPeriod>('FinancialPeriod', FinancialPeriodSchema);

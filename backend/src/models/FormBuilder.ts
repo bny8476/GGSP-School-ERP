@@ -43,4 +43,4 @@ const FormBuilderSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IFormBuilder>('FormBuilder', FormBuilderSchema);
+export default mongoose.models.FormBuilder || mongoose.model<IFormBuilder>('FormBuilder', FormBuilderSchema);

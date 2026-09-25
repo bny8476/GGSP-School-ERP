@@ -63,4 +63,4 @@ const EmployeeAttendanceSchema: Schema = new Schema(
 // One attendance record per user/employee per date
 EmployeeAttendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
 
-export default mongoose.model<IEmployeeAttendance>('EmployeeAttendance', EmployeeAttendanceSchema);
+export default mongoose.models.EmployeeAttendance || mongoose.model<IEmployeeAttendance>('EmployeeAttendance', EmployeeAttendanceSchema);

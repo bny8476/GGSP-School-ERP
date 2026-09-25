@@ -23,10 +23,24 @@ export const create = async (req: Request, res: Response) => {
 
 export const update = async (req: Request, res: Response) => {
   try {
-    const item = await Payroll.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { month, baseSalary, attendanceDays, deductions, bonuses, netSalary, status, paymentDate } = req.body;
+    const allowedUpdates: Record<string, any> = {};
+    if (month !== undefined) allowedUpdates.month = month;
+    if (baseSalary !== undefined) allowedUpdates.baseSalary = baseSalary;
+    if (attendanceDays !== undefined) allowedUpdates.attendanceDays = attendanceDays;
+    if (deductions !== undefined) allowedUpdates.deductions = deductions;
+    if (bonuses !== undefined) allowedUpdates.bonuses = bonuses;
+    if (netSalary !== undefined) allowedUpdates.netSalary = netSalary;
+    if (status !== undefined) allowedUpdates.status = status;
+    if (paymentDate !== undefined) allowedUpdates.paymentDate = paymentDate;
+
+    const item = await Payroll.findByIdAndUpdate(req.params.id, allowedUpdates, { new: true, runValidators: true });
+    if (!item) {
+      return res.status(404).json({ message: 'Payroll record not found' });
+    }
     res.json(item);
   } catch (error) { 
-    res.status(400).json({ message: 'Invalid data' }); 
+    res.status(400).json({ message: 'Invalid data', error }); 
   }
 };
 

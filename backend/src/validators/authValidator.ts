@@ -29,3 +29,19 @@ export const forgotPasswordSchema = z.object({
     email: z.string().email('Valid registered email address is required'),
   }),
 });
+
+export const verifyResetCodeSchema = z.object({
+  body: z.object({
+    email: z.string().email('Valid registered email address is required'),
+    code: z.string().min(4, 'Reset code is required'),
+  }),
+});
+
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email('Valid registered email address is required'),
+    code: z.string().min(4, 'Reset code is required'),
+    newPassword: z.string().min(6, 'New password must be at least 6 characters long'),
+  }),
+});
+

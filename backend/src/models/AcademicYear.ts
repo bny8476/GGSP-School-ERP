@@ -41,4 +41,4 @@ const AcademicYearSchema: Schema = new Schema(
 
 AcademicYearSchema.index({ campusId: 1, name: 1 });
 
-export default mongoose.model<IAcademicYear>('AcademicYear', AcademicYearSchema);
+export default mongoose.models.AcademicYear || mongoose.model<IAcademicYear>('AcademicYear', AcademicYearSchema);

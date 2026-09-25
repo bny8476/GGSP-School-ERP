@@ -13,8 +13,12 @@ import {
   getFiles,
   createFileRecord,
 } from '../controllers/appsController';
+import { protect } from '../middleware/auth';
 
 const router = Router();
+
+// Secure all productivity apps endpoints
+router.use(protect);
 
 // Chat routes
 router.get('/chat/messages', getChatMessages);

@@ -7,8 +7,12 @@ import {
   addComment,
   deleteNote,
 } from '../controllers/noteController';
+import { protect } from '../middleware/auth';
 
 const router = Router();
+
+// Secure all notes endpoints
+router.use(protect);
 
 // Notes endpoints
 router.get('/', getNotes);

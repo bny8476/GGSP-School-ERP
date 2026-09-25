@@ -17,4 +17,4 @@ const SubjectSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ISubject>('Subject', SubjectSchema);
+export default mongoose.models.Subject || mongoose.model<ISubject>('Subject', SubjectSchema);

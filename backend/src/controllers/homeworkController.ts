@@ -37,7 +37,7 @@ export const getChildHomework = async (req: Request, res: Response) => {
     const formatted = list.map((hw) => {
       let status: 'Pending' | 'Submitted' | 'Completed' | 'Overdue' = 'Pending';
       if (childId) {
-        const sub = hw.submissions.find((s) => String(s.studentId) === String(childId));
+        const sub = hw.submissions.find((s: any) => String(s.studentId) === String(childId));
         if (sub) {
           status = sub.status;
         } else if (new Date(hw.dueDate) < now) {
@@ -204,7 +204,7 @@ export const updateHomeworkStatus = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'Homework not found' });
     }
 
-    const existingIdx = hw.submissions.findIndex((s) => String(s.studentId) === String(studentId));
+    const existingIdx = hw.submissions.findIndex((s: any) => String(s.studentId) === String(studentId));
     if (existingIdx >= 0) {
       hw.submissions[existingIdx].status = status;
       if (status === 'Completed') hw.submissions[existingIdx].completedAt = new Date();

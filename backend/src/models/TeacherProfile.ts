@@ -60,4 +60,4 @@ const TeacherProfileSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ITeacherProfile>('TeacherProfile', TeacherProfileSchema);
+export default mongoose.models.TeacherProfile || mongoose.model<ITeacherProfile>('TeacherProfile', TeacherProfileSchema);

@@ -77,4 +77,4 @@ const ClassWorkSchema: Schema = new Schema(
 
 ClassWorkSchema.index({ classId: 1, sectionId: 1, date: -1 });
 
-export default mongoose.model<IClassWork>('ClassWork', ClassWorkSchema);
+export default mongoose.models.ClassWork || mongoose.model<IClassWork>('ClassWork', ClassWorkSchema);

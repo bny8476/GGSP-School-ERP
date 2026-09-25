@@ -77,4 +77,4 @@ const LeaveRequestSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ILeaveRequest>('LeaveRequest', LeaveRequestSchema);
+export default mongoose.models.LeaveRequest || mongoose.model<ILeaveRequest>('LeaveRequest', LeaveRequestSchema);

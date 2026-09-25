@@ -25,4 +25,4 @@ const DayCareLogSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IDayCareLog>('DayCareLog', DayCareLogSchema);
+export default mongoose.models.DayCareLog || mongoose.model<IDayCareLog>('DayCareLog', DayCareLogSchema);

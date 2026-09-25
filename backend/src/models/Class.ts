@@ -20,4 +20,4 @@ const ClassSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IClass>('Class', ClassSchema);
+export default mongoose.models.Class || mongoose.model<IClass>('Class', ClassSchema);

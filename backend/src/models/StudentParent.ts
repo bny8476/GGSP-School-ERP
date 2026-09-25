@@ -55,4 +55,4 @@ const StudentParentSchema: Schema = new Schema(
 // Prevent duplicate junction links between same student and parent
 StudentParentSchema.index({ studentId: 1, parentId: 1 }, { unique: true });
 
-export default mongoose.model<IStudentParent>('StudentParent', StudentParentSchema);
+export default mongoose.models.StudentParent || mongoose.model<IStudentParent>('StudentParent', StudentParentSchema);

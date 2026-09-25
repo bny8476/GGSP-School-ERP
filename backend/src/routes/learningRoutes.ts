@@ -8,6 +8,6 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', getLearningMaterials);
-router.post('/', authorizeRoles('Super Admin', 'Admin', 'Teacher'), createLearningMaterial);
+router.post('/', authorizeRoles('SuperAdmin', 'Admin', 'Teacher'), createLearningMaterial);
 
 export default router;

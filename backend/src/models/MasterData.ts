@@ -33,4 +33,4 @@ const MasterDataSchema: Schema = new Schema(
 
 MasterDataSchema.index({ category: 1, campusId: 1, name: 1 });
 
-export default mongoose.model<IMasterData>('MasterData', MasterDataSchema);
+export default mongoose.models.MasterData || mongoose.model<IMasterData>('MasterData', MasterDataSchema);

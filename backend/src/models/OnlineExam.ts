@@ -57,4 +57,4 @@ const OnlineExamSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IOnlineExam>('OnlineExam', OnlineExamSchema);
+export default mongoose.models.OnlineExam || mongoose.model<IOnlineExam>('OnlineExam', OnlineExamSchema);

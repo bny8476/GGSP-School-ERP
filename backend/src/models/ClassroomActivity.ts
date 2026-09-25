@@ -86,4 +86,4 @@ const ClassroomActivitySchema: Schema = new Schema(
 
 ClassroomActivitySchema.index({ classId: 1, sectionId: 1, date: -1 });
 
-export default mongoose.model<IClassroomActivity>('ClassroomActivity', ClassroomActivitySchema);
+export default mongoose.models.ClassroomActivity || mongoose.model<IClassroomActivity>('ClassroomActivity', ClassroomActivitySchema);

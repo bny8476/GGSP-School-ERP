@@ -8,7 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/active', getActiveBroadcasts);
-router.post('/', authorizeRoles('Super Admin', 'Admin'), createBroadcast);
-router.patch('/:id/dismiss', authorizeRoles('Super Admin', 'Admin'), dismissBroadcast);
+router.post('/', authorizeRoles('SuperAdmin', 'Admin'), createBroadcast);
+router.patch('/:id/dismiss', authorizeRoles('SuperAdmin', 'Admin'), dismissBroadcast);
 
 export default router;

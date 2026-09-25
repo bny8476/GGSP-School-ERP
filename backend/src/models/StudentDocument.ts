@@ -55,4 +55,4 @@ const StudentDocumentSchema: Schema = new Schema(
 
 StudentDocumentSchema.index({ studentId: 1, category: 1 });
 
-export default mongoose.model<IStudentDocument>('StudentDocument', StudentDocumentSchema);
+export default mongoose.models.StudentDocument || mongoose.model<IStudentDocument>('StudentDocument', StudentDocumentSchema);

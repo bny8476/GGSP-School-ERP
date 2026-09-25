@@ -35,4 +35,4 @@ const ParentSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IParent>('Parent', ParentSchema);
+export default mongoose.models.Parent || mongoose.model<IParent>('Parent', ParentSchema);

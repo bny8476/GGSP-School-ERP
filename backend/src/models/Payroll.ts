@@ -33,4 +33,4 @@ const PayrollSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IPayroll>('Payroll', PayrollSchema);
+export default mongoose.models.Payroll || mongoose.model<IPayroll>('Payroll', PayrollSchema);

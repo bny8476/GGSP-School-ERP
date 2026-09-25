@@ -33,4 +33,4 @@ const AnnouncementSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IAnnouncement>('Announcement', AnnouncementSchema);
+export default mongoose.models.Announcement || mongoose.model<IAnnouncement>('Announcement', AnnouncementSchema);

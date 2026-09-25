@@ -62,4 +62,4 @@ const BookSchema: Schema = new Schema(
 BookSchema.index({ title: 1, author: 1 });
 BookSchema.index({ category: 1 });
 
-export default mongoose.model<IBook>('Book', BookSchema);
+export default mongoose.models.Book || mongoose.model<IBook>('Book', BookSchema);
