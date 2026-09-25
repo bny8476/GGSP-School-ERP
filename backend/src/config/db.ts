@@ -39,6 +39,7 @@ const connectDB = async () => {
   // 3. In development / testing: Fallback to embedded in-memory MongoDB
   try {
     console.log('⚡ Launching embedded in-memory MongoDB for local development...');
+    // @ts-ignore
     const { MongoMemoryServer } = await import('mongodb-memory-server');
     memoryServerInstance = await MongoMemoryServer.create({
       binary: {
