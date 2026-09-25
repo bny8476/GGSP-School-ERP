@@ -41,8 +41,12 @@ const connectDB = async () => {
     console.log('⚡ Launching embedded in-memory MongoDB for local development...');
     const { MongoMemoryServer } = await import('mongodb-memory-server');
     memoryServerInstance = await MongoMemoryServer.create({
+      binary: {
+        version: '4.4.29',
+      },
       instance: {
         dbName: 'global_international_erp',
+        launchTimeout: 60000,
       },
     });
 

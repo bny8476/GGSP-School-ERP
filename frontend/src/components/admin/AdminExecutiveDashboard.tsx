@@ -28,6 +28,14 @@ interface AdminExecutiveDashboardProps {
   onRefresh: () => void;
 }
 
+const formatCurrency = (val?: number, fallback = '₹ 8.42 L') => {
+  if (val === undefined || val === null || isNaN(val)) return fallback;
+  if (val >= 10000000) return `₹ ${(val / 10000000).toFixed(2)} Cr`;
+  if (val >= 100000) return `₹ ${(val / 100000).toFixed(2)} L`;
+  if (val >= 1000) return `₹ ${(val / 1000).toFixed(1)}k`;
+  return `₹ ${val.toLocaleString('en-IN')}`;
+};
+
 export default function AdminExecutiveDashboard({
   stats,
   userName,
@@ -35,6 +43,8 @@ export default function AdminExecutiveDashboard({
 }: AdminExecutiveDashboardProps) {
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const [activeDate] = useState('Tue, Sep 18, 2026');
+
+  const displayName = userName?.trim() || 'Admin';
 
   return (
     <div className="space-y-4 animate-in fade-in duration-300 pb-10">
@@ -65,7 +75,7 @@ export default function AdminExecutiveDashboard({
               Welcome back,
             </p>
             <h1 className="text-2xl sm:text-3xl font-black text-[#000E28] dark:text-white tracking-tight flex items-center gap-2 mt-0.5">
-              Admin <span className="inline-block animate-wave text-2xl">👋</span>
+              {displayName} <span className="inline-block animate-wave text-2xl">👋</span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-normal">
               Here&apos;s what&apos;s happening at GGPS School today.
@@ -123,7 +133,7 @@ export default function AdminExecutiveDashboard({
               Total Students
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
-              1,248
+              {stats?.totalStudents ? stats.totalStudents.toLocaleString('en-IN') : '1,248'}
             </p>
           </div>
 
@@ -165,7 +175,7 @@ export default function AdminExecutiveDashboard({
               Total Teachers / Staff
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
-              86
+              {stats?.totalStaff ? stats.totalStaff.toLocaleString('en-IN') : '86'}
             </p>
           </div>
 
@@ -207,7 +217,7 @@ export default function AdminExecutiveDashboard({
               New Admissions
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
-              42
+              {stats?.newAdmissions ?? stats?.admissionPipeline?.confirmed ?? 42}
             </p>
           </div>
 
@@ -249,7 +259,7 @@ export default function AdminExecutiveDashboard({
               Fee Collection
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
-              ₹ 8.42 L
+              {formatCurrency(stats?.feeStats?.collected ?? stats?.feeCollectionSummary, '₹ 8.42 L')}
             </p>
           </div>
 
@@ -404,7 +414,8 @@ export default function AdminExecutiveDashboard({
                 <div>
                   <p className="text-[10px] text-slate-400 font-medium">Total Students</p>
                   <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                    1,248 <span className="text-[9px] text-emerald-600">↑ 8.4%</span>
+                    {stats?.totalStudents ? stats.totalStudents.toLocaleString('en-IN') : '1,248'}{' '}
+                    <span className="text-[9px] text-emerald-600">↑ 8.4%</span>
                   </p>
                 </div>
               </div>
@@ -416,7 +427,8 @@ export default function AdminExecutiveDashboard({
                 <div>
                   <p className="text-[10px] text-slate-400 font-medium">Total Teachers</p>
                   <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                    86 <span className="text-[9px] text-emerald-600">↑ 3.1%</span>
+                    {stats?.totalStaff ? stats.totalStaff.toLocaleString('en-IN') : '86'}{' '}
+                    <span className="text-[9px] text-emerald-600">↑ 3.1%</span>
                   </p>
                 </div>
               </div>
@@ -428,7 +440,8 @@ export default function AdminExecutiveDashboard({
                 <div>
                   <p className="text-[10px] text-slate-400 font-medium">Total Staff</p>
                   <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                    24 <span className="text-[9px] text-emerald-600">↑ 2.5%</span>
+                    {stats?.attendanceSummary?.staffTotal ?? 24}{' '}
+                    <span className="text-[9px] text-emerald-600">↑ 2.5%</span>
                   </p>
                 </div>
               </div>
@@ -440,7 +453,8 @@ export default function AdminExecutiveDashboard({
                 <div>
                   <p className="text-[10px] text-slate-400 font-medium">Total Parents</p>
                   <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                    1,012 <span className="text-[9px] text-emerald-600">↑ 6.8%</span>
+                    {stats?.totalParents ?? '1,012'}{' '}
+                    <span className="text-[9px] text-emerald-600">↑ 6.8%</span>
                   </p>
                 </div>
               </div>
@@ -836,8 +850,8 @@ export default function AdminExecutiveDashboard({
           ROW 3: ADMISSIONS OVERVIEW | FEE COLLECTION OVERVIEW | PENDING FEES
       ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* SECTION 3A: ADMISSIONS OVERVIEW (Spans 4 cols) */}
-        <div className="lg:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
+        {/* SECTION 3A: ADMISSIONS OVERVIEW (Spans 6 cols on lg, 4 on xl) */}
+        <div className="lg:col-span-6 xl:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -917,8 +931,8 @@ export default function AdminExecutiveDashboard({
           </div>
         </div>
 
-        {/* SECTION 3B: FEE COLLECTION OVERVIEW (Spans 4 cols) */}
-        <div className="lg:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
+        {/* SECTION 3B: FEE COLLECTION OVERVIEW (Spans 6 cols on lg, 4 on xl) */}
+        <div className="lg:col-span-6 xl:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
           <div>
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -986,7 +1000,7 @@ export default function AdminExecutiveDashboard({
                     </span>
                   </div>
                   <p className="text-base font-black text-emerald-900 dark:text-emerald-100 mt-1">
-                    ₹ 8.42 L
+                    {formatCurrency(stats?.feeStats?.collected, '₹ 8.42 L')}
                   </p>
                   <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
                     ↑ 7.2% <span className="font-normal text-slate-400">vs. last month</span>
@@ -1004,7 +1018,7 @@ export default function AdminExecutiveDashboard({
                     </span>
                   </div>
                   <p className="text-base font-black text-rose-900 dark:text-rose-100 mt-1">
-                    ₹ 2.16 L
+                    {formatCurrency(stats?.feeStats?.pending, '₹ 2.16 L')}
                   </p>
                 </div>
               </div>
@@ -1012,8 +1026,8 @@ export default function AdminExecutiveDashboard({
           </div>
         </div>
 
-        {/* SECTION 3C: PENDING FEES (Spans 4 cols) */}
-        <div className="lg:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
+        {/* SECTION 3C: PENDING FEES (Spans 12 cols on lg, 4 on xl) */}
+        <div className="lg:col-span-12 xl:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1033,105 +1047,142 @@ export default function AdminExecutiveDashboard({
             </div>
 
             {/* Pending Fees Table */}
-            <div className="overflow-x-auto mt-4">
-              <table className="w-full text-left">
+            <div className="overflow-x-auto mt-4 -mx-1 px-1">
+              <table className="w-full min-w-[390px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-semibold text-slate-400">
-                    <th className="pb-2">Student Name</th>
-                    <th className="pb-2">Class</th>
-                    <th className="pb-2">Amount</th>
-                    <th className="pb-2">Due Date</th>
-                    <th className="pb-2 text-right">Status</th>
+                    <th className="pb-2.5 pl-0.5 pr-2 text-left whitespace-nowrap">Student Name</th>
+                    <th className="pb-2.5 px-2 text-left whitespace-nowrap">Class</th>
+                    <th className="pb-2.5 px-2 text-right whitespace-nowrap">Amount</th>
+                    <th className="pb-2.5 px-2 text-center whitespace-nowrap">Due Date</th>
+                    <th className="pb-2.5 pl-2 pr-0.5 text-right whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60 text-xs">
-                  {/* Row 1 */}
-                  <tr>
-                    <td className="py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-blue-100 text-[#0050CB] font-bold text-[10px] flex items-center justify-center">
-                          A
-                        </div>
-                        <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-                          Aarav Sharma
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-2.5 text-slate-500 text-[11px]">Class 3B</td>
-                    <td className="py-2.5 font-bold text-rose-500 text-[11px]">₹ 12,000</td>
-                    <td className="py-2.5 text-slate-500 text-[10px]">Sep 20, 2026</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
-                        Pending
-                      </span>
-                    </td>
-                  </tr>
+                  {stats?.feesDue && stats.feesDue.length > 0 ? (
+                    stats.feesDue.slice(0, 5).map((fee: any) => {
+                      const student = fee.studentId || {};
+                      const studentName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Student';
+                      const initial = studentName.charAt(0).toUpperCase() || 'S';
+                      const studentGrade = student.grade ? `Class ${student.grade}` : 'Class 3B';
+                      const remaining = Math.max(0, (fee.totalAmount || 0) - (fee.amountPaid || 0));
+                      const amountStr = remaining > 0 ? `₹${remaining.toLocaleString('en-IN')}` : `₹${(fee.totalAmount || 0).toLocaleString('en-IN')}`;
+                      const dueDateStr = fee.dueDate ? new Date(fee.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Due Soon';
 
-                  {/* Row 2 */}
-                  <tr>
-                    <td className="py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-pink-100 text-pink-600 font-bold text-[10px] flex items-center justify-center">
-                          D
-                        </div>
-                        <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-                          Diya Patel
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-2.5 text-slate-500 text-[11px]">Class 5A</td>
-                    <td className="py-2.5 font-bold text-rose-500 text-[11px]">₹ 8,500</td>
-                    <td className="py-2.5 text-slate-500 text-[10px]">Sep 22, 2026</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
-                        Pending
-                      </span>
-                    </td>
-                  </tr>
+                      return (
+                        <tr key={fee._id || fee.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                          <td className="py-2.5 pl-0.5 pr-2 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-blue-100 text-[#0050CB] font-bold text-[10px] flex items-center justify-center shrink-0">
+                                {initial}
+                              </div>
+                              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                                {studentName}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-2 text-slate-500 text-[11px] whitespace-nowrap">{studentGrade}</td>
+                          <td className="py-2.5 px-2 text-right font-bold text-rose-500 text-[11px] whitespace-nowrap">{amountStr}</td>
+                          <td className="py-2.5 px-2 text-center text-slate-500 text-[10px] whitespace-nowrap">{dueDateStr}</td>
+                          <td className="py-2.5 pl-2 pr-0.5 text-right whitespace-nowrap">
+                            <span className="inline-flex px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
+                              {fee.status || 'Pending'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <>
+                      {/* Row 1 */}
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="py-2.5 pl-0.5 pr-2 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-blue-100 text-[#0050CB] font-bold text-[10px] flex items-center justify-center shrink-0">
+                              A
+                            </div>
+                            <span className="font-semibold text-slate-800 dark:text-slate-100">
+                              Aarav Sharma
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-2 text-slate-500 text-[11px] whitespace-nowrap">Class 3B</td>
+                        <td className="py-2.5 px-2 text-right font-bold text-rose-500 text-[11px] whitespace-nowrap">₹12,000</td>
+                        <td className="py-2.5 px-2 text-center text-slate-500 text-[10px] whitespace-nowrap">Sep 20, 2026</td>
+                        <td className="py-2.5 pl-2 pr-0.5 text-right whitespace-nowrap">
+                          <span className="inline-flex px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
+                            Pending
+                          </span>
+                        </td>
+                      </tr>
 
-                  {/* Row 3 */}
-                  <tr>
-                    <td className="py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 font-bold text-[10px] flex items-center justify-center">
-                          R
-                        </div>
-                        <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-                          Rohan Verma
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-2.5 text-slate-500 text-[11px]">Class 4C</td>
-                    <td className="py-2.5 font-bold text-rose-500 text-[11px]">₹ 10,000</td>
-                    <td className="py-2.5 text-slate-500 text-[10px]">Sep 25, 2026</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
-                        Pending
-                      </span>
-                    </td>
-                  </tr>
+                      {/* Row 2 */}
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="py-2.5 pl-0.5 pr-2 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-pink-100 text-pink-600 font-bold text-[10px] flex items-center justify-center shrink-0">
+                              D
+                            </div>
+                            <span className="font-semibold text-slate-800 dark:text-slate-100">
+                              Diya Patel
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-2 text-slate-500 text-[11px] whitespace-nowrap">Class 5A</td>
+                        <td className="py-2.5 px-2 text-right font-bold text-rose-500 text-[11px] whitespace-nowrap">₹8,500</td>
+                        <td className="py-2.5 px-2 text-center text-slate-500 text-[10px] whitespace-nowrap">Sep 22, 2026</td>
+                        <td className="py-2.5 pl-2 pr-0.5 text-right whitespace-nowrap">
+                          <span className="inline-flex px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
+                            Pending
+                          </span>
+                        </td>
+                      </tr>
 
-                  {/* Row 4 */}
-                  <tr>
-                    <td className="py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 font-bold text-[10px] flex items-center justify-center">
-                          A
-                        </div>
-                        <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-                          Ananya Singh
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-2.5 text-slate-500 text-[11px]">Class 2B</td>
-                    <td className="py-2.5 font-bold text-rose-500 text-[11px]">₹ 7,500</td>
-                    <td className="py-2.5 text-slate-500 text-[10px]">Sep 28, 2026</td>
-                    <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
-                        Pending
-                      </span>
-                    </td>
-                  </tr>
+                      {/* Row 3 */}
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="py-2.5 pl-0.5 pr-2 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 font-bold text-[10px] flex items-center justify-center shrink-0">
+                              R
+                            </div>
+                            <span className="font-semibold text-slate-800 dark:text-slate-100">
+                              Rohan Verma
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-2 text-slate-500 text-[11px] whitespace-nowrap">Class 4C</td>
+                        <td className="py-2.5 px-2 text-right font-bold text-rose-500 text-[11px] whitespace-nowrap">₹10,000</td>
+                        <td className="py-2.5 px-2 text-center text-slate-500 text-[10px] whitespace-nowrap">Sep 25, 2026</td>
+                        <td className="py-2.5 pl-2 pr-0.5 text-right whitespace-nowrap">
+                          <span className="inline-flex px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
+                            Pending
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Row 4 */}
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="py-2.5 pl-0.5 pr-2 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 font-bold text-[10px] flex items-center justify-center shrink-0">
+                              A
+                            </div>
+                            <span className="font-semibold text-slate-800 dark:text-slate-100">
+                              Ananya Singh
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-2 text-slate-500 text-[11px] whitespace-nowrap">Class 2B</td>
+                        <td className="py-2.5 px-2 text-right font-bold text-rose-500 text-[11px] whitespace-nowrap">₹7,500</td>
+                        <td className="py-2.5 px-2 text-center text-slate-500 text-[10px] whitespace-nowrap">Sep 28, 2026</td>
+                        <td className="py-2.5 pl-2 pr-0.5 text-right whitespace-nowrap">
+                          <span className="inline-flex px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[9px] font-bold border border-rose-100 dark:border-rose-900/50">
+                            Pending
+                          </span>
+                        </td>
+                      </tr>
+                    </>
+                  )}
                 </tbody>
               </table>
             </div>
