@@ -198,38 +198,63 @@ export default function ParentSidebar({
     <div className="flex flex-col h-full bg-gradient-to-b from-[#F3F8FF] via-white to-[#F0F6FF] dark:from-[#061026] dark:via-[#081329] dark:to-[#061026] text-slate-700 dark:text-slate-200 select-none relative overflow-hidden font-sans border-r border-blue-100/70 dark:border-white/10 shadow-[2px_0_12px_rgba(0,80,203,0.03)]">
       
       {/* 1. Header: Logo & Parent Portal Title */}
-      <div className="h-16 flex items-center justify-between px-4 sm:px-5 shrink-0 bg-transparent">
-        <Link href="/parent" className="flex items-center gap-3 group min-w-0">
-          <GGPSLogo size="md" />
-          {!isCollapsed && (
+      {isCollapsed ? (
+        <div className="py-3 px-2 flex flex-col items-center gap-2 shrink-0 border-b border-blue-100/60 dark:border-white/10">
+          <Link
+            href="/parent"
+            className="flex items-center justify-center p-1 rounded-xl hover:bg-blue-50 dark:hover:bg-white/5 transition-colors"
+            title="GGPS School - Parent Portal"
+          >
+            <GGPSLogo size="sm" />
+          </Link>
+
+          {/* Desktop Expand Toggle Button inside collapsed header */}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(false)}
+            className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-[#0050CB] hover:bg-[#E5EEFF] dark:hover:bg-white/10 transition-colors cursor-pointer items-center justify-center"
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <div className="h-16 flex items-center justify-between px-4 sm:px-5 shrink-0 bg-transparent">
+          <Link href="/parent" className="flex items-center gap-3 group min-w-0">
+            <GGPSLogo size="md" />
             <div className="flex flex-col leading-tight min-w-0">
               <span className="text-sm font-black tracking-tight text-[#102A5C] dark:text-white truncate">
                 GGPS School
               </span>
-              <span className="text-[11px] font-bold text-[#1A68E5] tracking-wide truncate">
+              <span className="text-[11px] font-bold text-[#0050CB] tracking-wide truncate">
                 Parent Portal
               </span>
             </div>
-          )}
-        </Link>
+          </Link>
 
-        {/* Desktop Collapse Toggle */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-[#1A68E5] hover:bg-[#EAF4FF] dark:hover:bg-white/10 transition-colors cursor-pointer"
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
+          {/* Desktop Collapse Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(true)}
+            className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-[#0050CB] hover:bg-[#E5EEFF] dark:hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
 
-        {/* Mobile Close Button */}
-        <button
-          onClick={() => setIsMobileOpen(false)}
-          className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+          {/* Mobile Close Button */}
+          <button
+            type="button"
+            onClick={() => setIsMobileOpen(false)}
+            className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* 2. Clustered Navigation List */}
       <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-3 scrollbar-thin scrollbar-thumb-blue-100/60 dark:scrollbar-thumb-slate-800">
@@ -350,6 +375,27 @@ export default function ParentSidebar({
           </div>
         </div>
       )}
+
+      {/* Collapsed bottom actions (Settings & Logout) */}
+      {isCollapsed && (
+        <div className="mt-auto p-2 flex flex-col items-center gap-1 pb-3 border-t border-blue-100/60 dark:border-white/10 shrink-0">
+          <Link
+            href="/parent/account"
+            title="Settings"
+            className="p-2 rounded-xl text-slate-400 hover:text-[#0050CB] hover:bg-[#E5EEFF] dark:hover:bg-white/10 transition-colors"
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Logout"
+            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -357,11 +403,24 @@ export default function ParentSidebar({
     <>
       {/* Desktop Sidebar (260px width matching exact design) */}
       <aside
-        className={`hidden md:flex flex-col shrink-0 transition-all duration-300 z-30 ${
+        className={`hidden md:flex flex-col shrink-0 transition-all duration-300 z-30 relative ${
           isCollapsed ? "w-[76px]" : "w-[260px] lg:w-[270px]"
         }`}
       >
         {sidebarContent}
+
+        {/* Floating Border Expand Button when Collapsed */}
+        {isCollapsed && (
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(false)}
+            className="absolute -right-3 top-5 z-40 w-6 h-6 rounded-full bg-white dark:bg-[#081329] border border-blue-200 dark:border-white/20 shadow-md shadow-blue-500/10 hidden md:flex items-center justify-center text-slate-500 hover:text-[#0050CB] hover:border-[#0050CB] transition-all cursor-pointer hover:scale-110"
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        )}
       </aside>
 
       {/* Mobile Slide-Out Drawer */}

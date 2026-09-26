@@ -103,8 +103,8 @@ export default function ParentDashboard() {
                   <span>GGPS CONNECTED CAMPUS</span>
                 </div>
 
-                <h1 className="text-xl sm:text-2xl md:text-[24px] font-black text-[#000E28] tracking-tight leading-tight flex items-center gap-1.5 mt-2">
-                  <span>Welcome back, {parentProfile?.motherName?.split(" ")[0] || "Priya"} 👋</span>
+                <h1 className="text-xl sm:text-2xl md:text-[24px] font-black text-[#000E28] tracking-tight leading-tight flex items-center gap-1.5 mt-2" suppressHydrationWarning>
+                  <span suppressHydrationWarning>Welcome back, {parentProfile?.motherName?.split(" ")[0] || "Priya"} 👋</span>
                 </h1>
 
                 <p className="text-xs sm:text-[13px] font-bold text-[#102A5C] dark:text-blue-100 leading-snug mt-1">
@@ -128,7 +128,7 @@ export default function ParentDashboard() {
 
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/90 dark:bg-[#000E28]/80 backdrop-blur-md border border-slate-200/80 text-[11px] font-bold text-slate-600 dark:text-slate-300 shadow-2xs">
                   <Calendar className="w-3 h-3 text-[#0050CB]" />
-                  <span>{currentDateFormatted}</span>
+                  <span suppressHydrationWarning>{currentDateFormatted}</span>
                 </div>
               </div>
             </div>

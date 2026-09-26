@@ -17,7 +17,7 @@ interface ParentHeaderProps {
 export default function ParentHeader({ onOpenMobileMenu }: ParentHeaderProps) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const { children, selectedChild, selectChild, setIsSearchOpen, unreadNotificationCount, unreadMessageCount } = useParent();
+  const { parentProfile, children, selectedChild, selectChild, setIsSearchOpen, unreadNotificationCount, unreadMessageCount } = useParent();
   const [isChildMenuOpen, setIsChildMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -246,8 +246,8 @@ export default function ParentHeader({ onOpenMobileMenu }: ParentHeaderProps) {
             />
           </div>
           <div className="hidden xl:flex flex-col pr-1">
-            <span className="text-xs font-bold text-[#102A5C] dark:text-white leading-tight">
-              Priya Sharma
+            <span className="text-xs font-bold text-[#102A5C] dark:text-white leading-tight" suppressHydrationWarning>
+              {parentProfile?.motherName || "Priya Sharma"}
             </span>
             <span className="text-[10px] text-slate-400 leading-tight font-medium">
               Parent

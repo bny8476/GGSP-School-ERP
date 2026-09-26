@@ -42,7 +42,6 @@ export default function AdminExecutiveDashboard({
   onRefresh,
 }: AdminExecutiveDashboardProps) {
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
-  const [activeDate] = useState('Tue, Sep 18, 2026');
 
   const displayName = userName?.trim() || 'Admin';
 
@@ -105,18 +104,6 @@ export default function AdminExecutiveDashboard({
             </div>
           </div>
         </div>
-
-        {/* Top Right Date Button */}
-        <div className="absolute top-5 right-5 z-20 hidden sm:block">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/95 dark:bg-[#07152F]/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-2xs hover:bg-white transition-colors cursor-pointer"
-          >
-            <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-            <span>{activeDate}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          </button>
-        </div>
       </div>
 
       {/* ========================================================
@@ -126,85 +113,161 @@ export default function AdminExecutiveDashboard({
         {/* Card 1: Total Students */}
         <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
-            <div className="w-9 h-9 rounded-xl bg-[#0050CB] text-white flex items-center justify-center shadow-sm shadow-[#0050CB]/25">
-              <Users className="w-4 h-4" />
+            <div className="flex items-center justify-between">
+              <div className="w-9 h-9 rounded-xl bg-[#0050CB] text-white flex items-center justify-center shadow-sm shadow-[#0050CB]/25">
+                <Users className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-[#0050CB] dark:text-[#38BDF8] bg-blue-50 dark:bg-[#0050CB]/20 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/40">
+                Enrolled
+              </span>
             </div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-3">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2.5">
               Total Students
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
               {stats?.totalStudents ? stats.totalStudents.toLocaleString('en-IN') : '1,248'}
             </p>
+
+            {/* Capacity / Target Bar */}
+            <div className="mt-2.5 space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                <span>Capacity</span>
+                <span className="font-bold text-slate-600 dark:text-slate-300">92%</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-[#0050CB] rounded-full transition-all duration-500" style={{ width: '92%' }} />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
-            <span>↑ 8.4%</span>
-            <span className="text-slate-400 font-normal">vs. last month</span>
+          <div className="flex items-center justify-between text-[11px] mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/70">
+            <div className="flex items-center gap-1 text-emerald-600 font-bold">
+              <span>↑ 8.4%</span>
+              <span className="text-slate-400 font-normal">vs. last month</span>
+            </div>
+            <span className="text-[10px] font-semibold text-slate-400">Live</span>
           </div>
         </div>
 
         {/* Card 2: Total Teachers / Staff */}
         <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
-            <div className="w-9 h-9 rounded-xl bg-[#8B5CF6] text-white flex items-center justify-center shadow-sm shadow-purple-500/25">
-              <GraduationCap className="w-4 h-4" />
+            <div className="flex items-center justify-between">
+              <div className="w-9 h-9 rounded-xl bg-[#8B5CF6] text-white flex items-center justify-center shadow-sm shadow-purple-500/25">
+                <GraduationCap className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 rounded-full border border-purple-100 dark:border-purple-900/40">
+                1:18 Ratio
+              </span>
             </div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-3">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2.5">
               Total Teachers / Staff
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
               {stats?.totalStaff ? stats.totalStaff.toLocaleString('en-IN') : '86'}
             </p>
+
+            {/* Attendance / Duty Bar */}
+            <div className="mt-2.5 space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                <span>On Duty</span>
+                <span className="font-bold text-slate-600 dark:text-slate-300">96%</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-[#8B5CF6] rounded-full transition-all duration-500" style={{ width: '96%' }} />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
-            <span>↑ 3.1%</span>
-            <span className="text-slate-400 font-normal">vs. last month</span>
+          <div className="flex items-center justify-between text-[11px] mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/70">
+            <div className="flex items-center gap-1 text-emerald-600 font-bold">
+              <span>↑ 3.1%</span>
+              <span className="text-slate-400 font-normal">vs. last month</span>
+            </div>
+            <span className="text-[10px] font-semibold text-slate-400">Verified</span>
           </div>
         </div>
 
         {/* Card 3: New Admissions */}
         <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
-            <div className="w-9 h-9 rounded-xl bg-[#10B981] text-white flex items-center justify-center shadow-sm shadow-emerald-500/25">
-              <UserPlus className="w-4 h-4" />
+            <div className="flex items-center justify-between">
+              <div className="w-9 h-9 rounded-xl bg-[#10B981] text-white flex items-center justify-center shadow-sm shadow-emerald-500/25">
+                <UserPlus className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900/40">
+                AY 25-26
+              </span>
             </div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-3">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2.5">
               New Admissions
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
               {stats?.newAdmissions ?? stats?.admissionPipeline?.confirmed ?? 42}
             </p>
+
+            {/* Target Progress Bar */}
+            <div className="mt-2.5 space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                <span>Target: 50</span>
+                <span className="font-bold text-slate-600 dark:text-slate-300">84%</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-[#10B981] rounded-full transition-all duration-500" style={{ width: '84%' }} />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
-            <span>↑ 12.5%</span>
-            <span className="text-slate-400 font-normal">vs. last month</span>
+          <div className="flex items-center justify-between text-[11px] mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/70">
+            <div className="flex items-center gap-1 text-emerald-600 font-bold">
+              <span>↑ 12.5%</span>
+              <span className="text-slate-400 font-normal">vs. last month</span>
+            </div>
+            <span className="text-[10px] font-semibold text-slate-400">Target</span>
           </div>
         </div>
 
         {/* Card 4: Fee Collection */}
         <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
-            <div className="w-9 h-9 rounded-xl bg-[#F59E0B] text-white flex items-center justify-center shadow-sm shadow-amber-500/25">
-              <IndianRupee className="w-4 h-4 stroke-[2.5]" />
+            <div className="flex items-center justify-between">
+              <div className="w-9 h-9 rounded-xl bg-[#F59E0B] text-white flex items-center justify-center shadow-sm shadow-amber-500/25">
+                <IndianRupee className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/40">
+                Term 1
+              </span>
             </div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-3">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2.5">
               Fee Collection
             </p>
             <p className="text-2xl font-black text-[#000E28] dark:text-white mt-0.5 tracking-tight">
               {formatCurrency(stats?.feeStats?.collected ?? stats?.feeCollectionSummary, '₹ 8.42 L')}
             </p>
+
+            {/* Collection Target Bar */}
+            <div className="mt-2.5 space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                <span>Target: ₹ 10 L</span>
+                <span className="font-bold text-slate-600 dark:text-slate-300">88%</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-[#F59E0B] rounded-full transition-all duration-500" style={{ width: '88%' }} />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
-            <span>↑ 7.2%</span>
-            <span className="text-slate-400 font-normal">vs. last month</span>
+          <div className="flex items-center justify-between text-[11px] mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/70">
+            <div className="flex items-center gap-1 text-emerald-600 font-bold">
+              <span>↑ 7.2%</span>
+              <span className="text-slate-400 font-normal">vs. last month</span>
+            </div>
+            <span className="text-[10px] font-semibold text-slate-400">Q3 Pace</span>
           </div>
         </div>
 
         {/* Card 5: Quick Actions (Spans 4 columns for full readable action buttons) */}
-        <div className="sm:col-span-2 lg:col-span-4 xl:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
+        <div className="sm:col-span-2 lg:col-span-4 xl:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <h3 className="text-xs sm:text-sm font-bold text-[#000E28] dark:text-white">
               Quick Actions

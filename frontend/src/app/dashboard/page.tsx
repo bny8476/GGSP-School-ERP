@@ -358,7 +358,7 @@ export default function DashboardOverview() {
   // ==========================================
   // TEACHER ACADEMIC & CLASSROOM WORKSPACE
   // ==========================================
-  if (userRole === 'teacher' || stats?.isTeacherPortal) {
+  if (userRole === 'teacher' || (stats?.isTeacherPortal && userRole !== 'admin' && userRole !== 'superadmin')) {
     return (
       <TeacherWorkspace 
         user={currentUser} 

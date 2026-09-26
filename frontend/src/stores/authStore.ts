@@ -72,6 +72,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.removeItem("user_profile");
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("ggps_cached_stats");
+      // Explicitly expire cookies so Next.js middleware doesn't bounce /login back to /dashboard
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0";
+      document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0";
+      document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0";
     }
     set({
       user: null,
@@ -81,7 +86,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       isLoading: false,
     });
     if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      window.location.href = "/login?logout=true";
     }
   },
 

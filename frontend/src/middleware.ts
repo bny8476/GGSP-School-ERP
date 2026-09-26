@@ -27,6 +27,15 @@ export function middleware(request: NextRequest) {
   const isProtectedPath = pathname.startsWith("/dashboard") || pathname.startsWith("/parent") || pathname.startsWith("/teacher");
   const isLoginPage = pathname === "/login";
 
+  // If visiting login page with a logout flag, delete cookies and allow login page
+  if (isLoginPage && request.nextUrl.searchParams.has("logout")) {
+    const response = NextResponse.next();
+    response.cookies.delete("token");
+    response.cookies.delete("user_role");
+    response.cookies.delete("refreshToken");
+    return response;
+  }
+
   // If visiting login page while already authenticated with cookies, redirect to their portal
   if (isLoginPage && tokenCookie) {
     const targetUrl = request.nextUrl.clone();

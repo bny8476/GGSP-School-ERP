@@ -103,6 +103,7 @@ import ExamsMarksWorkspace from './ExamsMarksWorkspace';
 import TeacherHomeWorkspace from './TeacherHomeWorkspace';
 import EnrollChildModal from './EnrollChildModal';
 import { getApiBaseUrl } from '@/lib/utils';
+import { useAuthStore } from '@/stores/authStore';
 import { getSocket, joinRoom, leaveRoom } from '@/lib/socket';
 import {
   PremiumCard,
@@ -2859,11 +2860,17 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
     }
   };
 
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      const apiBase = getApiBaseUrl();
+      await fetch(`${apiBase}/api/v1/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (e) {
+      console.warn('Teacher logout notice:', e);
+    } finally {
+      useAuthStore.getState().logout();
     }
   };
 
@@ -3120,27 +3127,48 @@ export default function TeacherWorkspace({ user, stats }: TeacherWorkspaceProps)
       >
         {/* Top Branding & Collapse Button */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between px-1 pt-1">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#3157D5] to-[#6366F1] flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+          {isSidebarCollapsed ? (
+            <div className="flex flex-col items-center gap-2 pt-1 pb-2 border-b border-slate-800/80">
+              <div
+                className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#3157D5] to-[#6366F1] flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0"
+                title="GGPS School ERP"
+              >
                 <span className="text-xl">🎓</span>
               </div>
-              {!isSidebarCollapsed && (
+
+              <button
+                type="button"
+                onClick={() => setIsSidebarCollapsed(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer flex items-center justify-center"
+                title="Expand Sidebar"
+                aria-label="Expand Sidebar"
+              >
+                <PanelLeft className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between px-1 pt-1">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#3157D5] to-[#6366F1] flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+                  <span className="text-xl">🎓</span>
+                </div>
                 <div className="leading-tight truncate">
                   <span className="text-base font-black tracking-wide text-white block">GGPS</span>
                   <span className="text-[11px] font-semibold text-[#818CF8] tracking-wider block">School ERP</span>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <button
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              title={isSidebarCollapsed ? "Expand Sidebar (260px)" : "Collapse Sidebar (82px)"}
-            >
-              {isSidebarCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setIsSidebarCollapsed(true)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                title="Collapse Sidebar"
+                aria-label="Collapse Sidebar"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
           {/* Navigation Links */}
           <nav className="space-y-1">
