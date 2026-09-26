@@ -4,15 +4,15 @@ import React, { useState } from "react";
 import { Trophy, Award, QrCode, Plus, Sparkles, Flame, Shield, CheckCircle2, Star } from "lucide-react";
 
 export default function HouseSystemPage() {
-  const [selectedStudent, setSelectedStudent] = useState("Alexander Wright");
-  const [certTitle, setCertTitle] = useState("Excellence in STEM & Robotics");
+  const [selectedStudent, setSelectedStudent] = useState("Aarav Sharma");
+  const [certTitle, setCertTitle] = useState("Excellence in Phonics & Storytelling");
   const [certGenerated, setCertGenerated] = useState(false);
 
   const houses = [
-    { name: "Phoenix House", points: 1420, color: "from-amber-500 to-rose-600", lead: "Grade 10-A", icon: Flame },
-    { name: "Dragon House", points: 1380, color: "from-emerald-500 to-teal-700", lead: "Grade 11-B", icon: Shield },
-    { name: "Falcon House", points: 1290, color: "from-[#0050CB] to-[#38BDF8]", lead: "Grade 9-A", icon: Star },
-    { name: "Pegasus House", points: 1210, color: "from-purple-500 to-indigo-700", lead: "Grade 12-A", icon: Award },
+    { name: "Phoenix House", points: 1420, color: "from-amber-500 to-rose-600", lead: "UKG A", icon: Flame },
+    { name: "Dragon House", points: 1380, color: "from-emerald-500 to-teal-700", lead: "LKG B", icon: Shield },
+    { name: "Falcon House", points: 1290, color: "from-[#0050CB] to-[#38BDF8]", lead: "UKG B", icon: Star },
+    { name: "Pegasus House", points: 1210, color: "from-purple-500 to-indigo-700", lead: "Pre-KG A", icon: Award },
   ];
 
   return (

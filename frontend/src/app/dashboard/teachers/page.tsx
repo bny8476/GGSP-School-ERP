@@ -55,8 +55,8 @@ function TeachersContent() {
       lastName: "Johnson",
       email: "sarah.johnson@globalerp.edu",
       phoneNumber: "+1 (555) 234-5678",
-      designation: "Senior Physics Faculty",
-      qualification: "M.Sc Physics, B.Ed",
+      designation: "Head of Early Phonics & Rhymes",
+      qualification: "M.A. Child Psychology, D.E.C.Ed",
       experienceYears: 8,
       salary: 65000,
       role: { name: "Teacher" },
@@ -111,8 +111,8 @@ function TeachersContent() {
       lastName: "Rostova",
       email: "elena.rostova@globalerp.edu",
       phoneNumber: "+1 (555) 567-8901",
-      designation: "Biology & Life Sciences",
-      qualification: "M.Sc Biochemistry",
+      designation: "General Awareness (EVS) Faculty",
+      qualification: "B.Ed, Child Development Specialist",
       experienceYears: 7,
       salary: 61000,
       role: { name: "Teacher" },
@@ -716,7 +716,7 @@ function TeachersContent() {
                     type="text"
                     value={formData.designation}
                     onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                    placeholder="e.g. Senior Physics Faculty"
+                    placeholder="e.g. Early Literacy & Phonics Lead"
                     className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
                   />
                 </div>
@@ -726,7 +726,7 @@ function TeachersContent() {
                     type="text"
                     value={formData.qualification}
                     onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
-                    placeholder="e.g. M.Sc Physics, B.Ed"
+                    placeholder="e.g. D.E.C.Ed, Montessori Certified"
                     className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
                   />
                 </div>

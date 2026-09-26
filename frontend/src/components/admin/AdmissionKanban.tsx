@@ -1,17 +1,10 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { 
-  Clock, 
-  Calendar, 
   Phone, 
   User, 
   CheckCircle2, 
-  ChevronRight, 
-  Sparkles,
-  ArrowRight,
-  MoreVertical
 } from 'lucide-react';
 
 export interface AdmissionApplication {
@@ -47,14 +40,14 @@ export default function AdmissionKanban({
   onSelectApplication,
 }: AdmissionKanbanProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 overflow-x-auto pb-4 custom-scrollbar">
+    <div className="flex gap-4 overflow-x-auto pb-4 pt-1 custom-scrollbar min-w-full items-start">
       {COLUMNS.map((col) => {
         const columnApps = applications.filter((app) => app.status === col.id);
 
         return (
           <div
             key={col.id}
-            className="flex flex-col bg-slate-50/70 dark:bg-[#07152F]/70 rounded-[22px] border border-slate-200/80 dark:border-slate-800 p-3 min-w-[270px] max-h-[78vh]"
+            className="flex-1 min-w-[280px] sm:min-w-[290px] xl:min-w-[280px] max-w-[360px] shrink-0 flex flex-col bg-slate-50/70 dark:bg-[#07152F]/70 rounded-[22px] border border-slate-200/80 dark:border-slate-800 p-3.5 max-h-[78vh]"
           >
             {/* Column Header */}
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80 dark:border-slate-800 px-1 shrink-0">
@@ -72,17 +65,13 @@ export default function AdmissionKanban({
             {/* Column Cards (Scrollable) */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
               {columnApps.length === 0 ? (
-                <div className="py-10 text-center text-slate-400 dark:text-slate-600 text-xs">
+                <div className="py-10 text-center text-slate-400 dark:text-slate-600 text-xs font-medium">
                   No applicants in this stage
                 </div>
               ) : (
                 columnApps.map((app) => (
-                  <motion.div
+                  <div
                     key={app._id}
-                    layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
                     className="bg-white dark:bg-[#0B1F3A] rounded-2xl p-4 border border-[#E6EAF2] dark:border-slate-700/80 shadow-xs hover:shadow-md hover:border-[#0050CB]/40 dark:hover:border-[#0050CB]/50 transition-all duration-200 flex flex-col justify-between group"
                   >
                     <div>
@@ -91,7 +80,7 @@ export default function AdmissionKanban({
                         <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#E5EEFF] dark:bg-[#0050CB]/30 text-[#0050CB] dark:text-[#E5EEFF]">
                           {app.gradeAppliedFor || 'LKG'}
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-slate-400 font-medium">
                           {app.createdAt
                             ? new Date(app.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                             : 'Recent'}
@@ -122,11 +111,11 @@ export default function AdmissionKanban({
                     </div>
 
                     {/* Stage Transition Selector */}
-                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                       <select
                         value={app.status}
                         onChange={(e) => onStatusChange(app._id, e.target.value)}
-                        className="text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#000E28] dark:text-slate-200 cursor-pointer focus:outline-none"
+                        className="text-[11px] font-bold py-1.5 px-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#000E28] dark:text-slate-200 cursor-pointer focus:outline-none flex-1 min-w-0"
                       >
                         {COLUMNS.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -139,14 +128,14 @@ export default function AdmissionKanban({
                         <button
                           type="button"
                           onClick={() => onStatusChange(app._id, 'Admission Confirmed')}
-                          className="p-1 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                          className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors shrink-0 cursor-pointer"
                           title="Confirm Admission"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 ))
               )}
             </div>

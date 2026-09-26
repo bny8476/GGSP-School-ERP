@@ -32,7 +32,7 @@ export default function DigitalClassroomPage() {
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [newMaterial, setNewMaterial] = useState({
     title: '',
-    subject: 'Mathematics',
+    subject: 'Phonics & English',
     classId: '',
     fileUrl: '',
     fileType: 'PDF',
@@ -42,7 +42,7 @@ export default function DigitalClassroomPage() {
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [newQuestion, setNewQuestion] = useState({
     questionText: '',
-    subject: 'Mathematics',
+    subject: 'Phonics & English',
     difficulty: 'Medium',
     marks: 1,
     options: ['', '', '', ''],
@@ -372,7 +372,7 @@ export default function DigitalClassroomPage() {
                   value={newMaterial.title}
                   onChange={(e) => setNewMaterial({ ...newMaterial, title: e.target.value })}
                   className="w-full px-3 py-2 border rounded-xl dark:bg-slate-800 dark:border-slate-700 text-sm"
-                  placeholder="Chapter 4 - Calculus Notes"
+                  placeholder="Rhymes & Phonics Sound Cards (Pre-KG)"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">

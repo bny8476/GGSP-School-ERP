@@ -37,8 +37,8 @@ export default function ImportExportPage() {
   const handleDownloadTemplate = () => {
     const csvContent =
       selectedEntity === 'students'
-        ? 'firstName,lastName,grade,rollNumber,parentEmail,phone\nJohn,Doe,Grade 10,1001,parent@example.com,+15550192'
-        : 'name,email,subject,phone,qualification\nSarah,Smith,Mathematics,+15550193,M.Sc. Mathematics';
+        ? 'firstName,lastName,grade,rollNumber,parentEmail,phone\nAarav,Sharma,Pre-KG,PKG-001,parent@example.com,+919876543210'
+        : 'name,email,subject,phone,qualification\nSarah,Smith,Phonics & English,+919876543211,Early Childhood Education (E.C.C.Ed)';
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);

@@ -58,8 +58,8 @@ export const seedDatabase = async () => {
 
     // 4. Create Class and Section
     const schoolClass = await Class.findOneAndUpdate(
-      { name: 'Grade 1' },
-      { name: 'Grade 1', description: 'Primary Grade 1' },
+      { name: 'LKG' },
+      { name: 'LKG', description: 'Lower Kindergarten (LKG)' },
       options
     );
 
@@ -169,10 +169,10 @@ export const seedDatabase = async () => {
       {
         userId: teacherUser._id,
         employeeId: teacherEmployee._id,
-        qualification: 'Master in Education',
-        specialization: ['Mathematics', 'Science'],
-        subjects: ['Math', 'Science'],
-        classes: ['Grade 1'],
+        qualification: 'Diploma in Early Childhood Education (D.E.C.Ed)',
+        specialization: ['Phonics & English', 'Early Numeracy'],
+        subjects: ['Phonics & English', 'Early Numeracy', 'Rhymes & Storytelling'],
+        classes: ['LKG'],
       },
       options
     );
@@ -238,12 +238,12 @@ export const seedDatabase = async () => {
 
     // Student (Sammy Student)
     const student = await Student.findOneAndUpdate(
-      { admissionNumber: 'GGPS-2026-GR1-001' },
+      { admissionNumber: 'GGPS-2026-LKG-001' },
       {
         firstName: 'Sammy',
         lastName: 'Student',
-        admissionNumber: 'GGPS-2026-GR1-001',
-        grade: 'Grade 1',
+        admissionNumber: 'GGPS-2026-LKG-001',
+        grade: 'LKG',
         parentId: parentProfile._id,
         status: 'Active',
         bloodGroup: 'O+',
@@ -302,7 +302,7 @@ export const seedDatabase = async () => {
       { studentId: student._id, feeType: 'Tuition' },
       {
         studentId: student._id,
-        grade: 'Grade 1',
+        grade: 'LKG',
         feeType: 'Tuition',
         totalAmount: 32000,
         amountPaid: 32000,

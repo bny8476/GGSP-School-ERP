@@ -62,21 +62,19 @@ function AttendanceContent() {
 
   // Class-wise Report Mock Data
   const classReports = [
-    { grade: 'Pre-KG', enrolled: 45, present: 41, absent: 3, late: 1, rate: 91.1, status: 'Optimal' },
-    { grade: 'LKG', enrolled: 68, present: 65, absent: 2, late: 1, rate: 95.6, status: 'Optimal' },
-    { grade: 'UKG', enrolled: 72, present: 68, absent: 3, late: 1, rate: 94.4, status: 'Optimal' },
-    { grade: 'Grade 1', enrolled: 80, present: 74, absent: 4, late: 2, rate: 92.5, status: 'Good' },
-    { grade: 'Grade 2', enrolled: 75, present: 71, absent: 3, late: 1, rate: 94.7, status: 'Optimal' },
-    { grade: 'Grade 5', enrolled: 84, present: 79, absent: 4, late: 1, rate: 94.0, status: 'Optimal' },
-    { grade: 'Grade 8', enrolled: 78, present: 69, absent: 7, late: 2, rate: 88.5, status: 'Attention' },
-    { grade: 'Grade 10', enrolled: 82, present: 80, absent: 1, late: 1, rate: 97.6, status: 'Excellent' },
+    { grade: 'Pre-KG A', enrolled: 25, present: 23, absent: 1, late: 1, rate: 92.0, status: 'Optimal' },
+    { grade: 'Pre-KG B', enrolled: 24, present: 22, absent: 2, late: 0, rate: 91.7, status: 'Optimal' },
+    { grade: 'LKG A', enrolled: 32, present: 31, absent: 1, late: 0, rate: 96.9, status: 'Optimal' },
+    { grade: 'LKG B', enrolled: 30, present: 28, absent: 1, late: 1, rate: 93.3, status: 'Optimal' },
+    { grade: 'UKG A', enrolled: 34, present: 33, absent: 1, late: 0, rate: 97.1, status: 'Optimal' },
+    { grade: 'UKG B', enrolled: 33, present: 31, absent: 2, late: 0, rate: 93.9, status: 'Optimal' },
   ];
 
   // Chronic Absenteeism Defaulters (< 75%)
   const [defaulters] = useState([
-    { id: 'def-1', name: 'Kabir Deshmukh', grade: 'Grade 7-B', totalDays: 48, presentDays: 34, rate: 70.8, parentContact: '+91 98334 45566', status: 'Warning Notice' },
-    { id: 'def-2', name: 'Rahul Joshi', grade: 'Grade 8-A', totalDays: 48, presentDays: 35, rate: 72.9, parentContact: '+91 98110 99887', status: 'Under Review' },
-    { id: 'def-3', name: 'Alok Nath', grade: 'Grade 4-C', totalDays: 48, presentDays: 32, rate: 66.7, parentContact: '+91 99221 44556', status: 'Parent Meeting' },
+    { id: 'def-1', name: 'Kabir Deshmukh', grade: 'UKG B', totalDays: 48, presentDays: 34, rate: 70.8, parentContact: '+91 98334 45566', status: 'Parent Check-in' },
+    { id: 'def-2', name: 'Rohan Mehta', grade: 'Pre-KG B', totalDays: 48, presentDays: 35, rate: 72.9, parentContact: '+91 98110 99887', status: 'Health Recovery' },
+    { id: 'def-3', name: 'Alok Nath', grade: 'LKG A', totalDays: 48, presentDays: 32, rate: 66.7, parentContact: '+91 99221 44556', status: 'Parent Meeting' },
   ]);
 
   const fetchClassData = async () => {
@@ -384,7 +382,7 @@ function AttendanceContent() {
                     Select Grade & Section
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {['Pre-KG', 'LKG', 'UKG', 'Grade 1', 'Grade 2', 'Grade 5', 'Grade 10'].map(grade => (
+                    {['Pre-KG', 'LKG', 'UKG'].map(grade => (
                       <button
                         key={grade}
                         onClick={() => setSelectedClass(grade)}

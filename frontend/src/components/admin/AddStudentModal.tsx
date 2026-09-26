@@ -401,7 +401,7 @@ export default function AddStudentModal({
                       onChange={(e) => handleChange('grade', e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-[#000E28] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0050CB]/30"
                     >
-                      {['Pre-KG', 'LKG', 'UKG', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].map((g) => (
+                      {['Pre-KG', 'LKG', 'UKG'].map((g) => (
                         <option key={g} value={g}>
                           {g}
                         </option>

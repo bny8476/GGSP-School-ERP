@@ -59,7 +59,7 @@ export default function ParentAccountPage() {
       _id: "c2",
       firstName: "Ananya",
       lastName: "Sharma",
-      grade: "Class 3",
+      grade: "UKG",
       section: "Section B",
       rollNumber: "07",
       studentPhoto: "/hero-girl-student.png",

@@ -8,10 +8,10 @@ export default function EmergencyCenterPage() {
   const [broadcastSent, setBroadcastSent] = useState(false);
 
   const classroomRoster = [
-    { room: "Class 10-A", teacher: "Mr. David Miller", status: "All Safe", headcount: "28/28", updated: "1 min ago" },
-    { room: "Class 10-B", teacher: "Ms. Elena Rostova", status: "All Safe", headcount: "30/30", updated: "2 mins ago" },
-    { room: "Science Lab 2", teacher: "Dr. Robert Vance", status: "Unaccounted (1 Missing)", headcount: "24/25", updated: "Just now" },
-    { room: "Gymnasium", teacher: "Coach Marcus", status: "All Safe", headcount: "45/45", updated: "3 mins ago" },
+    { room: "Pre-KG A", teacher: "Ms. Shalini Roy", status: "All Safe", headcount: "22/22", updated: "1 min ago" },
+    { room: "LKG B", teacher: "Ms. Elena Rostova", status: "All Safe", headcount: "25/25", updated: "2 mins ago" },
+    { room: "Sensory Activity Playroom", teacher: "Ms. Ananya Deshmukh", status: "All Safe", headcount: "20/20", updated: "Just now" },
+    { room: "Sand & Play Area", teacher: "Coach Marcus", status: "All Safe", headcount: "24/24", updated: "3 mins ago" },
   ];
 
   const handlePanicTrigger = (type: string) => {

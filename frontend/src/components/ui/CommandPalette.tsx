@@ -43,15 +43,15 @@ const GLOBAL_SEARCH_ITEMS: SearchItem[] = [
   { id: 'qa-5', title: 'Send Emergency Broadcast', subtitle: 'SMS and push notification to all parents', category: 'Quick Actions', href: '/dashboard/emergency-center', icon: Megaphone },
 
   // Students
-  { id: 'st-1', title: 'Aarav Sharma', subtitle: 'GGPS-2026-LKG-001 • Class LKG-A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
-  { id: 'st-2', title: 'Ananya Patel', subtitle: 'GGPS-2026-G1-002 • Grade 1-B', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
-  { id: 'st-3', title: 'Rohan Verma', subtitle: 'GGPS-2026-G5-003 • Grade 5-A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
-  { id: 'st-4', title: 'Diya Sengupta', subtitle: 'GGPS-2026-G3-004 • Grade 3-A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'st-1', title: 'Aarav Sharma', subtitle: 'GGPS-2026-LKG-001 • Class LKG A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'st-2', title: 'Ananya Patel', subtitle: 'GGPS-2026-PKG-002 • Class Pre-KG A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'st-3', title: 'Rohan Verma', subtitle: 'GGPS-2026-UKG-003 • Class UKG A', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
+  { id: 'st-4', title: 'Diya Sengupta', subtitle: 'GGPS-2026-LKG-004 • Class LKG B', category: 'Students', href: '/dashboard/students', icon: GraduationCap },
 
   // Admissions
   { id: 'adm-1', title: 'ADM-2026-089: Aarav Sharma', subtitle: 'Status: Admission Confirmed • LKG', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
-  { id: 'adm-2', title: 'ADM-2026-088: Ananya Patel', subtitle: 'Status: Approved • Grade 1', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
-  { id: 'adm-3', title: 'ADM-2026-087: Rohan Verma', subtitle: 'Status: Demo Scheduled • Grade 5', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
+  { id: 'adm-2', title: 'ADM-2026-088: Ananya Patel', subtitle: 'Status: Approved • Pre-KG', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
+  { id: 'adm-3', title: 'ADM-2026-087: Rohan Verma', subtitle: 'Status: Demo Scheduled • UKG', category: 'Admissions', href: '/dashboard/admissions', icon: Sparkles },
 
   // Finance
   { id: 'fin-1', title: 'INV-2026-0042', subtitle: '₹45,000 Term 1 Tuition Fee • Paid', category: 'Finance', href: '/dashboard/fees', icon: Receipt },

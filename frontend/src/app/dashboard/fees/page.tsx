@@ -121,23 +121,19 @@ function FeesFinanceContent() {
     { id: 'fs-1', grade: 'Pre-KG', tuitionFee: 24000, developmentFee: 5000, labFee: 1000, sportsFee: 2000, examFee: 1000, totalAnnual: 33000, termSchedule: '3 Equal Terms' },
     { id: 'fs-2', grade: 'LKG', tuitionFee: 26000, developmentFee: 5000, labFee: 1500, sportsFee: 2500, examFee: 1000, totalAnnual: 36000, termSchedule: '3 Equal Terms' },
     { id: 'fs-3', grade: 'UKG', tuitionFee: 28000, developmentFee: 5000, labFee: 1500, sportsFee: 2500, examFee: 1000, totalAnnual: 38000, termSchedule: '3 Equal Terms' },
-    { id: 'fs-4', grade: 'Grade 1 - 5', tuitionFee: 32000, developmentFee: 6000, labFee: 3000, sportsFee: 3000, examFee: 2000, totalAnnual: 46000, termSchedule: '4 Quarterly Terms' },
-    { id: 'fs-5', grade: 'Grade 6 - 8', tuitionFee: 36000, developmentFee: 7000, labFee: 5000, sportsFee: 3500, examFee: 2500, totalAnnual: 54000, termSchedule: '4 Quarterly Terms' },
-    { id: 'fs-6', grade: 'Grade 9 - 10', tuitionFee: 42000, developmentFee: 8000, labFee: 7000, sportsFee: 4000, examFee: 3000, totalAnnual: 64000, termSchedule: '4 Quarterly Terms' },
   ]);
 
   // Scholarships State
   const [scholarships, setScholarships] = useState<ScholarshipRecord[]>([
     { id: 'sch-1', studentName: 'Diya Patel', admissionNo: 'GGPS-2026-UKG-014', grade: 'UKG', category: 'Sibling Discount (Second Child)', discountPercentage: 15, annualBenefit: 5700, approvedBy: 'Principal Office', status: 'Active' },
     { id: 'sch-2', studentName: 'Ananya Iyer', admissionNo: 'GGPS-2026-PKG-003', grade: 'Pre-KG', category: 'Staff Ward Concession', discountPercentage: 50, annualBenefit: 16500, approvedBy: 'Board of Trustees', status: 'Active' },
-    { id: 'sch-3', studentName: 'Vihaan Verma', admissionNo: 'GGPS-2026-GR5-022', grade: 'Grade 5', category: 'Merit Scholarship (Olympiad Rank 1)', discountPercentage: 25, annualBenefit: 11500, approvedBy: 'Academic Council', status: 'Active' },
-    { id: 'sch-4', studentName: 'Kavya Pillai', admissionNo: 'GGPS-2026-GR8-011', grade: 'Grade 8', category: 'EWS Educational Aid', discountPercentage: 100, annualBenefit: 54000, approvedBy: 'State Welfare Dept', status: 'Active' },
+    { id: 'sch-3', studentName: 'Vihaan Verma', admissionNo: 'GGPS-2026-UKG-022', grade: 'UKG', category: 'Early Enrollee Concession', discountPercentage: 20, annualBenefit: 7600, approvedBy: 'Admissions Desk', status: 'Active' },
   ]);
 
   // Refunds State
   const [refunds, setRefunds] = useState<RefundRecord[]>([
-    { id: 'ref-1', studentName: 'Rohan Mehra', grade: 'Grade 6', reason: 'Relocation to Mumbai (Caution Deposit Return)', amount: 15000, requestDate: '2026-09-12', status: 'Approved', transactionRef: 'NEFT-884920' },
-    { id: 'ref-2', studentName: 'Tara Sen', grade: 'Grade 3', reason: 'Duplicate Online Term 1 Payment Adjustment', amount: 8500, requestDate: '2026-09-20', status: 'Pending' },
+    { id: 'ref-1', studentName: 'Rohan Mehra', grade: 'LKG', reason: 'Relocation to Mumbai (Caution Deposit Return)', amount: 15000, requestDate: '2026-09-12', status: 'Approved', transactionRef: 'NEFT-884920' },
+    { id: 'ref-2', studentName: 'Tara Sen', grade: 'UKG', reason: 'Duplicate Online Term 1 Payment Adjustment', amount: 8500, requestDate: '2026-09-20', status: 'Pending' },
   ]);
 
   // Modals
@@ -183,26 +179,26 @@ function FeesFinanceContent() {
   });
 
   const [structureForm, setStructureForm] = useState({
-    grade: 'Grade 1',
+    grade: 'Pre-KG',
     tuitionFee: '',
     developmentFee: '',
     labFee: '',
     sportsFee: '',
     examFee: '',
-    termSchedule: '4 Quarterly Terms'
+    termSchedule: '3 Equal Terms'
   });
 
   const [scholarshipForm, setScholarshipForm] = useState({
     studentName: '',
     admissionNo: '',
-    grade: 'Grade 1',
+    grade: 'Pre-KG',
     category: 'Sibling Discount',
     discountPercentage: '15'
   });
 
   const [refundForm, setRefundForm] = useState({
     studentName: '',
-    grade: 'Grade 1',
+    grade: 'Pre-KG',
     reason: '',
     amount: ''
   });
@@ -234,14 +230,14 @@ function FeesFinanceContent() {
 
       if (!loadedFees || loadedFees.length === 0) {
         loadedFees = [
-          { _id: 'f_01', studentId: { firstName: 'Aarav', lastName: 'Sharma', admissionNumber: 'GGPS-2026-LKG-001' }, grade: 'LKG', feeType: 'Term 1 Tuition', totalAmount: 32000, amountPaid: 32000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0101', receiptNumber: 'GGPS-REC-2026-0042', paymentMode: 'UPI', paymentDate: '2026-06-10' },
-          { _id: 'f_02', studentId: { firstName: 'Diya', lastName: 'Patel', admissionNumber: 'GGPS-2026-UKG-014' }, grade: 'UKG', feeType: 'Term 1 Tuition & Activities', totalAmount: 42000, amountPaid: 42000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0102', receiptNumber: 'GGPS-REC-2026-0043', paymentMode: 'Net Banking', paymentDate: '2026-06-12' },
-          { _id: 'f_03', studentId: { firstName: 'Vihaan', lastName: 'Verma', admissionNumber: 'GGPS-2026-GR5-022' }, grade: 'Grade 5', feeType: 'Term 1 Tuition', totalAmount: 36000, amountPaid: 18000, status: 'Partial', dueDate: '2026-07-01', invoiceNumber: 'GGPS-INV-2026-0103', receiptNumber: 'GGPS-REC-2026-0044', paymentMode: 'Cash', paymentDate: '2026-06-25' },
-          { _id: 'f_04', studentId: { firstName: 'Ishaan', lastName: 'Gupta', admissionNumber: 'GGPS-2026-GR9-045' }, grade: 'Grade 9', feeType: 'Annual Lab & Tuition', totalAmount: 54000, amountPaid: 0, status: 'Overdue', dueDate: '2026-05-30', invoiceNumber: 'GGPS-INV-2026-0089' },
-          { _id: 'f_05', studentId: { firstName: 'Ananya', lastName: 'Iyer', admissionNumber: 'GGPS-2026-PKG-003' }, grade: 'Pre-KG', feeType: 'Term 1 Daycare & Tuition', totalAmount: 28000, amountPaid: 28000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0104', receiptNumber: 'GGPS-REC-2026-0045', paymentMode: 'UPI', paymentDate: '2026-06-14' },
-          { _id: 'f_06', studentId: { firstName: 'Sanya', lastName: 'Malhotra', admissionNumber: 'GGPS-2026-GR2-019' }, grade: 'Grade 2', feeType: 'Term 1 Tuition', totalAmount: 34000, amountPaid: 34000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0105', receiptNumber: 'GGPS-REC-2026-0046', paymentMode: 'Card (POS)', paymentDate: '2026-06-15' },
-          { _id: 'f_07', studentId: { firstName: 'Kabir', lastName: 'Deshmukh', admissionNumber: 'GGPS-2026-GR7-033' }, grade: 'Grade 7', feeType: 'Annual Sports & Tuition', totalAmount: 48000, amountPaid: 24000, status: 'Partial', dueDate: '2026-07-15', invoiceNumber: 'GGPS-INV-2026-0106', receiptNumber: 'GGPS-REC-2026-0047', paymentMode: 'UPI', paymentDate: '2026-07-02' },
-          { _id: 'f_08', studentId: { firstName: 'Meera', lastName: 'Nambiar', admissionNumber: 'GGPS-2026-GR10-008' }, grade: 'Grade 10', feeType: 'Term 1 Science & Board Prep', totalAmount: 64000, amountPaid: 0, status: 'Overdue', dueDate: '2026-05-15', invoiceNumber: 'GGPS-INV-2026-0082' },
+          { _id: 'f_01', studentId: { firstName: 'Aarav', lastName: 'Sharma', admissionNumber: 'GGPS-2026-LKG-001' }, grade: 'LKG', feeType: 'Term 1 Tuition & Phonics Kit', totalAmount: 26000, amountPaid: 26000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0101', receiptNumber: 'GGPS-REC-2026-0042', paymentMode: 'UPI', paymentDate: '2026-06-10' },
+          { _id: 'f_02', studentId: { firstName: 'Diya', lastName: 'Patel', admissionNumber: 'GGPS-2026-UKG-014' }, grade: 'UKG', feeType: 'Term 1 Tuition & Montessori Activities', totalAmount: 28000, amountPaid: 28000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0102', receiptNumber: 'GGPS-REC-2026-0043', paymentMode: 'Net Banking', paymentDate: '2026-06-12' },
+          { _id: 'f_03', studentId: { firstName: 'Vihaan', lastName: 'Verma', admissionNumber: 'GGPS-2026-UKG-022' }, grade: 'UKG', feeType: 'Term 1 Tuition', totalAmount: 28000, amountPaid: 14000, status: 'Partial', dueDate: '2026-07-01', invoiceNumber: 'GGPS-INV-2026-0103', receiptNumber: 'GGPS-REC-2026-0044', paymentMode: 'Cash', paymentDate: '2026-06-25' },
+          { _id: 'f_04', studentId: { firstName: 'Ishaan', lastName: 'Gupta', admissionNumber: 'GGPS-2026-LKG-045' }, grade: 'LKG', feeType: 'Annual Activity & Sensory Kit', totalAmount: 18000, amountPaid: 0, status: 'Overdue', dueDate: '2026-05-30', invoiceNumber: 'GGPS-INV-2026-0089' },
+          { _id: 'f_05', studentId: { firstName: 'Ananya', lastName: 'Iyer', admissionNumber: 'GGPS-2026-PKG-003' }, grade: 'Pre-KG', feeType: 'Term 1 Daycare & Pre-KG Tuition', totalAmount: 24000, amountPaid: 24000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0104', receiptNumber: 'GGPS-REC-2026-0045', paymentMode: 'UPI', paymentDate: '2026-06-14' },
+          { _id: 'f_06', studentId: { firstName: 'Sanya', lastName: 'Malhotra', admissionNumber: 'GGPS-2026-PKG-019' }, grade: 'Pre-KG', feeType: 'Term 1 Tuition & Playgroup Surcharge', totalAmount: 24000, amountPaid: 24000, status: 'Paid', dueDate: '2026-06-15', invoiceNumber: 'GGPS-INV-2026-0105', receiptNumber: 'GGPS-REC-2026-0046', paymentMode: 'Card (POS)', paymentDate: '2026-06-15' },
+          { _id: 'f_07', studentId: { firstName: 'Kabir', lastName: 'Deshmukh', admissionNumber: 'GGPS-2026-UKG-033' }, grade: 'UKG', feeType: 'Annual Sports & Rhyme Session', totalAmount: 28000, amountPaid: 14000, status: 'Partial', dueDate: '2026-07-15', invoiceNumber: 'GGPS-INV-2026-0106', receiptNumber: 'GGPS-REC-2026-0047', paymentMode: 'UPI', paymentDate: '2026-07-02' },
+          { _id: 'f_08', studentId: { firstName: 'Meera', lastName: 'Nambiar', admissionNumber: 'GGPS-2026-LKG-008' }, grade: 'LKG', feeType: 'Term 1 EVS & Activity Kit', totalAmount: 26000, amountPaid: 0, status: 'Overdue', dueDate: '2026-05-15', invoiceNumber: 'GGPS-INV-2026-0082' },
         ];
       }
 
@@ -474,7 +470,7 @@ function FeesFinanceContent() {
     setScholarships(prev => [newSch, ...prev]);
     toast.success(`Concession granted to ${scholarshipForm.studentName}`);
     setShowScholarshipModal(false);
-    setScholarshipForm({ studentName: '', admissionNo: '', grade: 'Grade 1', category: 'Sibling Discount', discountPercentage: '15' });
+    setScholarshipForm({ studentName: '', admissionNo: '', grade: 'Pre-KG', category: 'Sibling Discount', discountPercentage: '15' });
   };
 
   const handleCreateRefund = (e: React.FormEvent) => {
@@ -492,7 +488,7 @@ function FeesFinanceContent() {
     setRefunds(prev => [newRef, ...prev]);
     toast.success('Refund request submitted for administrative audit');
     setShowRefundModal(false);
-    setRefundForm({ studentName: '', grade: 'Grade 1', reason: '', amount: '' });
+    setRefundForm({ studentName: '', grade: 'Pre-KG', reason: '', amount: '' });
   };
 
   const handleApproveRefund = (id: string) => {
@@ -856,11 +852,6 @@ function FeesFinanceContent() {
                   <option value="Pre-KG">Pre-KG</option>
                   <option value="LKG">LKG</option>
                   <option value="UKG">UKG</option>
-                  <option value="Grade 2">Grade 2</option>
-                  <option value="Grade 5">Grade 5</option>
-                  <option value="Grade 7">Grade 7</option>
-                  <option value="Grade 9">Grade 9</option>
-                  <option value="Grade 10">Grade 10</option>
                 </select>
               </div>
 
@@ -922,12 +913,6 @@ function FeesFinanceContent() {
                     <option>Pre-KG</option>
                     <option>LKG</option>
                     <option>UKG</option>
-                    <option>Grade 1</option>
-                    <option>Grade 2</option>
-                    <option>Grade 5</option>
-                    <option>Grade 7</option>
-                    <option>Grade 9</option>
-                    <option>Grade 10</option>
                   </select>
                 </div>
               </div>
@@ -1527,12 +1512,6 @@ function FeesFinanceContent() {
                   <option>Pre-KG</option>
                   <option>LKG</option>
                   <option>UKG</option>
-                  <option>Grade 1</option>
-                  <option>Grade 2</option>
-                  <option>Grade 5</option>
-                  <option>Grade 7</option>
-                  <option>Grade 9</option>
-                  <option>Grade 10</option>
                 </select>
               </div>
 
@@ -1872,13 +1851,6 @@ function FeesFinanceContent() {
                   <option>Pre-KG</option>
                   <option>LKG</option>
                   <option>UKG</option>
-                  <option>Grade 1</option>
-                  <option>Grade 2</option>
-                  <option>Grade 3</option>
-                  <option>Grade 4</option>
-                  <option>Grade 5</option>
-                  <option>Grade 6 - 8</option>
-                  <option>Grade 9 - 10</option>
                 </select>
               </div>
 
@@ -2007,10 +1979,6 @@ function FeesFinanceContent() {
                   <option>Pre-KG</option>
                   <option>LKG</option>
                   <option>UKG</option>
-                  <option>Grade 1</option>
-                  <option>Grade 5</option>
-                  <option>Grade 8</option>
-                  <option>Grade 10</option>
                 </select>
               </div>
 
@@ -2093,10 +2061,8 @@ function FeesFinanceContent() {
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#000E28] font-bold"
                 >
                   <option>Pre-KG</option>
-                  <option>Grade 1</option>
-                  <option>Grade 3</option>
-                  <option>Grade 6</option>
-                  <option>Grade 10</option>
+                  <option>LKG</option>
+                  <option>UKG</option>
                 </select>
               </div>
 

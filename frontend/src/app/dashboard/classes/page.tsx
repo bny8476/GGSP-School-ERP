@@ -21,8 +21,14 @@ export default function ClassesPage() {
         credentials: 'include',
       });
       const data = await res.json();
-      if (Array.isArray(data)) {
+      if (Array.isArray(data) && data.length > 0) {
         setClasses(data);
+      } else {
+        setClasses([
+          { _id: 'cls-1', name: 'Pre-KG', description: 'Early playgroup & sensory exploration cohort', sections: ['Section A', 'Section B'] },
+          { _id: 'cls-2', name: 'LKG', description: 'Lower kindergarten foundational numeracy & phonics', sections: ['Section A', 'Section B'] },
+          { _id: 'cls-3', name: 'UKG', description: 'Upper kindergarten primary readiness cohort', sections: ['Section A', 'Section B'] },
+        ]);
       }
     } catch (e) {
       console.error(e);

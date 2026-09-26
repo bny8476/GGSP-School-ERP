@@ -433,11 +433,6 @@ export default function AdmissionsPage() {
                     <option value="Pre-KG">Pre-KG (2.5 - 3.5 Years)</option>
                     <option value="LKG">LKG (3.5 - 4.5 Years)</option>
                     <option value="UKG">UKG (4.5 - 5.5 Years)</option>
-                    <option value="Grade 1">Grade 1 (Primary School)</option>
-                    <option value="Grade 2">Grade 2 (Primary School)</option>
-                    <option value="Grade 3">Grade 3 (Primary School)</option>
-                    <option value="Grade 4">Grade 4 (Primary School)</option>
-                    <option value="Grade 5">Grade 5 (Primary School)</option>
                   </select>
                   <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>

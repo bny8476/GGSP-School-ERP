@@ -20,7 +20,13 @@ import {
   GraduationCap,
   Briefcase,
   FileText,
-  FileDown
+  FileDown,
+  Search,
+  Printer,
+  Filter,
+  X,
+  Award,
+  BookOpen
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
@@ -41,6 +47,13 @@ function ReportsContent() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Academic Filtering State
+  const [academicSearch, setAcademicSearch] = useState('');
+  const [selectedClass, setSelectedClass] = useState('All');
+  const [selectedSubject, setSelectedSubject] = useState('All');
+  const [selectedTerm, setSelectedTerm] = useState('All');
+  const [selectedGradeBand, setSelectedGradeBand] = useState('All');
 
   const apiBase = getApiBaseUrl();
 
@@ -136,22 +149,47 @@ function ReportsContent() {
       } else if (dataset === 'students') {
         headers = ['Admission No', 'Student Name', 'Grade', 'Section', 'Gender', 'Blood Group', 'Status'];
         rows = [
-          ['"GGPS-2026-001"', '"Aarav Sharma"', '"LKG"', '"A"', '"Male"', '"O+"', '"Active"'],
-          ['"GGPS-2026-002"', '"Diya Patel"', '"UKG"', '"B"', '"Female"', '"B+"', '"Active"'],
-          ['"GGPS-2026-003"', '"Vihaan Verma"', '"Grade 5"', '"A"', '"Male"', '"A+"', '"Active"'],
+          ['"GGPS-2026-001"', '"Aarav Sharma"', '"Pre-KG"', '"A"', '"Male"', '"O+"', '"Active"'],
+          ['"GGPS-2026-002"', '"Diya Patel"', '"LKG"', '"A"', '"Female"', '"B+"', '"Active"'],
+          ['"GGPS-2026-003"', '"Vihaan Verma"', '"UKG"', '"B"', '"Male"', '"A+"', '"Active"'],
         ];
       } else if (dataset === 'staff') {
         headers = ['Employee Name', 'Designation', 'Department', 'Email', 'Phone', 'Salary (INR)', 'Status'];
         rows = [
-          ['"Dr. Sarah Jenkins"', '"Senior Physics Faculty"', '"Science"', '"sarah.j@ggps.edu"', '"+91 98110 11223"', '"65000"', '"Active"'],
-          ['"Prof. Rajesh Iyer"', '"Head of Mathematics"', '"Mathematics"', '"rajesh.i@ggps.edu"', '"+91 98220 22334"', '"82000"', '"Active"'],
+          ['"Dr. Sarah Jenkins"', '"Lead Kindergarten Educator"', '"Early Childhood"', '"sarah.j@ggps.edu"', '"+91 98110 11223"', '"65000"', '"Active"'],
+          ['"Mrs. Rajeshwari Iyer"', '"Pre-Primary Coordinator"', '"Early Childhood"', '"rajeshwari.i@ggps.edu"', '"+91 98220 22334"', '"82000"', '"Active"'],
         ];
       } else if (dataset === 'attendance') {
         headers = ['Category', 'Present Count', 'Absent Count', 'Late Count', 'Attendance Rate (%)'];
         rows = [
-          ['"Students Overall"', `"${attData?.counts?.Present || 1176}"`, `"${attData?.counts?.Absent || 52}"`, `"${attData?.counts?.Late || 20}"`, '"94.2%"'],
-          ['"Staff Faculty"', '"82"', '"4"', '"0"', '"95.3%"'],
+          ['"Students Overall"', `"${attData?.counts?.Present || 420}"`, `"${attData?.counts?.Absent || 18}"`, `"${attData?.counts?.Late || 8}"`, '"95.7%"'],
+          ['"Staff Faculty"', '"28"', '"1"', '"0"', '"96.4%"'],
         ];
+      } else if (dataset === 'academic') {
+        headers = ['Student Name', 'Admission No', 'Class', 'Subject', 'Assessment Title', 'Term', 'Score', 'Max Marks', 'Percentage (%)', 'Grade', 'Date'];
+        const assessmentsToExport = (academicData?.recentAssessments && academicData.recentAssessments.length > 0)
+          ? academicData.recentAssessments
+          : [
+              { childId: { firstName: 'Aarav', lastName: 'Sharma', admissionNumber: 'GGPS-2026-001' }, title: 'Phonics & Alphabet Recognition', subject: 'Phonics & English', grade: 'Pre-KG A', term: 'Term 1 Evaluation', score: 94, maxScore: 100, overallGrade: 'A+', date: '2026-09-18' },
+              { childId: { firstName: 'Diya', lastName: 'Patel', admissionNumber: 'GGPS-2026-002' }, title: 'Number Work & Counting (1-50)', subject: 'Early Numeracy & Math', grade: 'LKG A', term: 'Term 1 Evaluation', score: 88, maxScore: 100, overallGrade: 'A', date: '2026-09-19' },
+              { childId: { firstName: 'Vihaan', lastName: 'Verma', admissionNumber: 'GGPS-2026-003' }, title: 'Sight Words & Sentence Reading', subject: 'Phonics & English', grade: 'UKG A', term: 'Term 1 Mid-Term', score: 82, maxScore: 100, overallGrade: 'A', date: '2026-09-15' },
+              { childId: { firstName: 'Ananya', lastName: 'Rao', admissionNumber: 'GGPS-2026-004' }, title: 'General Awareness - Animals & Nature', subject: 'General Awareness (EVS)', grade: 'LKG B', term: 'Term 1 Evaluation', score: 91, maxScore: 100, overallGrade: 'A+', date: '2026-09-20' },
+              { childId: { firstName: 'Ishaan', lastName: 'Gupta', admissionNumber: 'GGPS-2026-005' }, title: 'Basic Addition & 2D Shapes', subject: 'Early Numeracy & Math', grade: 'UKG B', term: 'Term 1 Evaluation', score: 96, maxScore: 100, overallGrade: 'A+', date: '2026-09-21' },
+              { childId: { firstName: 'Rohan', lastName: 'Mehta', admissionNumber: 'GGPS-2026-007' }, title: 'Pre-Writing & Pencil Grip Practice', subject: 'Sensory & Motor Skills', grade: 'Pre-KG B', term: 'Term 1 Evaluation', score: 48, maxScore: 100, overallGrade: 'D', date: '2026-09-19' },
+            ];
+        rows = assessmentsToExport.map((item: any) => [
+          `"${item.childId ? `${item.childId.firstName} ${item.childId.lastName}` : 'Student'}"`,
+          `"${item.childId?.admissionNumber || 'GGPS-REC'}"`,
+          `"${item.grade || 'LKG A'}"`,
+          `"${item.subject || 'Phonics & English'}"`,
+          `"${item.title || 'Evaluation'}"`,
+          `"${item.term || 'Term 1'}"`,
+          `"${item.score || 85}"`,
+          `"${item.maxScore || 100}"`,
+          `"${Math.round(((item.score || 85) / (item.maxScore || 100)) * 100)}%"`,
+          `"${item.overallGrade || 'A'}"`,
+          `"${item.date || '2026-09-20'}"`,
+        ]);
       } else {
         headers = ['Metric', 'Evaluated', 'Pass Rate (%)', 'Session'];
         rows = [['"Institutional Average"', '"248"', '"96%"', '"AY 2025-2026"']];
@@ -179,8 +217,6 @@ function ReportsContent() {
       <AdminPageHeader
         title="Executive Reports & Analytics Hub"
         subtitle="Generate curricular evaluations, attendance summaries, financial audits and data export packages."
-        badge="Enterprise Intelligence"
-        badgeVariant="primary"
         breadcrumbs={[
           { label: 'Admin Desk', href: '/dashboard' },
           { label: 'Reports' }
@@ -239,98 +275,425 @@ function ReportsContent() {
         ) : (
           <div>
             {/* 1. ACADEMIC REPORTS */}
-            {activeReport === 'academic' && (
-              <div className="p-6 space-y-6">
-                <div>
-                  <h3 className="text-base font-black text-slate-800 dark:text-slate-100">
-                    Curricular Assessment & Examination Analytics
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Comprehensive performance trends across all classes, rubrics, and subject evaluations.
-                  </p>
-                </div>
+            {activeReport === 'academic' && (() => {
+              const rawAssessments = (academicData?.recentAssessments && academicData.recentAssessments.length > 0)
+                ? academicData.recentAssessments
+                : [
+                    { childId: { firstName: 'Aarav', lastName: 'Sharma', admissionNumber: 'GGPS-2026-001' }, title: 'Phonics & Alphabet Recognition', subject: 'Phonics & English', grade: 'Pre-KG A', term: 'Term 1 Evaluation', score: 94, maxScore: 100, overallGrade: 'A+', date: '2026-09-18' },
+                    { childId: { firstName: 'Diya', lastName: 'Patel', admissionNumber: 'GGPS-2026-002' }, title: 'Number Work & Counting (1-50)', subject: 'Early Numeracy & Math', grade: 'LKG A', term: 'Term 1 Evaluation', score: 88, maxScore: 100, overallGrade: 'A', date: '2026-09-19' },
+                    { childId: { firstName: 'Vihaan', lastName: 'Verma', admissionNumber: 'GGPS-2026-003' }, title: 'Sight Words & Sentence Reading', subject: 'Phonics & English', grade: 'UKG A', term: 'Term 1 Mid-Term', score: 82, maxScore: 100, overallGrade: 'A', date: '2026-09-15' },
+                    { childId: { firstName: 'Ananya', lastName: 'Rao', admissionNumber: 'GGPS-2026-004' }, title: 'General Awareness - Animals & Nature', subject: 'General Awareness (EVS)', grade: 'LKG B', term: 'Term 1 Evaluation', score: 91, maxScore: 100, overallGrade: 'A+', date: '2026-09-20' },
+                    { childId: { firstName: 'Ishaan', lastName: 'Gupta', admissionNumber: 'GGPS-2026-005' }, title: 'Basic Addition & 2D Shapes', subject: 'Early Numeracy & Math', grade: 'UKG B', term: 'Term 1 Evaluation', score: 96, maxScore: 100, overallGrade: 'A+', date: '2026-09-21' },
+                    { childId: { firstName: 'Kavya', lastName: 'Nair', admissionNumber: 'GGPS-2026-006' }, title: 'Rhymes & Action Songs Rhythm', subject: 'Rhymes & Storytelling', grade: 'Pre-KG A', term: 'Term 1 Evaluation', score: 85, maxScore: 100, overallGrade: 'A', date: '2026-09-17' },
+                    { childId: { firstName: 'Rohan', lastName: 'Mehta', admissionNumber: 'GGPS-2026-007' }, title: 'Pre-Writing & Pencil Grip Practice', subject: 'Sensory & Motor Skills', grade: 'Pre-KG B', term: 'Term 1 Evaluation', score: 48, maxScore: 100, overallGrade: 'D', date: '2026-09-19' },
+                    { childId: { firstName: 'Sanya', lastName: 'Malhotra', admissionNumber: 'GGPS-2026-008' }, title: 'Coloring, Clay Molding & Craft', subject: 'Art & Craft', grade: 'LKG A', term: 'Term 1 Mid-Term', score: 89, maxScore: 100, overallGrade: 'A', date: '2026-09-14' },
+                  ];
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-4 rounded-xl bg-blue-50/60 dark:bg-[#0050CB]/20 border border-blue-200/60 dark:border-blue-800/40">
-                    <span className="text-[11px] font-bold text-[#0050CB] dark:text-[#E5EEFF] block uppercase">
-                      Pass Percentage
-                    </span>
-                    <span className="text-3xl font-black text-slate-800 dark:text-white mt-1 block">
-                      {academicData?.passPercentage || 96.4}%
-                    </span>
-                    <span className="text-[10px] text-emerald-600 font-bold">↑ 2.1% vs last academic year</span>
+              // Filtering Logic
+              const filteredAssessments = rawAssessments.filter((item: any) => {
+                const q = academicSearch.toLowerCase().trim();
+                const studentName = `${item.childId?.firstName || ''} ${item.childId?.lastName || ''}`.toLowerCase();
+                const admNo = (item.childId?.admissionNumber || '').toLowerCase();
+                const title = (item.title || '').toLowerCase();
+
+                const matchesSearch = !q || studentName.includes(q) || admNo.includes(q) || title.includes(q);
+                const matchesClass = selectedClass === 'All' || item.grade === selectedClass;
+                const matchesSubject = selectedSubject === 'All' || item.subject === selectedSubject;
+                const matchesTerm = selectedTerm === 'All' || item.term === selectedTerm;
+                
+                let matchesGrade = true;
+                if (selectedGradeBand === 'A+') matchesGrade = item.overallGrade === 'A+';
+                else if (selectedGradeBand === 'A/B') matchesGrade = item.overallGrade === 'A' || item.overallGrade === 'B';
+                else if (selectedGradeBand === 'D') matchesGrade = item.overallGrade === 'D' || item.overallGrade === 'F';
+
+                return matchesSearch && matchesClass && matchesSubject && matchesTerm && matchesGrade;
+              });
+
+              // Distribution counts
+              const gradeCounts = { 'A+': 0, 'A': 0, 'B': 0, 'C': 0, 'D': 0 };
+              rawAssessments.forEach((item: any) => {
+                const g = item.overallGrade || 'B';
+                if (gradeCounts[g as keyof typeof gradeCounts] !== undefined) {
+                  gradeCounts[g as keyof typeof gradeCounts]++;
+                }
+              });
+              const totalItems = rawAssessments.length || 1;
+
+              // Subject benchmark averages
+              const subjectMap: Record<string, { totalScore: number; count: number }> = {};
+              rawAssessments.forEach((item: any) => {
+                const s = item.subject || 'General';
+                if (!subjectMap[s]) subjectMap[s] = { totalScore: 0, count: 0 };
+                subjectMap[s].totalScore += (item.score || 80);
+                subjectMap[s].count++;
+              });
+
+              return (
+                <div className="p-6 space-y-6">
+                  {/* Header & Print Action */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <Award className="w-5 h-5 text-[#0050CB]" />
+                        Curricular Assessment & Examination Analytics
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Performance telemetry across classes, grade distributions, and subject mastery benchmarks.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 transition-all self-start sm:self-auto shadow-sm"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-[#0050CB]" />
+                      <span>Print Academic Ledger</span>
+                    </button>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40">
-                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 block uppercase">
-                      Distinction (A+)
-                    </span>
-                    <span className="text-3xl font-black text-slate-800 dark:text-white mt-1 block">
-                      {academicData?.gradeDistribution?.['A+'] || 48}
-                    </span>
-                    <span className="text-[10px] text-slate-400">Students with 90%+ marks</span>
+                  {/* 4 Standard Top KPI Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-xl bg-blue-50/60 dark:bg-[#0050CB]/20 border border-blue-200/60 dark:border-blue-800/40">
+                      <span className="text-[11px] font-bold text-[#0050CB] dark:text-[#E5EEFF] block uppercase tracking-wider">
+                        Pass Percentage
+                      </span>
+                      <span className="text-3xl font-black text-slate-800 dark:text-white mt-1 block">
+                        {academicData?.passPercentage || 96.4}%
+                      </span>
+                      <span className="text-[10px] text-emerald-600 font-bold">↑ 2.1% vs last academic year</span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40">
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 block uppercase tracking-wider">
+                        Distinction (A+)
+                      </span>
+                      <span className="text-3xl font-black text-slate-800 dark:text-white mt-1 block">
+                        {academicData?.gradeDistribution?.['A+'] || gradeCounts['A+']}
+                      </span>
+                      <span className="text-[10px] text-slate-400">Students with 90%+ marks</span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-800/40">
+                      <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 block uppercase tracking-wider">
+                        First Class (A/B)
+                      </span>
+                      <span className="text-3xl font-black text-slate-800 dark:text-white mt-1 block">
+                        {gradeCounts['A'] + gradeCounts['B']}
+                      </span>
+                      <span className="text-[10px] text-slate-400">70% to 89% score range</span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40">
+                      <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 block uppercase tracking-wider">
+                        Remedial Support
+                      </span>
+                      <span className="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1 block">
+                        {academicData?.gradeDistribution?.['D'] || gradeCounts['D']}
+                      </span>
+                      <span className="text-[10px] text-amber-600 font-bold">Scheduled for tutorial support</span>
+                    </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-800/40">
-                    <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 block uppercase">
-                      First Class (A/B)
-                    </span>
-                    <span className="text-3xl font-black text-slate-800 dark:text-white mt-1 block">
-                      {((academicData?.gradeDistribution?.['A'] || 84) + (academicData?.gradeDistribution?.['B'] || 62))}
-                    </span>
-                    <span className="text-[10px] text-slate-400">70% to 89% score range</span>
+                  {/* Visual Grade Distribution Bell Curve */}
+                  <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-[#001438]/50 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
+                        Institutional Grade Distribution (Bell Curve)
+                      </span>
+                      <span className="text-slate-400 font-medium">Sample Size: {rawAssessments.length} Evaluations</span>
+                    </div>
+
+                    {/* Progress Segment Bar */}
+                    <div className="w-full h-4 rounded-full overflow-hidden flex bg-slate-200 dark:bg-slate-800">
+                      <div
+                        style={{ width: `${Math.round((gradeCounts['A+'] / totalItems) * 100)}%` }}
+                        className="bg-emerald-500 hover:opacity-90 transition-all cursor-pointer"
+                        title={`A+ (90-100%): ${gradeCounts['A+']} students`}
+                      />
+                      <div
+                        style={{ width: `${Math.round((gradeCounts['A'] / totalItems) * 100)}%` }}
+                        className="bg-blue-500 hover:opacity-90 transition-all cursor-pointer"
+                        title={`A (80-89%): ${gradeCounts['A']} students`}
+                      />
+                      <div
+                        style={{ width: `${Math.round((gradeCounts['B'] / totalItems) * 100)}%` }}
+                        className="bg-purple-500 hover:opacity-90 transition-all cursor-pointer"
+                        title={`B (70-79%): ${gradeCounts['B']} students`}
+                      />
+                      <div
+                        style={{ width: `${Math.round((gradeCounts['C'] / totalItems) * 100)}%` }}
+                        className="bg-amber-500 hover:opacity-90 transition-all cursor-pointer"
+                        title={`C (50-69%): ${gradeCounts['C']} students`}
+                      />
+                      <div
+                        style={{ width: `${Math.round((gradeCounts['D'] / totalItems) * 100)}%` }}
+                        className="bg-[#FF690C] hover:opacity-90 transition-all cursor-pointer"
+                        title={`D (<50%): ${gradeCounts['D']} students`}
+                      />
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex items-center gap-4 flex-wrap text-xs pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="font-bold text-slate-700 dark:text-slate-300">A+ (90%+):</span>
+                        <span className="text-slate-400">{gradeCounts['A+']}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" />
+                        <span className="font-bold text-slate-700 dark:text-slate-300">A (80-89%):</span>
+                        <span className="text-slate-400">{gradeCounts['A']}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-purple-500 shrink-0" />
+                        <span className="font-bold text-slate-700 dark:text-slate-300">B (70-79%):</span>
+                        <span className="text-slate-400">{gradeCounts['B']}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0" />
+                        <span className="font-bold text-slate-700 dark:text-slate-300">C (50-69%):</span>
+                        <span className="text-slate-400">{gradeCounts['C']}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-[#FF690C] shrink-0" />
+                        <span className="font-bold text-[#FF690C]">D (&lt;50% Remedial):</span>
+                        <span className="text-slate-400">{gradeCounts['D']}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40">
-                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 block uppercase">
-                      Remedial Support
-                    </span>
-                    <span className="text-3xl font-black text-slate-800 dark:text-white mt-1 block">
-                      {academicData?.gradeDistribution?.['D'] || 6}
-                    </span>
-                    <span className="text-[10px] text-amber-600 font-bold">Scheduled for tutorial support</span>
-                  </div>
-                </div>
-
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-                  <div className="p-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-200">
-                    Recent Examination & Assessment Logs
-                  </div>
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50/50 dark:bg-slate-900/50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                      <tr>
-                        <th className="py-2.5 px-4">Student</th>
-                        <th className="py-2.5 px-4">Assessment Title</th>
-                        <th className="py-2.5 px-4">Class</th>
-                        <th className="py-2.5 px-4">Term</th>
-                        <th className="py-2.5 px-4 text-center">Overall Grade</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {(academicData?.recentAssessments?.length > 0 ? academicData.recentAssessments : [
-                        { childId: { firstName: 'Aarav', lastName: 'Sharma' }, title: 'Term 1 Mid-Term Physics', grade: 'Grade 10', term: 'Term 1', overallGrade: 'A+' },
-                        { childId: { firstName: 'Diya', lastName: 'Patel' }, title: 'Mathematics Evaluation', grade: 'Grade 8', term: 'Term 1', overallGrade: 'A' },
-                        { childId: { firstName: 'Vihaan', lastName: 'Verma' }, title: 'English Comprehension', grade: 'Grade 5', term: 'Term 1', overallGrade: 'B' },
-                      ]).map((item: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                          <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">
-                            {item.childId?.firstName} {item.childId?.lastName}
-                          </td>
-                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{item.title || 'Mid-Term Exam'}</td>
-                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{item.grade || 'Standard'}</td>
-                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{item.term || 'Term 1'}</td>
-                          <td className="py-3 px-4 text-center">
-                            <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              {item.overallGrade || 'A'}
+                  {/* Subject Mastery Benchmarks Cards */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                      <BookOpen className="w-3.5 h-3.5 text-[#0050CB]" />
+                      Subject Performance Benchmarks
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                      {Object.entries(subjectMap).map(([subj, stats]) => {
+                        const avg = Math.round(stats.totalScore / stats.count);
+                        return (
+                          <div
+                            key={subj}
+                            className="bg-white dark:bg-[#001438] border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-1 shadow-xs"
+                          >
+                            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate block">
+                              {subj}
                             </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-lg font-black text-slate-900 dark:text-white">{avg}%</span>
+                              <span className="text-[10px] text-slate-400 font-medium">avg</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                              <div
+                                style={{ width: `${avg}%` }}
+                                className={`h-full rounded-full ${
+                                  avg >= 85 ? 'bg-emerald-500' : avg >= 70 ? 'bg-blue-500' : 'bg-amber-500'
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Interactive Filtering Toolbar */}
+                  <div className="bg-slate-50 dark:bg-[#001438] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                    {/* Search */}
+                    <div className="relative w-full lg:w-72">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={academicSearch}
+                        onChange={(e) => setAcademicSearch(e.target.value)}
+                        placeholder="Search student or assessment..."
+                        className="w-full pl-9 pr-8 py-1.5 bg-white dark:bg-[#07152F] border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0050CB]"
+                      />
+                      {academicSearch && (
+                        <button
+                          onClick={() => setAcademicSearch('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Filter Dropdowns */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1 text-xs text-slate-400 font-bold">
+                        <Filter className="w-3.5 h-3.5 text-[#0050CB]" />
+                        <span>Filter:</span>
+                      </div>
+
+                      {/* Class */}
+                      <select
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                        className="bg-white dark:bg-[#07152F] border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 py-1.5 px-2.5 rounded-xl focus:outline-none focus:border-[#0050CB]"
+                      >
+                        <option value="All">All Classes</option>
+                        <option value="Pre-KG A">Pre-KG A</option>
+                        <option value="Pre-KG B">Pre-KG B</option>
+                        <option value="LKG A">LKG A</option>
+                        <option value="LKG B">LKG B</option>
+                        <option value="UKG A">UKG A</option>
+                        <option value="UKG B">UKG B</option>
+                      </select>
+
+                      {/* Subject */}
+                      <select
+                        value={selectedSubject}
+                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        className="bg-white dark:bg-[#07152F] border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 py-1.5 px-2.5 rounded-xl focus:outline-none focus:border-[#0050CB]"
+                      >
+                        <option value="All">All Subjects</option>
+                        <option value="Phonics & English">Phonics & English</option>
+                        <option value="Early Numeracy & Math">Early Numeracy & Math</option>
+                        <option value="General Awareness (EVS)">General Awareness (EVS)</option>
+                        <option value="Rhymes & Storytelling">Rhymes & Storytelling</option>
+                        <option value="Art & Craft">Art & Craft</option>
+                        <option value="Sensory & Motor Skills">Sensory & Motor Skills</option>
+                      </select>
+
+                      {/* Performance Band */}
+                      <select
+                        value={selectedGradeBand}
+                        onChange={(e) => setSelectedGradeBand(e.target.value)}
+                        className="bg-white dark:bg-[#07152F] border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 py-1.5 px-2.5 rounded-xl focus:outline-none focus:border-[#0050CB]"
+                      >
+                        <option value="All">All Grades</option>
+                        <option value="A+">Distinction (A+)</option>
+                        <option value="A/B">First Class (A/B)</option>
+                        <option value="D">Remedial (&lt;50%)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Detailed Assessment Ledger Table */}
+                  <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                      <span className="font-extrabold text-xs text-slate-800 dark:text-slate-200">
+                        Granular Assessment Ledger ({filteredAssessments.length} records)
+                      </span>
+                      {(academicSearch || selectedClass !== 'All' || selectedSubject !== 'All' || selectedGradeBand !== 'All') && (
+                        <button
+                          onClick={() => {
+                            setAcademicSearch('');
+                            setSelectedClass('All');
+                            setSelectedSubject('All');
+                            setSelectedGradeBand('All');
+                          }}
+                          className="text-xs font-bold text-[#0050CB] hover:underline"
+                        >
+                          Clear filters
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50/50 dark:bg-slate-900/50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                          <tr>
+                            <th className="py-3 px-4">Student & Admission</th>
+                            <th className="py-3 px-4">Subject & Assessment</th>
+                            <th className="py-3 px-4">Class & Term</th>
+                            <th className="py-3 px-4">Score & Percentage</th>
+                            <th className="py-3 px-4 text-center">Grade</th>
+                            <th className="py-3 px-4 text-right">Evaluation Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                          {filteredAssessments.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-12 text-center text-slate-400">
+                                <Search className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                                <p className="font-bold text-sm text-slate-600 dark:text-slate-300">No evaluations match criteria</p>
+                                <p className="text-xs">Adjust your search query or reset class and subject filters.</p>
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredAssessments.map((item: any, idx: number) => {
+                              const scoreVal = item.score || 85;
+                              const maxVal = item.maxScore || 100;
+                              const pct = Math.round((scoreVal / maxVal) * 100);
+                              const g = item.overallGrade || 'A';
+
+                              return (
+                                <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                                  <td className="py-3.5 px-4">
+                                    <p className="font-bold text-slate-900 dark:text-white">
+                                      {item.childId?.firstName} {item.childId?.lastName}
+                                    </p>
+                                    <p className="text-[10px] font-mono text-slate-400">
+                                      {item.childId?.admissionNumber || 'GGPS-REC'}
+                                    </p>
+                                  </td>
+
+                                  <td className="py-3.5 px-4">
+                                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-[#0050CB] dark:text-[#38BDF8] inline-block mb-0.5">
+                                      {item.subject || 'General'}
+                                    </span>
+                                    <p className="text-slate-700 dark:text-slate-200 font-medium">
+                                      {item.title || 'Mid-Term Exam'}
+                                    </p>
+                                  </td>
+
+                                  <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                    <span className="font-semibold">{item.grade || 'Pre-KG'}</span>
+                                    <span className="text-slate-400 block text-[11px]">{item.term || 'Term 1'}</span>
+                                  </td>
+
+                                  <td className="py-3.5 px-4 whitespace-nowrap">
+                                    <div className="flex items-baseline gap-1.5">
+                                      <span className="font-extrabold text-slate-900 dark:text-white text-sm">
+                                        {scoreVal} / {maxVal}
+                                      </span>
+                                      <span className="text-[11px] font-bold text-slate-400">({pct}%)</span>
+                                    </div>
+                                    <div className="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden">
+                                      <div
+                                        style={{ width: `${pct}%` }}
+                                        className={`h-full rounded-full ${
+                                          pct >= 90 ? 'bg-emerald-500' : pct >= 75 ? 'bg-blue-500' : pct >= 50 ? 'bg-amber-500' : 'bg-[#FF690C]'
+                                        }`}
+                                      />
+                                    </div>
+                                  </td>
+
+                                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                                    <span
+                                      className={`px-2.5 py-0.5 rounded-full font-black text-[10px] border ${
+                                        g === 'A+'
+                                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                          : g === 'A'
+                                          ? 'bg-blue-50 text-[#0050CB] border-blue-200 dark:bg-blue-950/40 dark:text-[#38BDF8]'
+                                          : g === 'B'
+                                          ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400'
+                                          : g === 'C'
+                                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400'
+                                          : 'bg-rose-50 text-[#FF690C] border-rose-200 dark:bg-rose-950/40 dark:text-[#FF690C]'
+                                      }`}
+                                    >
+                                      {g}
+                                    </span>
+                                  </td>
+
+                                  <td className="py-3.5 px-4 text-right text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                                    {item.date || '2026-09-20'}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* 2. ATTENDANCE REPORTS */}
             {activeReport === 'attendance' && (
@@ -491,8 +854,8 @@ function ReportsContent() {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {(staffData?.staffList?.length > 0 ? staffData.staffList : [
-                        { firstName: 'Dr. Sarah', lastName: 'Jenkins', designation: 'Senior Physics Faculty', department: 'Science', experienceYears: 8, status: 'Active' },
-                        { firstName: 'Prof. Rajesh', lastName: 'Iyer', designation: 'Head of Mathematics', department: 'Mathematics', experienceYears: 12, status: 'Active' },
+                        { firstName: 'Dr. Sarah', lastName: 'Jenkins', designation: 'Head of Phonics & English', department: 'Early Years', experienceYears: 8, status: 'Active' },
+                        { firstName: 'Prof. Rajesh', lastName: 'Iyer', designation: 'Early Numeracy & Math Lead', department: 'Kindergarten', experienceYears: 12, status: 'Active' },
                         { firstName: 'Priya', lastName: 'Sharma', designation: 'Kindergarten Educator', department: 'Primary Edu', experienceYears: 5, status: 'Active' },
                       ]).map((s: any, idx: number) => (
                         <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">

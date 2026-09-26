@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { BookOpen, Sparkles, Plus, CheckCircle2, Clock, FileText, Send, Calendar } from "lucide-react";
 
 export default function LessonPlannerPage() {
-  const [subject, setSubject] = useState("Mathematics Grade 10");
+  const [subject, setSubject] = useState("Phonics & English (Pre-KG)");
   const [topic, setTopic] = useState("");
   const [objectives, setObjectives] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,30 +24,30 @@ export default function LessonPlannerPage() {
         setPlans([
           {
             id: "LP-101",
-            subject: "Mathematics Grade 10",
-            topic: "Quadratic Functions & Parabolic Graphs",
-            objectives: "Understand vertex form, calculate roots using quadratic formula, and solve word problems.",
+            subject: "Phonics & English (Pre-KG)",
+            topic: "Phonics Sounds 'A to D' & Picture Association",
+            objectives: "Identify initial letter sounds, trace letters in sand tray, and name associated everyday objects.",
             status: "Approved",
             date: "Sep 18, 2026",
-            teacher: "Dr. Robert Vance",
+            teacher: "Ms. Shalini Roy",
           },
           {
             id: "LP-102",
-            subject: "Physics Grade 11",
-            topic: "Newton's Laws of Motion & Friction Forces",
-            objectives: "Conduct incline plane experiment and calculate static vs kinetic friction coefficients.",
+            subject: "Early Numeracy (LKG)",
+            topic: "Counting Numbers 1 to 10 with Colorful Beads",
+            objectives: "Count physical objects 1 to 10, pair numbers with quantities, and recognize digit flashcards.",
             status: "Approved",
             date: "Sep 20, 2026",
-            teacher: "Dr. Robert Vance",
+            teacher: "Ms. Shalini Roy",
           },
           {
             id: "LP-103",
-            subject: "Chemistry Grade 9",
-            topic: "Stoichiometry & Molar Mass Calculations",
-            objectives: "Balance chemical equations and compute reactant/product stoichiometry ratios.",
+            subject: "General Awareness - EVS (UKG)",
+            topic: "Living Things: Plants & Animal Habitats",
+            objectives: "Observe garden leaves, distinguish between plants and animals, and identify baby animal names.",
             status: "Pending Review",
             date: "Sep 22, 2026",
-            teacher: "Dr. Robert Vance",
+            teacher: "Ms. Shalini Roy",
           },
         ]);
       }
@@ -148,10 +148,12 @@ export default function LessonPlannerPage() {
                 onChange={(e) => setSubject(e.target.value)}
                 className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
               >
-                <option value="Mathematics Grade 10">Mathematics Grade 10</option>
-                <option value="Physics Grade 11">Physics Grade 11</option>
-                <option value="Chemistry Grade 9">Chemistry Grade 9</option>
-                <option value="Computer Science Grade 12">Computer Science Grade 12</option>
+                <option value="Phonics & English (Pre-KG)">Phonics & English (Pre-KG)</option>
+                <option value="Early Numeracy (LKG)">Early Numeracy (LKG)</option>
+                <option value="General Awareness - EVS (UKG)">General Awareness - EVS (UKG)</option>
+                <option value="Rhymes & Storytelling (Pre-KG)">Rhymes & Storytelling (Pre-KG)</option>
+                <option value="Art & Sensory Play (LKG)">Art & Sensory Play (LKG)</option>
+                <option value="Primary Readiness (UKG)">Primary Readiness (UKG)</option>
               </select>
             </div>
 
@@ -161,7 +163,7 @@ export default function LessonPlannerPage() {
                 type="text"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="e.g. Quadratic Equations & Parabolas"
+                placeholder="e.g. Letter Sounds 'S, A, T, P' & Phonics Rhyme"
                 required
                 className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
               />

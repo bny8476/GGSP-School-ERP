@@ -76,8 +76,8 @@ const seedDB = async () => {
     // 4. Create Class and Section
     console.log('Seeding Class & Section...');
     const schoolClass = await Class.findOneAndUpdate(
-      { name: 'Grade 1' },
-      { name: 'Grade 1', description: 'Primary Grade 1' },
+      { name: 'LKG' },
+      { name: 'LKG', description: 'Lower Kindergarten (LKG)' },
       options
     );
     if (!schoolClass) throw new Error('Failed to create class');
@@ -92,7 +92,7 @@ const seedDB = async () => {
       options
     );
     if (!section) throw new Error('Failed to create section');
-    console.log('✓ Class & Section created: Grade 1 - Section A');
+    console.log('✓ Class & Section created: LKG - Section A');
 
     // 5. Create Staff / SuperAdmin
     console.log('Seeding Users & Staff Profiles...');
@@ -149,10 +149,10 @@ const seedDB = async () => {
       {
         userId: teacherUser._id,
         employeeId: teacherEmployee._id,
-        qualification: 'Master in Education',
-        specialization: ['Mathematics', 'Science'],
-        subjects: ['Math', 'Science'],
-        classes: ['Grade 1'],
+        qualification: 'Diploma in Early Childhood Education (D.E.C.Ed)',
+        specialization: ['Phonics & English', 'Early Numeracy'],
+        subjects: ['Phonics & English', 'Early Numeracy', 'Rhymes & Storytelling'],
+        classes: ['LKG'],
       },
       options
     );
@@ -230,7 +230,7 @@ const seedDB = async () => {
         firstName: 'Sammy',
         lastName: 'Student',
         admissionNumber: 'SEED-001',
-        grade: 'Grade 1',
+        grade: 'LKG',
         parentId: parentProfile._id,
         status: 'Active',
         bloodGroup: 'O+',
@@ -269,7 +269,7 @@ const seedDB = async () => {
       },
       options
     );
-    console.log('✓ Enrollment link created (Grade 1-A / Roll #01)');
+    console.log('✓ Enrollment link created (LKG-A / Roll #01)');
 
     // 12. Student Attendance Record
     const today = new Date();

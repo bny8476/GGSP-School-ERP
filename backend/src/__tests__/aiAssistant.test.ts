@@ -119,8 +119,8 @@ describe('AI Assistant Controller & Real Aggregation Endpoints', () => {
       _id: new mongoose.Types.ObjectId(),
       firstName: 'Alice',
       lastName: 'Wonderland',
-      grade: 'Grade 9',
-      admissionNumber: 'ADM-901',
+      grade: 'UKG',
+      admissionNumber: 'ADM-UKG-901',
     };
     jest.spyOn(Student, 'find').mockReturnValue({
       select: jest.fn().mockReturnValue({

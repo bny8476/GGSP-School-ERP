@@ -112,7 +112,7 @@ export const assignEnrollment = async (req: Request, res: Response) => {
       ]);
       finalRollNumber = await generateNextRollNumber(
         yDoc?.name || '2026-27',
-        cDoc?.name || 'Class 1',
+        cDoc?.name || 'Pre-KG',
         sDoc?.name || 'A'
       );
     }
@@ -189,7 +189,7 @@ export const bulkRollover = async (req: Request, res: Response) => {
 
         const rollNumber = await generateNextRollNumber(
           yDoc?.name || '2026-27',
-          cDoc?.name || 'Class 1',
+          cDoc?.name || 'Pre-KG',
           sDoc?.name || 'A'
         );
 

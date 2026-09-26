@@ -48,9 +48,6 @@ import {
   Shield,
   Briefcase,
   UserPlus,
-  Bus,
-  BookMarked,
-  Baby,
   CalendarDays
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -245,37 +242,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         { href: '/dashboard/online-exams', label: 'Online Exams' },
         { href: '/dashboard/assessments', label: 'Assessments & Marks' },
         { href: '/dashboard/assessments?tab=reportcards', label: 'Report Cards' },
-      ]
-    },
-    { 
-      href: '/dashboard/transport', 
-      label: 'Transport', 
-      icon: Bus, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/transport', label: 'Vehicle Fleet' },
-        { href: '/dashboard/transport?tab=routes', label: 'Routes & Stops' },
-        { href: '/dashboard/transport?tab=drivers', label: 'Drivers & Staff' },
-      ]
-    },
-    { 
-      href: '/dashboard/library', 
-      label: 'Library', 
-      icon: BookMarked, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/library', label: 'Book Catalog' },
-        { href: '/dashboard/library?tab=issues', label: 'Issue / Return' },
-      ]
-    },
-    { 
-      href: '/dashboard/daycare', 
-      label: 'Daycare', 
-      icon: Baby, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/daycare', label: 'Daycare Roster' },
-        { href: '/dashboard/daycare?tab=meals', label: 'Meal & Nap Logs' },
       ]
     },
     { 

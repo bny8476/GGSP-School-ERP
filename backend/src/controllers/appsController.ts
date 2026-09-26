@@ -11,7 +11,7 @@ import { getIO } from '../socket';
 export const DEFAULT_STAFF_MEMBERS = [
   { id: 'u1', name: 'Dr. Marcus Vance', role: 'Principal', department: 'Leadership', email: 'principal@globalinternationalschool.edu' },
   { id: 'u2', name: 'Sarah Jenkins', role: 'Head of Mathematics', department: 'Academics', email: 's.jenkins@globalinternationalschool.edu' },
-  { id: 'u3', name: 'David Chen', role: 'Physics Faculty - Grade 10', department: 'Academics', email: 'd.chen@globalinternationalschool.edu' },
+  { id: 'u3', name: 'David Chen', role: 'Pre-KG Phonics Lead Teacher', department: 'Academics', email: 'd.chen@globalinternationalschool.edu' },
   { id: 'u4', name: 'Robert Taylor', role: 'Chief Finance Officer', department: 'Finance', email: 'bursar@globalinternationalschool.edu' },
   { id: 'u5', name: 'Elena Rostova', role: 'Dean of Students & Discipline', department: 'Student Welfare', email: 'e.rostova@globalinternationalschool.edu' },
   { id: 'u6', name: 'Ahmed Al-Mansoor', role: 'Facility Operations Manager', department: 'Facilities', email: 'facilities@globalinternationalschool.edu' },
@@ -24,8 +24,8 @@ const INITIAL_TASKS: any[] = [
   {
     _id: 'task_1',
     id: 'task_1',
-    title: 'Review Grade 10 Mid-Term Exam Question Papers',
-    description: 'Check syllabus alignment, moderation criteria, and finalize question papers for Grade 10 Mid-Term Exams.',
+    title: 'Review Pre-KG Activity Worksheets & Learning Trays',
+    description: 'Check syllabus alignment, moderation criteria, and finalize activity worksheets for Pre-KG Term Assessments.',
     category: 'Academic',
     dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 days
     dateString: 'Sep 20, 2026',
@@ -65,7 +65,7 @@ const INITIAL_TASKS: any[] = [
   {
     _id: 'task_3',
     id: 'task_3',
-    title: 'Investigate Grade 8 Student Leo Harrison (5 Consecutive Absences)',
+    title: 'Investigate UKG Student Leo Harrison (5 Consecutive Absences)',
     description: 'Automated ERP Trigger: Attendance register flagged 5 unexcused sick leaves. Contact parent and schedule welfare evaluation.',
     category: 'Academic',
     dueDate: new Date(Date.now() - 1000 * 60 * 60 * 4), // Overdue
@@ -107,8 +107,8 @@ const INITIAL_TASKS: any[] = [
   {
     _id: 'task_5',
     id: 'task_5',
-    title: 'Approve Campus Laboratory Equipment Replenishment Request',
-    description: 'Faculty requested replenishment of high-school chemistry and physics experimental kits.',
+    title: 'Approve Montessori Sensory & Activity Material Replenishment Request',
+    description: 'Faculty requested replenishment of kindergarten sensory learning trays and Montessori wooden puzzles.',
     category: 'Academics',
     dueDate: new Date(Date.now() + 1000 * 60 * 60 * 72), // 3 days
     dateString: 'Sep 22, 2026',
@@ -453,8 +453,8 @@ export const triggerERPTasks = async (req: Request, res: Response) => {
     const newERPEventTask = {
       _id: `task_erp_${Date.now()}`,
       id: `task_erp_${Date.now()}`,
-      title: 'Audit Disciplinary Incident Report #DISC-881 (Grade 9 Common Room)',
-      description: 'Automated ERP Trigger: Incident recorded by Homeroom Proctor. Requires counseling review and parent notification confirmation.',
+      title: 'Audit Wellness & Naptime Report #WEL-881 (Pre-KG Activity Room)',
+      description: 'Automated ERP Trigger: Observation recorded by Homeroom Teacher. Review playgroup progress notes and parent notification confirmation.',
       category: 'Academic',
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
       dateString: new Date(Date.now() + 1000 * 60 * 60 * 24).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),

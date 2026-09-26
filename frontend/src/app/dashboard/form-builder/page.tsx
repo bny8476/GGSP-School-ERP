@@ -105,7 +105,7 @@ export default function FormBuilderPage() {
       fields: [
         { id: "f1", label: "Full Name", type: "text", required: true },
         { id: "f2", label: "Email Address", type: "email", required: true },
-        { id: "f3", label: "Student Grade / Class", type: "select", options: ["Class 10-A", "Class 9-B", "Class 8-A"] },
+        { id: "f3", label: "Student Grade / Class", type: "select", options: ["Pre-KG A", "LKG A", "UKG A"] },
         { id: "f4", label: "Feedback / Application Details", type: "textarea", required: true },
       ],
     };
@@ -323,15 +323,15 @@ export default function FormBuilderPage() {
             {/* Class Items */}
             <div className="space-y-3">
               
-              {/* Class 1 */}
+              {/* Slot 1 */}
               <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-slate-200 transition-colors">
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-[#0050CB] text-white flex items-center justify-center font-black text-sm shadow-xs">
-                    π
+                    🔤
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">Mathematics</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Class 10 - A • Room 201</p>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">Phonics & Early Literacy</h4>
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Pre-KG A • Room 101</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -346,15 +346,15 @@ export default function FormBuilderPage() {
                 </div>
               </div>
 
-              {/* Class 2 */}
+              {/* Slot 2 */}
               <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-slate-200 transition-colors">
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shadow-xs">
-                    ⚗️
+                    🔢
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">Science</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Class 9 - B • Room 102</p>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">Early Numeracy & Math</h4>
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">LKG - A • Room 102</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -369,15 +369,15 @@ export default function FormBuilderPage() {
                 </div>
               </div>
 
-              {/* Class 3 */}
+              {/* Slot 3 */}
               <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-slate-200 transition-colors">
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-black text-sm shadow-xs">
                     📖
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">English</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Class 8 - A • Room 105</p>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">Rhymes & Storytelling</h4>
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">UKG - A • Room 105</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -392,15 +392,15 @@ export default function FormBuilderPage() {
                 </div>
               </div>
 
-              {/* Class 4 */}
+              {/* Slot 4 */}
               <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-slate-200 transition-colors">
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-sm shadow-xs">
-                    🏛️
+                    🌱
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">History</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Class 7 - B • Room 106</p>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">General Awareness (EVS)</h4>
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">LKG - B • Room 106</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -415,15 +415,15 @@ export default function FormBuilderPage() {
                 </div>
               </div>
 
-              {/* Class 5 */}
+              {/* Slot 5 */}
               <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-slate-200 transition-colors">
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center font-black text-sm shadow-xs">
-                    💻
+                    🎨
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">Computer Science</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Class 6 - A • Lab 1</p>
+                    <h4 className="text-xs font-black text-[#000E28] dark:text-white">Sensory & Motor Play</h4>
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Pre-KG - B • Activity Arena</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -600,7 +600,7 @@ export default function FormBuilderPage() {
                   <Check className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="font-bold text-[#000E28] dark:text-white">Attendance marked for Class 10-A</p>
+                  <p className="font-bold text-[#000E28] dark:text-white">Attendance marked for Pre-KG A</p>
                   <p className="text-[10px] text-slate-400">2 hours ago</p>
                 </div>
               </div>
@@ -610,7 +610,7 @@ export default function FormBuilderPage() {
                   <FileText className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="font-bold text-[#000E28] dark:text-white">Homework assigned for Class 9-B</p>
+                  <p className="font-bold text-[#000E28] dark:text-white">Activity worksheet assigned for LKG B</p>
                   <p className="text-[10px] text-slate-400">3 hours ago</p>
                 </div>
               </div>

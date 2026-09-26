@@ -7,9 +7,9 @@ import toast from "react-hot-toast";
 
 export default function OnlineExamsPage() {
   const [exams, setExams] = useState([
-    { id: 1, title: "Grade 10 Physics Assessment - Motion & Forces", duration: "45 Minutes", totalQuestions: 30, passingScore: "70%", status: "Active" },
-    { id: 2, title: "Mathematics Algebra Mid-Term Quiz", duration: "60 Minutes", totalQuestions: 40, passingScore: "65%", status: "Scheduled" },
-    { id: 3, title: "English Grammar & Comprehension Test", duration: "30 Minutes", totalQuestions: 25, passingScore: "75%", status: "Completed" },
+    { id: 1, title: "Pre-KG Phonics & Alphabet Recognition Quiz", duration: "20 Minutes", totalQuestions: 15, passingScore: "70%", status: "Active" },
+    { id: 2, title: "LKG Early Numeracy & Shape Identification", duration: "25 Minutes", totalQuestions: 20, passingScore: "65%", status: "Scheduled" },
+    { id: 3, title: "UKG General Awareness & Environmental Fun Test", duration: "30 Minutes", totalQuestions: 20, passingScore: "75%", status: "Completed" },
   ]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -127,7 +127,7 @@ export default function OnlineExamsPage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Grade 10 Biology Genetics Test"
+                  placeholder="e.g. UKG Phonics & Sight Words Assessment"
                   required
                   className="w-full mt-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-[#0050CB]"
                 />

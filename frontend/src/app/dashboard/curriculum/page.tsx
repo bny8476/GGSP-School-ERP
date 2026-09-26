@@ -22,68 +22,68 @@ export default function CurriculumPage() {
 
   // New plan state
   const [planTitle, setPlanTitle] = useState("");
-  const [planGrade, setPlanGrade] = useState("Class 10-A");
-  const [planSubject, setPlanSubject] = useState("Mathematics");
-  const [planDuration, setPlanDuration] = useState("Apr 2025 - Mar 2026");
+  const [planGrade, setPlanGrade] = useState("Pre-KG A");
+  const [planSubject, setPlanSubject] = useState("Phonics & English");
+  const [planDuration, setPlanDuration] = useState("Apr 2026 - Mar 2027");
 
   useEffect(() => {
-    // Initial sample curriculum plans matching reference screenshot exactly
+    // Initial sample curriculum plans for Kindergarten cohorts
     setPlans([
       {
         id: "1",
-        title: "Mathematics Curriculum",
-        subTitle: "Grade 10 - Annual Plan",
-        class: "Class 10-A",
-        subject: "Mathematics",
-        duration: "Apr 2025 - Mar 2026",
+        title: "Phonics & Early Literacy Curriculum",
+        subTitle: "Pre-KG - Annual Plan",
+        class: "Pre-KG A",
+        subject: "Phonics & English",
+        duration: "Apr 2026 - Mar 2027",
         status: "Active",
         progress: 75,
         color: "bg-[#0050CB]",
-        icon: "📚",
+        icon: "🔤",
       },
       {
         id: "2",
-        title: "Science Curriculum",
-        subTitle: "Grade 9 - Semester Plan",
-        class: "Class 9-B",
-        subject: "Science",
-        duration: "Apr 2025 - Sep 2025",
+        title: "Early Numeracy & Math Play",
+        subTitle: "LKG - Semester Plan",
+        class: "LKG B",
+        subject: "Early Numeracy & Math",
+        duration: "Apr 2026 - Sep 2026",
         status: "Active",
         progress: 60,
         color: "bg-purple-600",
-        icon: "⚗️",
+        icon: "🔢",
       },
       {
         id: "3",
-        title: "English Curriculum",
-        subTitle: "Grade 8 - Annual Plan",
-        class: "Class 8-A",
-        subject: "English",
-        duration: "Apr 2025 - Mar 2026",
+        title: "General Awareness & Nature Discovery",
+        subTitle: "UKG - Annual Plan",
+        class: "UKG A",
+        subject: "General Awareness (EVS)",
+        duration: "Apr 2026 - Mar 2027",
         status: "Draft",
         progress: 30,
         color: "bg-amber-500",
-        icon: "📖",
+        icon: "🌱",
       },
       {
         id: "4",
-        title: "Social Studies Curriculum",
-        subTitle: "Grade 7 - Semester Plan",
-        class: "Class 7-A",
-        subject: "Social Studies",
-        duration: "Apr 2025 - Sep 2025",
+        title: "Rhymes, Songs & Storytelling Expressions",
+        subTitle: "LKG - Semester Plan",
+        class: "LKG A",
+        subject: "Rhymes & Storytelling",
+        duration: "Apr 2026 - Sep 2026",
         status: "Active",
         progress: 85,
         color: "bg-emerald-600",
-        icon: "🌐",
+        icon: "🎶",
       },
       {
         id: "5",
-        title: "Art & Craft Curriculum",
-        subTitle: "Grade 6 - Annual Plan",
-        class: "Class 6-B",
-        subject: "Art",
-        duration: "Apr 2025 - Mar 2026",
+        title: "Sensory & Fine Motor Skills",
+        subTitle: "Pre-KG - Annual Plan",
+        class: "Pre-KG B",
+        subject: "Sensory & Motor Skills",
+        duration: "Apr 2026 - Mar 2027",
         status: "Archived",
         progress: 100,
         color: "bg-rose-500",
@@ -292,11 +292,12 @@ export default function CurriculumPage() {
           className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none shrink-0"
         >
           <option value="All Classes">All Classes</option>
-          <option value="Class 10-A">Class 10-A</option>
-          <option value="Class 9-B">Class 9-B</option>
-          <option value="Class 8-A">Class 8-A</option>
-          <option value="Class 7-A">Class 7-A</option>
-          <option value="Class 6-B">Class 6-B</option>
+          <option value="Pre-KG A">Pre-KG A</option>
+          <option value="Pre-KG B">Pre-KG B</option>
+          <option value="LKG A">LKG A</option>
+          <option value="LKG B">LKG B</option>
+          <option value="UKG A">UKG A</option>
+          <option value="UKG B">UKG B</option>
         </select>
 
         {/* Subject Filter */}
@@ -306,11 +307,12 @@ export default function CurriculumPage() {
           className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none shrink-0"
         >
           <option value="All Subjects">All Subjects</option>
-          <option value="Mathematics">Mathematics</option>
-          <option value="Science">Science</option>
-          <option value="English">English</option>
-          <option value="Social Studies">Social Studies</option>
-          <option value="Art">Art</option>
+          <option value="Phonics & English">Phonics & English</option>
+          <option value="Early Numeracy & Math">Early Numeracy & Math</option>
+          <option value="General Awareness (EVS)">General Awareness (EVS)</option>
+          <option value="Rhymes & Storytelling">Rhymes & Storytelling</option>
+          <option value="Art & Craft">Art & Craft</option>
+          <option value="Sensory & Motor Skills">Sensory & Motor Skills</option>
         </select>
 
         {/* Status Filter */}
@@ -578,7 +580,7 @@ export default function CurriculumPage() {
                 </div>
                 <div>
                   <p className="font-bold text-[#000E28] dark:text-white">New curriculum plan created</p>
-                  <p className="text-[10px] font-semibold text-slate-500">Mathematics - Grade 10</p>
+                  <p className="text-[10px] font-semibold text-slate-500">Phonics & Literacy - Pre-KG</p>
                   <p className="text-[9px] text-slate-400">2 hours ago</p>
                 </div>
               </div>
@@ -589,7 +591,7 @@ export default function CurriculumPage() {
                 </div>
                 <div>
                   <p className="font-bold text-[#000E28] dark:text-white">Syllabus updated</p>
-                  <p className="text-[10px] font-semibold text-slate-500">Science - Grade 9</p>
+                  <p className="text-[10px] font-semibold text-slate-500">Early Numeracy - LKG</p>
                   <p className="text-[9px] text-slate-400">4 hours ago</p>
                 </div>
               </div>
@@ -600,7 +602,7 @@ export default function CurriculumPage() {
                 </div>
                 <div>
                   <p className="font-bold text-[#000E28] dark:text-white">Plan activated</p>
-                  <p className="text-[10px] font-semibold text-slate-500">English - Grade 8</p>
+                  <p className="text-[10px] font-semibold text-slate-500">General Awareness - UKG</p>
                   <p className="text-[9px] text-slate-400">6 hours ago</p>
                 </div>
               </div>
@@ -611,7 +613,7 @@ export default function CurriculumPage() {
                 </div>
                 <div>
                   <p className="font-bold text-[#000E28] dark:text-white">New subject added</p>
-                  <p className="text-[10px] font-semibold text-slate-500">Computer Science</p>
+                  <p className="text-[10px] font-semibold text-slate-500">Sensory & Motor Skills</p>
                   <p className="text-[9px] text-slate-400">1 day ago</p>
                 </div>
               </div>
@@ -687,11 +689,12 @@ export default function CurriculumPage() {
                     onChange={(e) => setPlanGrade(e.target.value)}
                     className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
                   >
-                    <option value="Class 10-A">Class 10-A</option>
-                    <option value="Class 9-B">Class 9-B</option>
-                    <option value="Class 8-A">Class 8-A</option>
-                    <option value="Class 7-A">Class 7-A</option>
-                    <option value="Class 6-B">Class 6-B</option>
+                    <option value="Pre-KG A">Pre-KG A</option>
+                    <option value="Pre-KG B">Pre-KG B</option>
+                    <option value="LKG A">LKG A</option>
+                    <option value="LKG B">LKG B</option>
+                    <option value="UKG A">UKG A</option>
+                    <option value="UKG B">UKG B</option>
                   </select>
                 </div>
 
@@ -702,11 +705,12 @@ export default function CurriculumPage() {
                     onChange={(e) => setPlanSubject(e.target.value)}
                     className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
                   >
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Science">Science</option>
-                    <option value="English">English</option>
-                    <option value="Social Studies">Social Studies</option>
-                    <option value="Art">Art</option>
+                    <option value="Phonics & English">Phonics & English</option>
+                    <option value="Early Numeracy & Math">Early Numeracy & Math</option>
+                    <option value="General Awareness (EVS)">General Awareness (EVS)</option>
+                    <option value="Rhymes & Storytelling">Rhymes & Storytelling</option>
+                    <option value="Art & Craft">Art & Craft</option>
+                    <option value="Sensory & Motor Skills">Sensory & Motor Skills</option>
                   </select>
                 </div>
               </div>

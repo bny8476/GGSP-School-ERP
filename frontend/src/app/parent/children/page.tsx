@@ -38,10 +38,10 @@ export default function MyChildrenPage() {
     _id: "c20202020202020202020202",
     firstName: "Ananya",
     lastName: "Sharma",
-    grade: "Class 3",
+    grade: "UKG",
     section: "Section B",
     rollNumber: "04",
-    age: "8 Years",
+    age: "5 Years",
     classTeacher: "Ms. Pooja Sharma",
     classMentor: "Ms. Neha Gupta",
     attendanceRate: 96,
@@ -164,7 +164,7 @@ export default function MyChildrenPage() {
                     Ananya Sharma
                   </p>
                   <p className="text-[11px] text-slate-400 font-medium truncate">
-                    Class 3 - Section B
+                    UKG - Section B
                   </p>
                 </div>
               </div>
@@ -418,7 +418,7 @@ export default function MyChildrenPage() {
                     <CheckCircle2 className="w-4 h-4 text-[#E11D48] fill-[#E11D48] text-white shrink-0" />
                   </div>
                   <p className="text-[11.5px] sm:text-xs font-bold text-[#E11D48] leading-tight">
-                    Class 3 - Section B <span className="text-slate-300 mx-1 font-normal">|</span> <span className="text-slate-500 font-semibold">Roll No. 04</span>
+                    UKG - Section B <span className="text-slate-300 mx-1 font-normal">|</span> <span className="text-slate-500 font-semibold">Roll No. 04</span>
                   </p>
                 </div>
               </div>
@@ -448,7 +448,7 @@ export default function MyChildrenPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] text-[#5A6E8C] font-semibold leading-tight">Age</p>
-                  <p className="text-xs sm:text-sm font-black text-[#0A225C] leading-snug">8 Years</p>
+                  <p className="text-xs sm:text-sm font-black text-[#0A225C] leading-snug">5 Years</p>
                 </div>
               </div>
 

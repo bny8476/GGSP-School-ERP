@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { FileText, Sparkles, Printer, Download, RefreshCw, CheckCircle2, Sliders, Layers } from "lucide-react";
 
 export default function PaperGeneratorPage() {
-  const [subject, setSubject] = useState("Mathematics");
-  const [grade, setGrade] = useState("10");
-  const [totalMarks, setTotalMarks] = useState("100");
+  const [subject, setSubject] = useState("Phonics & English");
+  const [grade, setGrade] = useState("Pre-KG");
+  const [totalMarks, setTotalMarks] = useState("25");
   const [difficulty, setDifficulty] = useState("Balanced");
   const [loading, setLoading] = useState(false);
   const [paper, setPaper] = useState<any>(null);
@@ -31,29 +31,29 @@ export default function PaperGeneratorPage() {
       } else {
         // Fallback generator preview
         setPaper({
-          title: `Mid-Term Examination 2026-27 - ${subject} Grade ${grade}`,
-          duration: "3 Hours",
+          title: `Continuous Assessment & Activity Worksheet - ${subject} (${grade})`,
+          duration: "45 Minutes",
           marks: totalMarks,
           sections: [
             {
-              name: "Section A: Multiple Choice Questions (20 Marks)",
+              name: "Section A: Visual Identification & Coloring (10 Marks)",
               questions: [
-                "1. If x² - 5x + 6 = 0, find the roots of the quadratic equation. (2 Marks)",
-                "2. What is the value of sin(90°) + cos(0°)? (2 Marks)",
-                "3. Determine the slope of the line passing through (2, 3) and (4, 7). (2 Marks)",
+                "1. Circle all objects that begin with the letter sound 'B'. (3 Marks)",
+                "2. Color the largest apple red and the smallest apple yellow. (3 Marks)",
+                "3. Match the baby animal to its mother. (4 Marks)",
               ],
             },
             {
-              name: "Section B: Short Answer Analytical Problems (30 Marks)",
+              name: "Section B: Number Tracing & Counting (10 Marks)",
               questions: [
-                "4. Prove that √2 is an irrational number using proof by contradiction. (5 Marks)",
-                "5. Solve the system of linear equations: 2x + 3y = 12 and 4x - y = 10. (5 Marks)",
+                "4. Count the stars in each box and trace the corresponding number. (5 Marks)",
+                "5. Connect the dots from 1 to 10 to reveal the hidden butterfly. (5 Marks)",
               ],
             },
             {
-              name: "Section C: Advanced Application & Case Study (50 Marks)",
+              name: "Section C: Fine Motor Skills & Maze (5 Marks)",
               questions: [
-                "6. A lighthouse operator measures the angle of depression of two ships anchored in a straight line as 30° and 45°. If the height of the lighthouse is 100m, calculate the distance between the ships. (10 Marks)",
+                "6. Help the puppy find the ball by drawing a line through the path without touching walls. (5 Marks)",
               ],
             },
           ],
@@ -100,11 +100,12 @@ export default function PaperGeneratorPage() {
                 onChange={(e) => setSubject(e.target.value)}
                 className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
               >
-                <option value="Mathematics">Mathematics</option>
-                <option value="Physics">Physics</option>
-                <option value="Chemistry">Chemistry</option>
-                <option value="Biology">Biology</option>
-                <option value="English Literature">English Literature</option>
+                <option value="Phonics & English">Phonics & English</option>
+                <option value="Early Numeracy & Math">Early Numeracy & Math</option>
+                <option value="General Awareness (EVS)">General Awareness (EVS)</option>
+                <option value="Rhymes & Storytelling">Rhymes & Storytelling</option>
+                <option value="Art & Craft">Art & Craft</option>
+                <option value="Sensory & Motor Skills">Sensory & Motor Skills</option>
               </select>
             </div>
 
@@ -116,10 +117,9 @@ export default function PaperGeneratorPage() {
                   onChange={(e) => setGrade(e.target.value)}
                   className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"
                 >
-                  <option value="9">Grade 9</option>
-                  <option value="10">Grade 10</option>
-                  <option value="11">Grade 11</option>
-                  <option value="12">Grade 12</option>
+                  <option value="Pre-KG">Pre-KG</option>
+                  <option value="LKG">LKG</option>
+                  <option value="UKG">UKG</option>
                 </select>
               </div>
 
@@ -130,9 +130,9 @@ export default function PaperGeneratorPage() {
                   onChange={(e) => setTotalMarks(e.target.value)}
                   className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"
                 >
+                  <option value="20">20 Marks</option>
+                  <option value="25">25 Marks</option>
                   <option value="50">50 Marks</option>
-                  <option value="75">75 Marks</option>
-                  <option value="100">100 Marks</option>
                 </select>
               </div>
             </div>

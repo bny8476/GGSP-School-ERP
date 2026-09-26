@@ -117,9 +117,9 @@ function ParentsPageContent() {
   const [commLogs, setCommLogs] = useState<CommLog[]>([
     { id: 'log-1', recipient: '+91 98765 43210', parentName: 'Vikram & Priya Sharma', studentName: 'Aarav Sharma (LKG-A)', channel: 'WhatsApp', subject: 'Term 1 Fee Payment Acknowledgment & Receipt', timestamp: '2026-09-24 10:15 AM', status: 'Read' },
     { id: 'log-2', recipient: '+91 98111 22334', parentName: 'Sanjay & Sunita Patel', studentName: 'Diya Patel (UKG-B)', channel: 'WhatsApp', subject: 'Upcoming Parent-Teacher Executive Conference Invite', timestamp: '2026-09-23 04:30 PM', status: 'Delivered' },
-    { id: 'log-3', recipient: '+91 97234 56789', parentName: 'Ananya & Ramesh Verma', studentName: 'Vihaan Verma (Grade 5-A)', channel: 'SMS', subject: 'Classroom Field Trip Consent Form Required', timestamp: '2026-09-23 09:00 AM', status: 'Delivered' },
+    { id: 'log-3', recipient: '+91 97234 56789', parentName: 'Ananya & Ramesh Verma', studentName: 'Vihaan Verma (UKG-A)', channel: 'SMS', subject: 'Classroom Field Trip Consent Form Required', timestamp: '2026-09-23 09:00 AM', status: 'Delivered' },
     { id: 'log-4', recipient: '+91 94440 12345', parentName: 'Karthik & Deepa Iyer', studentName: 'Ananya Iyer (Pre-KG)', channel: 'Email', subject: 'Monthly Academic & Wellness Newsletter - Sept 2026', timestamp: '2026-09-22 11:45 AM', status: 'Read' },
-    { id: 'log-5', recipient: '+91 99887 76655', parentName: 'Meera & Sunil Gupta', studentName: 'Ishaan Gupta (Grade 9-C)', channel: 'SMS', subject: 'Fee Payment Reminder - Term 1 Dues Pending', timestamp: '2026-09-21 02:20 PM', status: 'Pending' },
+    { id: 'log-5', recipient: '+91 99887 76655', parentName: 'Meera & Sunil Gupta', studentName: 'Ishaan Gupta (LKG-B)', channel: 'SMS', subject: 'Fee Payment Reminder - Term 1 Dues Pending', timestamp: '2026-09-21 02:20 PM', status: 'Pending' },
   ]);
 
   const fetchParents = async () => {
@@ -188,7 +188,7 @@ function ParentsPageContent() {
             whatsappNumber: '+91 97234 56789',
             address: '88 Green Meadows Enclave, Powai, Mumbai',
             students: [
-              { _id: 'std_03', firstName: 'Vihaan', lastName: 'Verma', grade: 'Grade 5', section: 'A', admissionNumber: 'GGPS-2026-GR5-022' }
+              { _id: 'std_03', firstName: 'Vihaan', lastName: 'Verma', grade: 'UKG', section: 'A', admissionNumber: 'GGPS-2026-UKG-022' }
             ]
           },
           {
@@ -218,7 +218,7 @@ function ParentsPageContent() {
             whatsappNumber: '+91 99887 76655',
             address: 'B-12 Hill View Towers, Malabar Hill, Mumbai',
             students: [
-              { _id: 'std_05', firstName: 'Ishaan', lastName: 'Gupta', grade: 'Grade 9', section: 'C', admissionNumber: 'GGPS-2026-GR9-045' }
+              { _id: 'std_05', firstName: 'Ishaan', lastName: 'Gupta', grade: 'LKG', section: 'B', admissionNumber: 'GGPS-2026-LKG-045' }
             ]
           }
         ];
@@ -228,9 +228,9 @@ function ParentsPageContent() {
       setStudentsList(loadedStudents.length > 0 ? loadedStudents : [
         { _id: 'std_01', firstName: 'Aarav', lastName: 'Sharma', grade: 'LKG', admissionNumber: 'GGPS-2026-LKG-001' },
         { _id: 'std_02', firstName: 'Diya', lastName: 'Patel', grade: 'UKG', admissionNumber: 'GGPS-2026-UKG-014' },
-        { _id: 'std_03', firstName: 'Vihaan', lastName: 'Verma', grade: 'Grade 5', admissionNumber: 'GGPS-2026-GR5-022' },
+        { _id: 'std_03', firstName: 'Vihaan', lastName: 'Verma', grade: 'UKG', admissionNumber: 'GGPS-2026-UKG-022' },
         { _id: 'std_04', firstName: 'Ananya', lastName: 'Iyer', grade: 'Pre-KG', admissionNumber: 'GGPS-2026-PKG-003' },
-        { _id: 'std_05', firstName: 'Ishaan', lastName: 'Gupta', grade: 'Grade 9', admissionNumber: 'GGPS-2026-GR9-045' },
+        { _id: 'std_05', firstName: 'Ishaan', lastName: 'Gupta', grade: 'LKG', admissionNumber: 'GGPS-2026-LKG-045' },
       ]);
     } catch (error) {
       console.error(error);

@@ -79,21 +79,21 @@ The Governing Board of **Global International School** hereby ratifies the capit
   },
   {
     id: "note_2",
-    title: "Curriculum Harmonization Plan: Grade 9–10 Cambridge & IB DP Prep",
-    content: `## Academic Syllabus Moderation Framework
+    title: "Kindergarten Curriculum Harmonization Plan: Pre-KG, LKG & UKG",
+    content: `## Early Years Foundation Stage (EYFS) Moderation Framework
 
-Coordination memo regarding curriculum alignment between Cambridge IGCSE and pre-IB Diploma coursework.
+Coordination memo regarding curriculum alignment between Pre-KG, LKG, and UKG early literacy and sensory learning.
 
 ### Objectives:
-- [x] Standardize internal rubric grading scales for Term 1.
-- [x] Integrate interdisciplinary science projects (Physics & Chemistry lab practicals).
-- [ ] Finalize mock examination schedules for Grade 10 (Target: Oct 15).
-- [ ] Circulate parental curriculum consultation booklet.
+- [x] Standardize phonics pronunciation and sound-play rubrics for Term 1.
+- [x] Integrate sensory motor-skills activities and Montessori math trays.
+- [ ] Finalize developmental assessment milestones for UKG (Target: Oct 15).
+- [ ] Circulate parental early childhood milestone consultation booklet.
 
 ### Assigned Academic Mentors:
-* **Mathematics**: Sarah Jenkins (Head of Dept)
-* **Sciences**: David Chen (Physics Lead)
-* **Humanities**: Elena Rostova (Dean of Academics)
+* **Early Literacy & Phonics**: Sarah Jenkins (Head of Dept)
+* **Numeracy & Fine Motor**: David Chen (Pre-KG Phonics Lead)
+* **General Awareness & Storytelling**: Elena Rostova (Dean of Academics)
 
 > **Mandatory Note**: Class advisors must submit term completion logs by Friday 4:00 PM.`,
     category: "Curriculum",

@@ -456,8 +456,6 @@ export default function EnrollChildModal({
                   <option value="Pre-KG">Pre-KG</option>
                   <option value="LKG">LKG</option>
                   <option value="UKG">UKG</option>
-                  <option value="Class 1">Class 1</option>
-                  <option value="Class 2">Class 2</option>
                 </select>
               </div>
 

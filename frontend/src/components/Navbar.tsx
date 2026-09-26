@@ -11,7 +11,7 @@ import { InteractiveHoverButton } from "@/registry/magicui/interactive-hover-but
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, mounted } = useTheme();
   const { language, currentLanguage, setLanguage, languages, t } = useLanguage();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const pathname = usePathname();
@@ -32,7 +32,7 @@ export default function Navbar() {
     return null;
   }
 
-  const isDark = theme === 'dark';
+  const isDark = mounted ? theme === 'dark' : false;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#000E28]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-colors">
@@ -108,6 +108,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setTheme('light')}
+              suppressHydrationWarning
               className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                 !isDark
                   ? 'bg-[#E5EEFF] text-[#0050CB] shadow-xs'
@@ -121,6 +122,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setTheme('dark')}
+              suppressHydrationWarning
               className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                 isDark
                   ? 'bg-[#0050CB] text-white shadow-xs'
@@ -225,6 +227,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setTheme('light')}
+                  suppressHydrationWarning
                   className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                     !isDark ? 'bg-[#E5EEFF] text-[#0050CB] shadow-xs' : 'text-slate-400 dark:text-slate-500'
                   }`}
@@ -235,6 +238,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setTheme('dark')}
+                  suppressHydrationWarning
                   className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                     isDark ? 'bg-[#0050CB] text-white shadow-xs' : 'text-slate-500 hover:text-[#000E28]'
                   }`}

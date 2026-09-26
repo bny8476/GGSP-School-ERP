@@ -47,7 +47,7 @@ interface StaffMember {
 const FALLBACK_STAFF: StaffMember[] = [
   { id: "u1", name: "Dr. Marcus Vance", role: "Principal", department: "Leadership", email: "principal@globalinternationalschool.edu" },
   { id: "u2", name: "Sarah Jenkins", role: "Head of Mathematics", department: "Academics", email: "s.jenkins@globalinternationalschool.edu" },
-  { id: "u3", name: "David Chen", role: "Physics Faculty - Grade 10", department: "Academics", email: "d.chen@globalinternationalschool.edu" },
+  { id: "u3", name: "David Chen", role: "Pre-KG Phonics Lead Teacher", department: "Academics", email: "d.chen@globalinternationalschool.edu" },
   { id: "u4", name: "Robert Taylor", role: "Chief Finance Officer", department: "Finance", email: "bursar@globalinternationalschool.edu" },
   { id: "u5", name: "Elena Rostova", role: "Dean of Students & Discipline", department: "Student Welfare", email: "e.rostova@globalinternationalschool.edu" },
   { id: "u6", name: "Ahmed Al-Mansoor", role: "Facility Operations Manager", department: "Facilities", email: "facilities@globalinternationalschool.edu" },
@@ -943,7 +943,7 @@ export default function TodoPage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Audit Grade 10 Mid-Term Assessment Papers"
+                  placeholder="e.g. Prepare Pre-KG Sensory Activity Worksheets"
                   required
                   className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-[#0050CB] font-semibold"
                 />

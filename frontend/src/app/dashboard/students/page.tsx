@@ -71,12 +71,12 @@ function StudentsDirectoryContent() {
         loadedStudents = [
           { _id: 'std_01', firstName: 'Aarav', lastName: 'Sharma', admissionNumber: 'GGPS-2026-LKG-001', grade: 'LKG', section: 'A', gender: 'Male', status: 'Active', bloodGroup: 'O+', attendanceRate: 98, emergencyContact: '+91 98765 43210', parentName: 'Rajesh Sharma', parentPhone: '+91 98765 43210', feeStatus: 'Paid', busRoute: 'Route 4' },
           { _id: 'std_02', firstName: 'Diya', lastName: 'Patel', admissionNumber: 'GGPS-2026-UKG-014', grade: 'UKG', section: 'B', gender: 'Female', status: 'Active', bloodGroup: 'B+', attendanceRate: 94, emergencyContact: '+91 98111 22334', parentName: 'Sanjay Patel', parentPhone: '+91 98111 22334', feeStatus: 'Paid', busRoute: 'Route 2' },
-          { _id: 'std_03', firstName: 'Vihaan', lastName: 'Verma', admissionNumber: 'GGPS-2026-GR5-022', grade: 'Grade 5', section: 'A', gender: 'Male', status: 'Active', bloodGroup: 'A+', attendanceRate: 92, emergencyContact: '+91 97234 56789', parentName: 'Ananya Verma', parentPhone: '+91 97234 56789', feeStatus: 'Pending', busRoute: 'Route 4' },
-          { _id: 'std_04', firstName: 'Ananya', lastName: 'Iyer', admissionNumber: 'GGPS-2026-PKG-003', grade: 'Pre-KG', section: 'Lotus', gender: 'Female', status: 'Active', bloodGroup: 'AB+', attendanceRate: 88, emergencyContact: '+91 94440 12345', parentName: 'Karthik Iyer', parentPhone: '+91 94440 12345', feeStatus: 'Paid', busRoute: 'Self' },
-          { _id: 'std_05', firstName: 'Ishaan', lastName: 'Gupta', admissionNumber: 'GGPS-2026-GR9-045', grade: 'Grade 9', section: 'C', gender: 'Male', status: 'Active', bloodGroup: 'O-', attendanceRate: 96, emergencyContact: '+91 99887 76655', parentName: 'Meera Gupta', parentPhone: '+91 99887 76655', feeStatus: 'Overdue', busRoute: 'Route 1' },
-          { _id: 'std_06', firstName: 'Sanya', lastName: 'Malhotra', admissionNumber: 'GGPS-2026-GR2-019', grade: 'Grade 2', section: 'A', gender: 'Female', status: 'Active', bloodGroup: 'B-', attendanceRate: 95, emergencyContact: '+91 98223 34455', parentName: 'Vikram Malhotra', parentPhone: '+91 98223 34455', feeStatus: 'Paid', busRoute: 'Route 3' },
-          { _id: 'std_07', firstName: 'Kabir', lastName: 'Deshmukh', admissionNumber: 'GGPS-2026-GR7-033', grade: 'Grade 7', section: 'B', gender: 'Male', status: 'Inactive', bloodGroup: 'A-', attendanceRate: 74, emergencyContact: '+91 98334 45566', parentName: 'Sunil Deshmukh', parentPhone: '+91 98334 45566', feeStatus: 'Pending', busRoute: 'Route 2' },
-          { _id: 'std_08', firstName: 'Meera', lastName: 'Nambiar', admissionNumber: 'GGPS-2026-GR10-008', grade: 'Grade 10', section: 'A', gender: 'Female', status: 'Active', bloodGroup: 'O+', attendanceRate: 99, emergencyContact: '+91 98770 11223', parentName: 'Gopal Nambiar', parentPhone: '+91 98770 11223', feeStatus: 'Paid', busRoute: 'Self' },
+          { _id: 'std_03', firstName: 'Vihaan', lastName: 'Verma', admissionNumber: 'GGPS-2026-UKG-022', grade: 'UKG', section: 'A', gender: 'Male', status: 'Active', bloodGroup: 'A+', attendanceRate: 92, emergencyContact: '+91 97234 56789', parentName: 'Ananya Verma', parentPhone: '+91 97234 56789', feeStatus: 'Pending', busRoute: 'Route 4' },
+          { _id: 'std_04', firstName: 'Ananya', lastName: 'Iyer', admissionNumber: 'GGPS-2026-PKG-003', grade: 'Pre-KG', section: 'A', gender: 'Female', status: 'Active', bloodGroup: 'AB+', attendanceRate: 88, emergencyContact: '+91 94440 12345', parentName: 'Karthik Iyer', parentPhone: '+91 94440 12345', feeStatus: 'Paid', busRoute: 'Self' },
+          { _id: 'std_05', firstName: 'Ishaan', lastName: 'Gupta', admissionNumber: 'GGPS-2026-LKG-045', grade: 'LKG', section: 'B', gender: 'Male', status: 'Active', bloodGroup: 'O-', attendanceRate: 96, emergencyContact: '+91 99887 76655', parentName: 'Meera Gupta', parentPhone: '+91 99887 76655', feeStatus: 'Overdue', busRoute: 'Route 1' },
+          { _id: 'std_06', firstName: 'Sanya', lastName: 'Malhotra', admissionNumber: 'GGPS-2026-PKG-019', grade: 'Pre-KG', section: 'B', gender: 'Female', status: 'Active', bloodGroup: 'B-', attendanceRate: 95, emergencyContact: '+91 98223 34455', parentName: 'Vikram Malhotra', parentPhone: '+91 98223 34455', feeStatus: 'Paid', busRoute: 'Route 3' },
+          { _id: 'std_07', firstName: 'Kabir', lastName: 'Deshmukh', admissionNumber: 'GGPS-2026-UKG-033', grade: 'UKG', section: 'A', gender: 'Male', status: 'Inactive', bloodGroup: 'A-', attendanceRate: 74, emergencyContact: '+91 98334 45566', parentName: 'Sunil Deshmukh', parentPhone: '+91 98334 45566', feeStatus: 'Pending', busRoute: 'Route 2' },
+          { _id: 'std_08', firstName: 'Meera', lastName: 'Nambiar', admissionNumber: 'GGPS-2026-LKG-008', grade: 'LKG', section: 'A', gender: 'Female', status: 'Active', bloodGroup: 'O+', attendanceRate: 99, emergencyContact: '+91 98770 11223', parentName: 'Gopal Nambiar', parentPhone: '+91 98770 11223', feeStatus: 'Paid', busRoute: 'Self' },
         ];
       }
 
@@ -378,16 +378,10 @@ function StudentsDirectoryContent() {
             onChange={(e) => setSelectedGrade(e.target.value)}
             className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#000E28] text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
           >
-            <option value="all">All Grades</option>
+            <option value="all">All Kindergarten Classes</option>
             <option value="Pre-KG">Pre-KG</option>
             <option value="LKG">LKG</option>
             <option value="UKG">UKG</option>
-            <option value="Grade 1">Grade 1</option>
-            <option value="Grade 2">Grade 2</option>
-            <option value="Grade 5">Grade 5</option>
-            <option value="Grade 7">Grade 7</option>
-            <option value="Grade 9">Grade 9</option>
-            <option value="Grade 10">Grade 10</option>
           </select>
 
           {/* Status Filter */}

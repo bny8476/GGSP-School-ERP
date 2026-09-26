@@ -48,7 +48,7 @@ export default function ChatPage() {
   const channels = [
     { id: "general", name: "# General Announcements", unread: 0 },
     { id: "staff-room", name: "# Staff & Faculty Lounge", unread: 0 },
-    { id: "grade-parents", name: "# Grade 4 Parents Group", unread: 0 },
+    { id: "grade-parents", name: "# LKG Parents Group", unread: 0 },
     { id: "event-planning", name: "# Annual Sports Day 2026", unread: 0 },
   ];
 

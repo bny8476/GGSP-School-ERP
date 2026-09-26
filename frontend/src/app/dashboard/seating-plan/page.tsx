@@ -85,9 +85,9 @@ export default function SeatingPlanPage() {
             </div>
 
             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs space-y-1">
-              <span className="font-bold text-slate-700 dark:text-slate-300">Shuffling Mode:</span>
+              <span className="font-bold text-slate-700 dark:text-slate-300">Cohort Arrangement Mode:</span>
               <p className="text-slate-500 text-[11px]">
-                Grade 10 & Grade 12 interleaved. No two adjacent students will share the same subject exam.
+                LKG & UKG activity cohorts interleaved. Balanced group spacing for classroom activity tables.
               </p>
             </div>
 
@@ -97,7 +97,7 @@ export default function SeatingPlanPage() {
               className="w-full py-2.5 bg-[#0050CB] hover:bg-[#003da3] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
             >
               <Sparkles className="h-4 w-4" />
-              <span>{loading ? "Shuffling..." : "Generate Seating Grid"}</span>
+              <span>{loading ? "Arranging..." : "Generate Seating Grid"}</span>
             </button>
           </form>
         </div>
@@ -124,7 +124,7 @@ export default function SeatingPlanPage() {
 
           <div className="border border-slate-200 dark:border-slate-800 rounded-2xl p-6 bg-slate-50 dark:bg-slate-900 space-y-4">
             <div className="text-center py-2 bg-slate-200 dark:bg-slate-800 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-600 dark:text-slate-300">
-              [ FRONT PODIUM / INVIGILATOR DESK ]
+              [ FRONT PODIUM / ACTIVITY BOARD ]
             </div>
 
             <div
@@ -133,14 +133,14 @@ export default function SeatingPlanPage() {
             >
               {Array.from({ length: rows * cols }).map((_, idx) => {
                 const isEvenRow = Math.floor(idx / cols) % 2 === 0;
-                const isGrade10 = (idx % 2 === 0 && isEvenRow) || (idx % 2 !== 0 && !isEvenRow);
-                const rollNo = isGrade10 ? `10-A-${(idx % 20) + 1}` : `12-B-${(idx % 20) + 1}`;
+                const isLKG = (idx % 2 === 0 && isEvenRow) || (idx % 2 !== 0 && !isEvenRow);
+                const rollNo = isLKG ? `LKG-A-${(idx % 20) + 1}` : `UKG-B-${(idx % 20) + 1}`;
 
                 return (
                   <div
                     key={idx}
                     className={`p-3 rounded-xl border text-center transition-all ${
-                      isGrade10
+                      isLKG
                         ? "bg-[#E5EEFF] border-[#0050CB]/30 text-[#0050CB] dark:bg-[#0050CB]/20 dark:text-[#38BDF8]"
                         : "bg-amber-50 border-amber-300 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400"
                     }`}
@@ -148,7 +148,7 @@ export default function SeatingPlanPage() {
                     <div className="text-[10px] font-black uppercase">Desk #{idx + 1}</div>
                     <div className="text-xs font-bold mt-1">{rollNo}</div>
                     <div className="text-[9px] font-bold opacity-75 mt-0.5">
-                      {isGrade10 ? "Math 10" : "Phys 12"}
+                      {isLKG ? "LKG Phonics" : "UKG Math"}
                     </div>
                   </div>
                 );

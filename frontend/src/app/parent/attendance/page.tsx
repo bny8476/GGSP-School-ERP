@@ -35,7 +35,7 @@ export default function AttendancePage() {
     _id: "c10101010101010101010101",
     firstName: "Aarav",
     lastName: "Sharma",
-    grade: "Grade 4",
+    grade: "LKG",
     section: "Section A",
     rollNumber: "01",
     studentPhoto: "/aarav-profile-avatar.png",

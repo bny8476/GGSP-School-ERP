@@ -146,6 +146,7 @@ export default function ParentHeader({ onOpenMobileMenu }: ParentHeaderProps) {
         <button
           type="button"
           onClick={toggleTheme}
+          suppressHydrationWarning
           className="w-9 h-9 rounded-full bg-[#F6F9FE] dark:bg-white/5 hover:bg-[#EAF4FF] dark:hover:bg-white/10 flex items-center justify-center text-[#F59E0B] transition-colors cursor-pointer"
           title="Toggle Theme"
         >

@@ -10,6 +10,7 @@ interface ThemeContextType {
   theme: Theme;
   layoutMode: LayoutMode;
   direction: Direction;
+  mounted: boolean;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
   setLayoutMode: (mode: LayoutMode) => void;
@@ -19,42 +20,39 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'light';
+  // Always initialize with deterministic SSR-safe defaults to prevent hydration mismatch
+  const [theme, setThemeState] = useState<Theme>('light');
+  const [layoutMode, setLayoutModeState] = useState<LayoutMode>('default');
+  const [direction, setDirectionState] = useState<Direction>('ltr');
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setMounted(true);
+    let activeTheme: Theme = 'light';
     try {
       const storedTheme = (localStorage.getItem('theme') || localStorage.getItem('gi_theme')) as Theme | null;
-      if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme;
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+      if (storedTheme === 'dark' || storedTheme === 'light') {
+        activeTheme = storedTheme;
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        activeTheme = 'dark';
+      }
+      setThemeState(activeTheme);
+
+      const storedLayout = localStorage.getItem('gi_layout') as LayoutMode | null;
+      if (storedLayout && ['default', 'mini', 'boxed'].includes(storedLayout)) {
+        setLayoutModeState(storedLayout);
+      }
+
+      const storedDir = localStorage.getItem('gi_dir') as Direction | null;
+      if (storedDir && ['ltr', 'rtl'].includes(storedDir)) {
+        setDirectionState(storedDir);
+        document.documentElement.setAttribute('dir', storedDir);
+      }
     } catch {
       // Ignore in restricted environments
     }
-    return 'light';
-  });
-
-  const [layoutMode, setLayoutModeState] = useState<LayoutMode>(() => {
-    if (typeof window === 'undefined') return 'default';
-    try {
-      return (localStorage.getItem('gi_layout') as LayoutMode) || 'default';
-    } catch {
-      // Ignore
-    }
-    return 'default';
-  });
-
-  const [direction, setDirectionState] = useState<Direction>(() => {
-    if (typeof window === 'undefined') return 'ltr';
-    try {
-      return (localStorage.getItem('gi_dir') as Direction) || 'ltr';
-    } catch {
-      // Ignore
-    }
-    return 'ltr';
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    document.documentElement.setAttribute('dir', direction);
-  }, [theme, direction]);
+    document.documentElement.classList.toggle('dark', activeTheme === 'dark');
+  }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -96,6 +94,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         theme,
         layoutMode,
         direction,
+        mounted,
         toggleTheme,
         setTheme,
         setLayoutMode,

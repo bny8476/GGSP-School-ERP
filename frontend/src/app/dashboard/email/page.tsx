@@ -81,9 +81,10 @@ interface EmailTemplate {
 // Fallback initial data in case of immediate network latency
 const FALLBACK_GROUPS: RecipientGroup[] = [
   { id: "all-parents", tag: "@All-Parents", label: "All Parents & Guardians", count: 850, category: "Parents" },
-  { id: "all-teachers", tag: "@All-Teachers", label: "All Teaching Faculty", count: 68, category: "Staff" },
-  { id: "grade-10-faculty", tag: "@Grade-10-Faculty", label: "Grade 10 Faculty & Mentors", count: 14, category: "Staff" },
-  { id: "grade-9-faculty", tag: "@Grade-9-Faculty", label: "Grade 9 Faculty & Mentors", count: 12, category: "Staff" },
+  { id: "all-teachers", tag: "@All-Teachers", label: "All Teaching Faculty", count: 24, category: "Staff" },
+  { id: "ukg-faculty", tag: "@UKG-Faculty", label: "UKG Faculty & Caregivers", count: 8, category: "Staff" },
+  { id: "lkg-faculty", tag: "@LKG-Faculty", label: "LKG Faculty & Caregivers", count: 8, category: "Staff" },
+  { id: "pkg-faculty", tag: "@PreKG-Faculty", label: "Pre-KG Faculty & Caregivers", count: 6, category: "Staff" },
   { id: "administration", tag: "@Administration", label: "Senior Admin & Department Heads", count: 10, category: "Admin" },
   { id: "all-students", tag: "@All-Students", label: "All Enrolled Students", count: 1240, category: "Students" },
 ];
@@ -286,19 +287,19 @@ Global International School`,
     sender: "Eleanor Harrison (Parent)",
     senderEmail: "e.harrison@gmail.com",
     recipients: ["admissions@globalinternationalschool.edu", "superadmin@globalinternationalschool.edu"],
-    subject: "Inquiry regarding Grade 11 International Baccalaureate Admission",
+    subject: "Inquiry regarding Pre-KG Kindergarten Admission",
     preview: "Good morning, I would like to confirm receipt of Leo Harrison’s application dossier and schedule an orientation slot...",
     body: `Dear Admissions & Admin Team,
 
-Good morning. I submitted the secondary enrollment dossier for my son Leo Harrison for Grade 11 IB Diploma Programme last Tuesday.
+Good morning. I submitted the enrollment inquiry for my son Leo Harrison for Pre-KG last Tuesday.
 
-Could you kindly confirm if the letter of acceptance and entrance examination assessment schedule have been dispatched?
+Could you kindly confirm if the school tour and demo interaction schedule have been finalized?
 
 Thank you for your assistance.
 
 Best regards,
 Eleanor Harrison
-Parent of Leo Harrison (App ID: GIS-ADM-2026-882)`,
+Parent of Leo Harrison (App ID: GGPS-ADM-2026-882)`,
     category: "admission_letter",
     folder: "inbox",
     priority: "normal",

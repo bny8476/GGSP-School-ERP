@@ -801,16 +801,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<LanguageCode>(() => {
-    if (typeof window === "undefined") return "en";
-    try {
-      const stored = localStorage.getItem("language") as LanguageCode | null;
-      if (stored && TRANSLATIONS[stored]) return stored;
-    } catch {
-      // Ignore
-    }
-    return "en";
-  });
+  const [language, setLanguageState] = useState<LanguageCode>("en");
 
   const applyLanguageToDOM = (code: LanguageCode) => {
     const langObj = LANGUAGES.find((l) => l.code === code) || LANGUAGES[0];
@@ -819,8 +810,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    applyLanguageToDOM(language);
-  }, [language]);
+    try {
+      const stored = localStorage.getItem("language") as LanguageCode | null;
+      if (stored && TRANSLATIONS[stored] && stored !== "en") {
+        setLanguageState(stored);
+        applyLanguageToDOM(stored);
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
 
   const setLanguage = (code: LanguageCode) => {
     if (!TRANSLATIONS[code]) return;

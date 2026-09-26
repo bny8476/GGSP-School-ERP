@@ -464,7 +464,7 @@ export const promoteStudent = async (req: Request, res: Response) => {
     ]);
 
     const yearStr = yearDoc?.name || '2026-27';
-    const classStr = cDoc?.name || 'Class 1';
+    const classStr = cDoc?.name || 'Pre-KG';
     const sectionStr = sDoc?.name || 'A';
 
     const rollNumber = await generateNextRollNumber(yearStr, classStr, sectionStr);

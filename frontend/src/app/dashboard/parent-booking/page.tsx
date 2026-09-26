@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Clock, Calendar, Users, CheckCircle2, User, Video, Plus } from "lucide-react";
 
 export default function ParentBookingPage() {
-  const [selectedTeacher, setSelectedTeacher] = useState("Dr. Robert Vance (Physics)");
+  const [selectedTeacher, setSelectedTeacher] = useState("Ms. Shalini Roy (Phonics & English)");
   const [selectedDate, setSelectedDate] = useState("2026-09-22");
   const [selectedTime, setSelectedTime] = useState("15:00 - 15:15 PM");
   const [note, setNote] = useState("");
@@ -13,18 +13,18 @@ export default function ParentBookingPage() {
   const [appointments, setAppointments] = useState([
     {
       id: "PTM-101",
-      teacher: "Dr. Robert Vance",
-      subject: "Physics",
-      student: "Alexander Wright (10-A)",
+      teacher: "Ms. Shalini Roy",
+      subject: "Phonics & English",
+      student: "Aarav Sharma (Pre-KG A)",
       dateTime: "Sep 22, 2026 at 3:00 PM",
-      mode: "In-Person (Room 204)",
+      mode: "In-Person (Room 101)",
       status: "Confirmed",
     },
     {
       id: "PTM-102",
       teacher: "Ms. Elena Rostova",
-      subject: "English Literature",
-      student: "Alexander Wright (10-A)",
+      subject: "Early Numeracy",
+      student: "Aarav Sharma (Pre-KG A)",
       dateTime: "Sep 24, 2026 at 4:15 PM",
       mode: "Virtual Video Call",
       status: "Pending Teacher Confirmation",
@@ -36,8 +36,8 @@ export default function ParentBookingPage() {
     const newAppt = {
       id: `PTM-${Date.now()}`,
       teacher: selectedTeacher.split("(")[0].trim(),
-      subject: selectedTeacher.includes("Physics") ? "Physics" : "General",
-      student: "Alexander Wright (10-A)",
+      subject: selectedTeacher.includes("Phonics") ? "Phonics & English" : "Early Childhood Development",
+      student: "Aarav Sharma (Pre-KG A)",
       dateTime: `${selectedDate} at ${selectedTime}`,
       mode: "Virtual Video Call",
       status: "Confirmed",
@@ -88,9 +88,9 @@ export default function ParentBookingPage() {
                 onChange={(e) => setSelectedTeacher(e.target.value)}
                 className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
               >
-                <option value="Dr. Robert Vance (Physics)">Dr. Robert Vance (Physics)</option>
-                <option value="Ms. Elena Rostova (English)">Ms. Elena Rostova (English)</option>
-                <option value="Mr. David Miller (Math)">Mr. David Miller (Math)</option>
+                <option value="Ms. Shalini Roy (Phonics & English)">Ms. Shalini Roy (Phonics & English)</option>
+                <option value="Ms. Elena Rostova (Early Numeracy)">Ms. Elena Rostova (Early Numeracy)</option>
+                <option value="Mr. Tanmay Deshmukh (Art & Motor Skills)">Mr. Tanmay Deshmukh (Art & Motor Skills)</option>
               </select>
             </div>
 
@@ -125,7 +125,7 @@ export default function ParentBookingPage() {
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
-                placeholder="e.g. Discussing Q1 physics exam results and homework habits..."
+                placeholder="e.g. Discussing letter sound recognition, circle time interaction, and lunchtime habits..."
                 className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0050CB]"
               />
             </div>

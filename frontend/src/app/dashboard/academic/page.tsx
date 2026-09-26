@@ -101,12 +101,29 @@ function AcademicContent() {
       ]);
       
       if (subRes.status === 'fulfilled' && subRes.value.ok) {
-        setSubjects(await subRes.value.json());
+        const subs = await subRes.value.json();
+        if (Array.isArray(subs) && subs.length > 0) {
+          setSubjects(subs);
+        } else {
+          setSubjects([
+            { _id: 'sub-1', name: 'Phonics & English', description: 'Early vocabulary, letter sounds & pre-reading', colorCode: '#0050CB', code: 'PHN' },
+            { _id: 'sub-2', name: 'Early Numeracy & Math', description: 'Number sense, shapes, sorting & counting games', colorCode: '#8B5CF6', code: 'NUM' },
+            { _id: 'sub-3', name: 'General Awareness (EVS)', description: 'Plants, animals, weather, and world discovery', colorCode: '#10B981', code: 'EVS' },
+            { _id: 'sub-4', name: 'Rhymes & Storytelling', description: 'Musical expressions, puppets and verbal rhythm', colorCode: '#F59E0B', code: 'RHY' },
+            { _id: 'sub-5', name: 'Art & Craft', description: 'Finger painting, coloring, origami and clay modeling', colorCode: '#EC4899', code: 'ART' },
+            { _id: 'sub-6', name: 'Sensory & Motor Skills', description: 'Hand-eye coordination, balance and fine motor play', colorCode: '#06B6D4', code: 'SMS' },
+          ]);
+        }
       }
       if (classRes.status === 'fulfilled' && classRes.value.ok) {
         const c = await classRes.value.json();
-        setClasses(Array.isArray(c) ? c : []);
-        if (c.length > 0 && !selectedClass) setSelectedClass(c[0]._id);
+        const list = Array.isArray(c) && c.length > 0 ? c : [
+          { _id: 'cls-pkg', name: 'Pre-KG' },
+          { _id: 'cls-lkg', name: 'LKG' },
+          { _id: 'cls-ukg', name: 'UKG' },
+        ];
+        setClasses(list);
+        if (list.length > 0 && !selectedClass) setSelectedClass(list[0]._id);
       }
       if (teachRes.status === 'fulfilled' && teachRes.value.ok) {
         const u = await teachRes.value.json();

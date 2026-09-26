@@ -29,9 +29,9 @@ export default function AIAssistantPage() {
       text: "Welcome to the Global AI Assistant Portal! I can analyze school attendance, exam performance, fee collection trends, and flag at-risk students for early intervention. What would you like to ask?",
       time: "Just now",
       recommendations: [
-        "View attendance drop summary for Grade 10",
+        "View attendance drop summary for UKG A",
         "Check fee defaulters for Q3",
-        "Identify top 5 at-risk students in Mathematics",
+        "Identify top 5 students needing support in Phonics",
       ],
     },
   ]);
@@ -50,7 +50,7 @@ export default function AIAssistantPage() {
         setInsights([
           {
             type: "Warning",
-            title: "Grade 9-B Attendance Drop Detected",
+            title: "Pre-KG B Attendance Drop Detected",
             description: "Average attendance dropped by 14% over the last 7 days. Recommended action: Send SMS alert to parents.",
             score: 78,
           },
@@ -62,8 +62,8 @@ export default function AIAssistantPage() {
           },
           {
             type: "Critical",
-            title: "Early Warning Alert: 3 At-Risk Students",
-            description: "3 students in Grade 11-A fall under Critical Risk threshold due to consecutive assessment failures.",
+            title: "Early Milestone Warning: 3 Students Need Support",
+            description: "3 students in LKG A need additional support in sensory and fine motor skill assessments.",
             score: 42,
           },
         ]);

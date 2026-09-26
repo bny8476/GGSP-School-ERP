@@ -74,11 +74,11 @@ function AdmissionsContent() {
         loaded = [
           { _id: 'app_1', childFirstName: 'Aanya', childLastName: 'Dixit', gradeAppliedFor: 'Pre-KG', parentName: 'Nitin Dixit', parentPhone: '+91 98110 44221', parentEmail: 'nitin.dixit@example.com', status: 'New Inquiry', createdAt: '2026-09-21' },
           { _id: 'app_2', childFirstName: 'Reyansh', childLastName: 'Chopra', gradeAppliedFor: 'LKG', parentName: 'Pooja Chopra', parentPhone: '+91 98223 99881', parentEmail: 'pooja.c@example.com', status: 'Follow-up Pending', createdAt: '2026-09-20' },
-          { _id: 'app_3', childFirstName: 'Samaira', childLastName: 'Bhasin', gradeAppliedFor: 'Grade 1', parentName: 'Amit Bhasin', parentPhone: '+91 99114 77665', parentEmail: 'amit.bhasin@example.com', status: 'Demo Class Scheduled', createdAt: '2026-09-18' },
+          { _id: 'app_3', childFirstName: 'Samaira', childLastName: 'Bhasin', gradeAppliedFor: 'UKG', parentName: 'Amit Bhasin', parentPhone: '+91 99114 77665', parentEmail: 'amit.bhasin@example.com', status: 'Demo Class Scheduled', createdAt: '2026-09-18' },
           { _id: 'app_4', childFirstName: 'Arjun', childLastName: 'Rao', gradeAppliedFor: 'UKG', parentName: 'Kavita Rao', parentPhone: '+91 98332 11009', parentEmail: 'kavita.rao@example.com', status: 'Interested', createdAt: '2026-09-15' },
           { _id: 'app_5', childFirstName: 'Zoya', childLastName: 'Siddiqui', gradeAppliedFor: 'Pre-KG', parentName: 'Farhan Siddiqui', parentPhone: '+91 97110 55443', parentEmail: 'farhan.s@example.com', status: 'Admission Confirmed', createdAt: '2026-09-12' },
-          { _id: 'app_6', childFirstName: 'Kavya', childLastName: 'Joshi', gradeAppliedFor: 'Grade 3', parentName: 'Deepak Joshi', parentPhone: '+91 98771 22334', parentEmail: 'deepak.j@example.com', status: 'Follow-up Pending', createdAt: '2026-09-19' },
-          { _id: 'app_7', childFirstName: 'Vivaan', childLastName: 'Aggarwal', gradeAppliedFor: 'Grade 5', parentName: 'Ritu Aggarwal', parentPhone: '+91 99881 33445', parentEmail: 'ritu.a@example.com', status: 'Demo Class Scheduled', createdAt: '2026-09-17' },
+          { _id: 'app_6', childFirstName: 'Kavya', childLastName: 'Joshi', gradeAppliedFor: 'LKG', parentName: 'Deepak Joshi', parentPhone: '+91 98771 22334', parentEmail: 'deepak.j@example.com', status: 'Follow-up Pending', createdAt: '2026-09-19' },
+          { _id: 'app_7', childFirstName: 'Vivaan', childLastName: 'Aggarwal', gradeAppliedFor: 'Pre-KG', parentName: 'Ritu Aggarwal', parentPhone: '+91 99881 33445', parentEmail: 'ritu.a@example.com', status: 'Demo Class Scheduled', createdAt: '2026-09-17' },
         ];
       }
 
@@ -541,7 +541,7 @@ function AdmissionsContent() {
                       {app.childFirstName} {app.childLastName}
                     </h4>
                     <p className="text-[11px] text-slate-400">
-                      Class: {app.gradeAppliedFor || 'Grade 1'} • Parent: {app.parentName}
+                      Class: {app.gradeAppliedFor || 'Pre-KG'} • Parent: {app.parentName}
                     </p>
                   </div>
                 </div>

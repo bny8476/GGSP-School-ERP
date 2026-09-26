@@ -124,7 +124,7 @@ export default function AdminExecutiveDashboard({
       ======================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
         {/* Card 1: Total Students */}
-        <div className="lg:col-span-2 xl:col-span-2.5 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+        <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
             <div className="w-9 h-9 rounded-xl bg-[#0050CB] text-white flex items-center justify-center shadow-sm shadow-[#0050CB]/25">
               <Users className="w-4 h-4" />
@@ -137,36 +137,14 @@ export default function AdminExecutiveDashboard({
             </p>
           </div>
 
-          <div className="flex items-end justify-between mt-2 pt-1">
-            <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold">
-              <span>↑ 8.4%</span>
-              <span className="text-slate-400 font-normal">vs. last month</span>
-            </div>
-            {/* Blue sparkline SVG */}
-            <svg className="w-20 h-8 overflow-visible" viewBox="0 0 80 32" fill="none">
-              <path
-                d="M2 28 C 15 26, 25 24, 38 18 C 50 12, 60 14, 78 4"
-                stroke="#0050CB"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M2 28 C 15 26, 25 24, 38 18 C 50 12, 60 14, 78 4 L 78 32 L 2 32 Z"
-                fill="url(#blueSpark)"
-                opacity="0.12"
-              />
-              <defs>
-                <linearGradient id="blueSpark" x1="0" y1="0" x2="0" y2="1">
-                  <stop stopColor="#0050CB" />
-                  <stop offset="100%" stopColor="#0050CB" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
+            <span>↑ 8.4%</span>
+            <span className="text-slate-400 font-normal">vs. last month</span>
           </div>
         </div>
 
         {/* Card 2: Total Teachers / Staff */}
-        <div className="lg:col-span-2 xl:col-span-2.5 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+        <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
             <div className="w-9 h-9 rounded-xl bg-[#8B5CF6] text-white flex items-center justify-center shadow-sm shadow-purple-500/25">
               <GraduationCap className="w-4 h-4" />
@@ -179,36 +157,14 @@ export default function AdminExecutiveDashboard({
             </p>
           </div>
 
-          <div className="flex items-end justify-between mt-2 pt-1">
-            <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold">
-              <span>↑ 3.1%</span>
-              <span className="text-slate-400 font-normal">vs. last month</span>
-            </div>
-            {/* Purple sparkline SVG */}
-            <svg className="w-20 h-8 overflow-visible" viewBox="0 0 80 32" fill="none">
-              <path
-                d="M2 26 C 16 28, 28 20, 42 22 C 54 24, 64 12, 78 8"
-                stroke="#8B5CF6"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M2 26 C 16 28, 28 20, 42 22 C 54 24, 64 12, 78 8 L 78 32 L 2 32 Z"
-                fill="url(#purpleSpark)"
-                opacity="0.12"
-              />
-              <defs>
-                <linearGradient id="purpleSpark" x1="0" y1="0" x2="0" y2="1">
-                  <stop stopColor="#8B5CF6" />
-                  <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
+            <span>↑ 3.1%</span>
+            <span className="text-slate-400 font-normal">vs. last month</span>
           </div>
         </div>
 
         {/* Card 3: New Admissions */}
-        <div className="lg:col-span-2 xl:col-span-2.5 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+        <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
             <div className="w-9 h-9 rounded-xl bg-[#10B981] text-white flex items-center justify-center shadow-sm shadow-emerald-500/25">
               <UserPlus className="w-4 h-4" />
@@ -221,36 +177,14 @@ export default function AdminExecutiveDashboard({
             </p>
           </div>
 
-          <div className="flex items-end justify-between mt-2 pt-1">
-            <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold">
-              <span>↑ 12.5%</span>
-              <span className="text-slate-400 font-normal">vs. last month</span>
-            </div>
-            {/* Green sparkline SVG */}
-            <svg className="w-20 h-8 overflow-visible" viewBox="0 0 80 32" fill="none">
-              <path
-                d="M2 27 C 18 25, 26 26, 40 18 C 52 10, 62 16, 78 5"
-                stroke="#10B981"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M2 27 C 18 25, 26 26, 40 18 C 52 10, 62 16, 78 5 L 78 32 L 2 32 Z"
-                fill="url(#greenSpark)"
-                opacity="0.12"
-              />
-              <defs>
-                <linearGradient id="greenSpark" x1="0" y1="0" x2="0" y2="1">
-                  <stop stopColor="#10B981" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
+            <span>↑ 12.5%</span>
+            <span className="text-slate-400 font-normal">vs. last month</span>
           </div>
         </div>
 
         {/* Card 4: Fee Collection */}
-        <div className="lg:col-span-2 xl:col-span-2.5 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+        <div className="lg:col-span-2 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
           <div>
             <div className="w-9 h-9 rounded-xl bg-[#F59E0B] text-white flex items-center justify-center shadow-sm shadow-amber-500/25">
               <IndianRupee className="w-4 h-4 stroke-[2.5]" />
@@ -263,36 +197,14 @@ export default function AdminExecutiveDashboard({
             </p>
           </div>
 
-          <div className="flex items-end justify-between mt-2 pt-1">
-            <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold">
-              <span>↑ 7.2%</span>
-              <span className="text-slate-400 font-normal">vs. last month</span>
-            </div>
-            {/* Amber sparkline SVG */}
-            <svg className="w-20 h-8 overflow-visible" viewBox="0 0 80 32" fill="none">
-              <path
-                d="M2 28 C 16 26, 28 27, 40 22 C 54 16, 62 20, 78 8"
-                stroke="#F59E0B"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M2 28 C 16 26, 28 27, 40 22 C 54 16, 62 20, 78 8 L 78 32 L 2 32 Z"
-                fill="url(#amberSpark)"
-                opacity="0.12"
-              />
-              <defs>
-                <linearGradient id="amberSpark" x1="0" y1="0" x2="0" y2="1">
-                  <stop stopColor="#F59E0B" />
-                  <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+          <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold mt-2 pt-1">
+            <span>↑ 7.2%</span>
+            <span className="text-slate-400 font-normal">vs. last month</span>
           </div>
         </div>
 
-        {/* Card 5: Quick Actions (Takes ~2 to 2.5 columns) */}
-        <div className="sm:col-span-2 lg:col-span-4 xl:col-span-2 bg-white dark:bg-[#07152F] rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
+        {/* Card 5: Quick Actions (Spans 4 columns for full readable action buttons) */}
+        <div className="sm:col-span-2 lg:col-span-4 xl:col-span-4 bg-white dark:bg-[#07152F] rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,14,40,0.02)] flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <h3 className="text-xs sm:text-sm font-bold text-[#000E28] dark:text-white">
               Quick Actions
@@ -306,76 +218,76 @@ export default function AdminExecutiveDashboard({
           </div>
 
           {/* 6 Actions Grid (2 columns x 3 rows) */}
-          <div className="grid grid-cols-2 gap-2 mt-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5 mt-3">
             <button
               type="button"
               onClick={() => setIsAddStudentOpen(true)}
-              className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-blue-50/70 dark:bg-slate-800/60 dark:hover:bg-blue-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer"
+              className="flex items-center gap-2.5 p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/70 dark:bg-slate-800/60 dark:hover:bg-blue-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer min-w-0"
             >
               <div className="w-6 h-6 rounded-lg bg-blue-100/70 text-[#0050CB] flex items-center justify-center shrink-0">
                 <UserPlus className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-[#0050CB] truncate">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 group-hover:text-[#0050CB] truncate">
                 Add Student
               </span>
             </button>
 
             <Link
               href="/dashboard/teachers"
-              className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-blue-50/70 dark:bg-slate-800/60 dark:hover:bg-blue-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer"
+              className="flex items-center gap-2.5 p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/70 dark:bg-slate-800/60 dark:hover:bg-blue-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer min-w-0"
             >
               <div className="w-6 h-6 rounded-lg bg-blue-100/70 text-[#0050CB] flex items-center justify-center shrink-0">
                 <UserPlus className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-[#0050CB] truncate">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 group-hover:text-[#0050CB] truncate">
                 Add Teacher
               </span>
             </Link>
 
             <Link
               href="/dashboard/admissions"
-              className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-emerald-50/70 dark:bg-slate-800/60 dark:hover:bg-emerald-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer"
+              className="flex items-center gap-2.5 p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/70 dark:bg-slate-800/60 dark:hover:bg-emerald-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer min-w-0"
             >
               <div className="w-6 h-6 rounded-lg bg-emerald-100/70 text-emerald-600 flex items-center justify-center shrink-0">
                 <UserCheck className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-emerald-600 truncate">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 group-hover:text-emerald-600 truncate">
                 New Admission
               </span>
             </Link>
 
             <Link
               href="/dashboard/fees?tab=collect"
-              className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-amber-50/70 dark:bg-slate-800/60 dark:hover:bg-amber-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer"
+              className="flex items-center gap-2.5 p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-amber-50/70 dark:bg-slate-800/60 dark:hover:bg-amber-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer min-w-0"
             >
               <div className="w-6 h-6 rounded-lg bg-amber-100/70 text-amber-600 flex items-center justify-center shrink-0">
                 <IndianRupee className="w-3.5 h-3.5 stroke-[2.5]" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-amber-600 truncate">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 group-hover:text-amber-600 truncate">
                 Fee Payment
               </span>
             </Link>
 
             <Link
               href="/dashboard/attendance"
-              className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-purple-50/70 dark:bg-slate-800/60 dark:hover:bg-purple-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer"
+              className="flex items-center gap-2.5 p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-purple-50/70 dark:bg-slate-800/60 dark:hover:bg-purple-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer min-w-0"
             >
               <div className="w-6 h-6 rounded-lg bg-purple-100/70 text-purple-600 flex items-center justify-center shrink-0">
                 <CheckSquare className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-purple-600 truncate">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 group-hover:text-purple-600 truncate">
                 Take Attendance
               </span>
             </Link>
 
             <Link
               href="/dashboard/chat"
-              className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-blue-50/70 dark:bg-slate-800/60 dark:hover:bg-blue-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer"
+              className="flex items-center gap-2.5 p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/70 dark:bg-slate-800/60 dark:hover:bg-blue-950/30 border border-slate-100 dark:border-slate-800 transition-colors text-left group cursor-pointer min-w-0"
             >
               <div className="w-6 h-6 rounded-lg bg-sky-100/70 text-sky-600 flex items-center justify-center shrink-0">
                 <Mail className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-sky-600 truncate">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 group-hover:text-sky-600 truncate">
                 Send Message
               </span>
             </Link>
@@ -685,7 +597,7 @@ export default function AdminExecutiveDashboard({
                       Exam schedule published
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                      Mid Term Exam - Class 10
+                      Term 1 Assessment - Pre-KG & LKG
                     </p>
                   </div>
                 </div>
@@ -767,7 +679,7 @@ export default function AdminExecutiveDashboard({
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
-                      Mid Term Exam - Class 5
+                      Mid Term Phonics Assessment - UKG
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                       09:00 AM - 12:00 PM
@@ -1064,7 +976,7 @@ export default function AdminExecutiveDashboard({
                       const student = fee.studentId || {};
                       const studentName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Student';
                       const initial = studentName.charAt(0).toUpperCase() || 'S';
-                      const studentGrade = student.grade ? `Class ${student.grade}` : 'Class 3B';
+                      const studentGrade = student.grade ? `Class ${student.grade}` : 'Pre-KG A';
                       const remaining = Math.max(0, (fee.totalAmount || 0) - (fee.amountPaid || 0));
                       const amountStr = remaining > 0 ? `₹${remaining.toLocaleString('en-IN')}` : `₹${(fee.totalAmount || 0).toLocaleString('en-IN')}`;
                       const dueDateStr = fee.dueDate ? new Date(fee.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Due Soon';

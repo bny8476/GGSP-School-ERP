@@ -10,9 +10,9 @@ export default function CallPage() {
   const [isVideoOff, setIsVideoOff] = useState(false);
 
   const recentCalls = [
-    { id: 1, name: "Parent-Teacher Conference (Grade 10)", type: "Video Call", duration: "24m 12s", date: "Today, 10:30 AM", status: "Completed" },
+    { id: 1, name: "Parent-Teacher Conference (Pre-KG A)", type: "Video Call", duration: "24m 12s", date: "Today, 10:30 AM", status: "Completed" },
     { id: 2, name: "Principal Office Sync", type: "Audio Call", duration: "12m 45s", date: "Yesterday, 04:15 PM", status: "Completed" },
-    { id: 3, name: "Science Department Meeting", type: "Video Call", duration: "45m 00s", date: "Sep 12, 2026", status: "Missed" },
+    { id: 3, name: "Early Childhood Curriculum Sync", type: "Video Call", duration: "45m 00s", date: "Sep 12, 2026", status: "Missed" },
   ];
 
   return (
@@ -49,7 +49,7 @@ export default function CallPage() {
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
               <div>
-                <h3 className="font-extrabold text-lg">Grade 10 Parent Consultation & Feedback</h3>
+                <h3 className="font-extrabold text-lg">Pre-KG Parent Consultation & Progress Review</h3>
                 <p className="text-xs text-slate-400 font-semibold">3 Participants Connected • Encrypted Call Session</p>
               </div>
             </div>

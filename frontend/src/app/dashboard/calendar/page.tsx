@@ -59,7 +59,7 @@ export default function AcademicCalendarPage() {
     },
     {
       id: "ev-2",
-      title: "Grade 10 Mathematics Mid-Term Assessment",
+      title: "UKG Early Numeracy & Phonics Term Assessment",
       type: "Exam",
       date: "SEP 25",
       time: "10:00 AM - 01:00 PM",
@@ -344,7 +344,7 @@ export default function AcademicCalendarPage() {
               >
                 <span className="font-semibold text-slate-700">4</span>
                 <div className="mt-1 px-1.5 py-0.5 rounded-md bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] text-[10px] font-semibold truncate">
-                  📝 Class Test <span className="font-normal opacity-90">(Grade 6-8)</span>
+                  📝 Phonics Check <span className="font-normal opacity-90">(LKG & UKG)</span>
                 </div>
               </div>
               {/* Sep 5 */}
@@ -387,7 +387,7 @@ export default function AcademicCalendarPage() {
               >
                 <span className="font-semibold text-slate-700">9</span>
                 <div className="mt-1 px-1.5 py-0.5 rounded-md bg-[#FFF7ED] text-[#EA580C] border border-[#FED7AA] text-[10px] font-semibold truncate">
-                  🏆 Sports Day <span className="font-normal opacity-90">(Grade 1-5)</span>
+                  🏆 Sports Day <span className="font-normal opacity-90">(Pre-KG to UKG)</span>
                 </div>
               </div>
               {/* Sep 10 */}
@@ -430,7 +430,7 @@ export default function AcademicCalendarPage() {
               >
                 <span className="font-semibold text-slate-700">14</span>
                 <div className="mt-1 px-1.5 py-0.5 rounded-md bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] text-[10px] font-semibold truncate">
-                  📝 Unit Test <span className="font-normal opacity-90">(Grade 9-10)</span>
+                  📝 Rhyme Recitation <span className="font-normal opacity-90">(Pre-KG & LKG)</span>
                 </div>
               </div>
               {/* Sep 15 */}
@@ -554,7 +554,7 @@ export default function AcademicCalendarPage() {
               >
                 <span className="font-semibold text-slate-700">28</span>
                 <div className="mt-1 px-1.5 py-0.5 rounded-md bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] text-[10px] font-semibold truncate">
-                  📐 Maths Olympiad <span className="font-normal opacity-90">(Grade 5-8)</span>
+                  🔢 Early Math Trail <span className="font-normal opacity-90">(Pre-KG - UKG)</span>
                 </div>
               </div>
               {/* Sep 29 */}
@@ -752,41 +752,41 @@ export default function AcademicCalendarPage() {
           </div>
 
           <div className="divide-y divide-slate-100 mt-2">
-            {/* Class 1 */}
+            {/* Period 1 */}
             <div className="py-2.5 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium w-36">08:00 AM - 09:00 AM</span>
-              <span className="font-bold text-slate-800 flex-1 px-3">Mathematics</span>
-              <span className="text-slate-500 font-medium px-3">Class 6 - A</span>
+              <span className="font-bold text-slate-800 flex-1 px-3">Early Numeracy & Math</span>
+              <span className="text-slate-500 font-medium px-3">LKG - A</span>
               <span className="bg-[#ECFDF5] text-[#059669] font-bold text-[10px] px-2.5 py-0.5 rounded-full">
                 Ongoing
               </span>
             </div>
 
-            {/* Class 2 */}
+            {/* Period 2 */}
             <div className="py-2.5 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium w-36">09:15 AM - 10:15 AM</span>
-              <span className="font-bold text-slate-800 flex-1 px-3">English</span>
-              <span className="text-slate-500 font-medium px-3">Class 6 - A</span>
+              <span className="font-bold text-slate-800 flex-1 px-3">Phonics & Rhymes</span>
+              <span className="text-slate-500 font-medium px-3">Pre-KG - A</span>
               <span className="bg-[#EFF6FF] text-[#2563EB] font-bold text-[10px] px-2.5 py-0.5 rounded-full">
                 Upcoming
               </span>
             </div>
 
-            {/* Class 3 */}
+            {/* Period 3 */}
             <div className="py-2.5 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium w-36">10:30 AM - 11:30 AM</span>
-              <span className="font-bold text-slate-800 flex-1 px-3">Science</span>
-              <span className="text-slate-500 font-medium px-3">Class 6 - A</span>
+              <span className="font-bold text-slate-800 flex-1 px-3">General Awareness (EVS)</span>
+              <span className="text-slate-500 font-medium px-3">UKG - A</span>
               <span className="bg-slate-100 text-slate-500 font-semibold text-[10px] px-2.5 py-0.5 rounded-full">
                 Not Started
               </span>
             </div>
 
-            {/* Class 4 */}
+            {/* Period 4 */}
             <div className="py-2.5 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium w-36">11:45 AM - 12:45 PM</span>
-              <span className="font-bold text-slate-800 flex-1 px-3">Social Studies</span>
-              <span className="text-slate-500 font-medium px-3">Class 6 - A</span>
+              <span className="font-bold text-slate-800 flex-1 px-3">Art & Craft Discovery</span>
+              <span className="text-slate-500 font-medium px-3">LKG - B</span>
               <span className="bg-slate-100 text-slate-500 font-semibold text-[10px] px-2.5 py-0.5 rounded-full">
                 Not Started
               </span>

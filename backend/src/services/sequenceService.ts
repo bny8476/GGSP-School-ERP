@@ -35,7 +35,7 @@ export function normalizeAcademicYear(rawYear?: string): string {
 
 /**
  * Normalizes a class/grade string into uppercase standard identifier
- * (e.g. "Class 1" -> "CLASS1", "LKG - Section A" -> "LKG", "UKG" -> "UKG").
+ * (e.g. "Pre-KG" -> "PREKG", "LKG - Section A" -> "LKG", "UKG" -> "UKG").
  */
 export function normalizeClassName(rawClass?: string): string {
   if (!rawClass) return 'LKG';
