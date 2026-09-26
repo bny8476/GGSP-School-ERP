@@ -48,7 +48,10 @@ import {
   Shield,
   Briefcase,
   UserPlus,
-  CalendarDays
+  CalendarDays,
+  HeartPulse,
+  Baby,
+  Award
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
@@ -135,167 +138,194 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const isTeacher = r === 'teacher' || isSuperAdmin;
   const isAccountant = r === 'accountant' || isSuperAdmin;
 
-  // The Complete Navigation Modules matching exact design
-  const navItems: NavItem[] = useMemo(() => [
-    { 
-      href: '/dashboard', 
-      label: 'Dashboard', 
-      icon: LayoutDashboard, 
-      show: true 
-    },
-    { 
-      href: '/dashboard/admissions', 
-      label: 'Admissions', 
-      icon: UserPlus, 
-      show: isSuperAdmin || isPrincipal,
-      subItems: [
-        { href: '/dashboard/admissions?tab=inquiries', label: 'Enquiries' },
-        { href: '/dashboard/admissions?tab=applications', label: 'Application Forms' },
-        { href: '/dashboard/admissions?tab=documents', label: 'Document Verification' },
-        { href: '/dashboard/admissions?tab=pipeline', label: 'Admission Pipeline' },
-        { href: '/dashboard/admissions?tab=confirmed', label: 'Confirmed Admissions' },
+  // The Grouped Kindergarten Navigation Architecture
+  const navCategories: NavCategory[] = useMemo(() => [
+    {
+      category: 'Core Operations',
+      items: [
+        { 
+          href: '/dashboard', 
+          label: 'Executive Dashboard', 
+          icon: LayoutDashboard, 
+          show: true 
+        },
+        { 
+          href: '/dashboard/admissions', 
+          label: 'Admissions Desk', 
+          icon: UserPlus, 
+          show: isSuperAdmin || isPrincipal,
+          badge: 'Intake',
+          subItems: [
+            { href: '/dashboard/admissions?tab=inquiries', label: 'Toddler Enquiries' },
+            { href: '/dashboard/admissions?tab=applications', label: 'Admission Applications' },
+            { href: '/dashboard/admissions?tab=documents', label: 'Document Verification' },
+            { href: '/dashboard/admissions?tab=pipeline', label: 'Intake Pipeline' },
+            { href: '/dashboard/admissions?tab=confirmed', label: 'Confirmed Admissions' },
+          ]
+        },
+        { 
+          href: '/dashboard/students', 
+          label: 'Kindergarten Cohorts', 
+          icon: GraduationCap, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/students', label: 'Student Directory' },
+            { href: '/dashboard/students?action=new', label: 'Register New Student' },
+            { href: '/dashboard/enrollment', label: 'Cohort Promotion (PreKG→UKG)' },
+            { href: '/dashboard/daily-activity', label: 'Daily Diary & Routine Logs' },
+            { href: '/dashboard/growth-profile', label: 'Child Growth & Milestones' },
+          ]
+        },
       ]
     },
-    { 
-      href: '/dashboard/students', 
-      label: 'Students', 
-      icon: GraduationCap, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/students', label: 'Student Directory' },
-        { href: '/dashboard/students?action=new', label: 'Add Student' },
-        { href: '/dashboard/enrollment', label: 'Student Promotion / Roll-over' },
-        { href: '/dashboard/discipline', label: 'Behavioral & Discipline Logs' },
-        { href: '/dashboard/growth-profile', label: 'Growth Profiles' },
+    {
+      category: 'Early Years Learning',
+      items: [
+        { 
+          href: '/dashboard/academic', 
+          label: 'Curriculum & Classes', 
+          icon: BookOpen, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/classes', label: 'Classrooms & Sections' },
+            { href: '/dashboard/curriculum', label: 'Montessori & Phonics Curriculum' },
+            { href: '/dashboard/academic?tab=subjects', label: 'Kindergarten Subjects' },
+            { href: '/dashboard/academic?tab=timetable', label: 'Daily Routine & Timetable' },
+            { href: '/dashboard/calendar', label: 'Preschool Calendar & Holidays' },
+          ]
+        },
+        { 
+          href: '/dashboard/assessments', 
+          label: 'Milestones & Progress', 
+          icon: FileSpreadsheet, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/assessments', label: 'Milestone Progress Tracker' },
+            { href: '/dashboard/assessments?tab=reportcards', label: 'Preschool Report Cards' },
+            { href: '/dashboard/reports?tab=academic', label: 'Curricular Analytics' },
+          ]
+        },
       ]
     },
-    { 
-      href: '/dashboard/teachers', 
-      label: 'Teachers / Employees', 
-      icon: Briefcase, 
-      show: isSuperAdmin || isPrincipal,
-      subItems: [
-        { href: '/dashboard/teachers', label: 'Staff Directory' },
-        { href: '/dashboard/teachers?action=new', label: 'Add / Edit Employee' },
-        { href: '/dashboard/attendance?tab=teachers', label: 'Staff Attendance' },
-        { href: '/dashboard/leaves', label: 'Leaves & Permissions' },
+    {
+      category: 'Finance & Administration',
+      items: [
+        { 
+          href: '/dashboard/fees', 
+          label: 'Fees & Composite Ledger', 
+          icon: DollarSign, 
+          show: isAccountant || isSuperAdmin,
+          subItems: [
+            { href: '/dashboard/fees?tab=structure', label: 'Composite Fee Setup' },
+            { href: '/dashboard/fees?tab=invoices', label: 'Student Invoices' },
+            { href: '/dashboard/fees?tab=collect', label: 'Fee Collection Desk' },
+            { href: '/dashboard/fees?tab=dues', label: 'Outstanding Balance Ledger' },
+            { href: '/dashboard/reports?tab=finance', label: 'Financial Audit & Reports' },
+          ]
+        },
+        { 
+          href: '/dashboard/teachers', 
+          label: 'Faculty & Caregivers', 
+          icon: Briefcase, 
+          show: isSuperAdmin || isPrincipal,
+          subItems: [
+            { href: '/dashboard/teachers', label: 'Educators & Staff Directory' },
+            { href: '/dashboard/teachers?action=new', label: 'Add Educator / Aide' },
+            { href: '/dashboard/reports?tab=staff', label: 'Staff Performance & Ledger' },
+            { href: '/dashboard/leaves', label: 'Staff Leaves & Approvals' },
+          ]
+        },
+        { 
+          href: '/dashboard/attendance', 
+          label: 'Attendance Telemetry', 
+          icon: CheckCircle2, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/attendance', label: 'Student Daily Roll-Call' },
+            { href: '/dashboard/attendance?tab=teachers', label: 'Faculty & Staff Attendance' },
+            { href: '/dashboard/reports?tab=attendance', label: 'Attendance Telemetry Reports' },
+          ]
+        },
       ]
     },
-    { 
-      href: '/dashboard/parents', 
-      label: 'Parents', 
-      icon: Users, 
-      show: isSuperAdmin || isPrincipal,
-      subItems: [
-        { href: '/dashboard/parents', label: 'Parent Directory' },
-        { href: '/dashboard/parents?tab=linked', label: 'Linked Students' },
-        { href: '/dashboard/parents?tab=logs', label: 'Communication Logs' },
-        { href: '/dashboard/parent-booking', label: 'Parent Meeting Requests' },
+    {
+      category: 'Communication & Campus',
+      items: [
+        { 
+          href: '/dashboard/circulars', 
+          label: 'Circulars & Notices', 
+          icon: Megaphone, 
+          show: true,
+          badge: 'Broadcast',
+          subItems: [
+            { href: '/dashboard/circulars', label: 'Official Circulars & Advisories' },
+            { href: '/dashboard/communication', label: 'Notice Board Desk' },
+          ]
+        },
+        { 
+          href: '/dashboard/parents', 
+          label: 'Parent Community', 
+          icon: Users, 
+          show: isSuperAdmin || isPrincipal,
+          subItems: [
+            { href: '/dashboard/parents', label: 'Parent Directory' },
+            { href: '/dashboard/parent-booking', label: 'PTM & Meeting Requests' },
+            { href: '/dashboard/chat', label: 'Staff & Parent Messages' },
+          ]
+        },
+        { 
+          href: '/dashboard/events', 
+          label: 'Events & Photo Gallery', 
+          icon: CalendarDays, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/events', label: 'Kindergarten Celebrations' },
+            { href: '/dashboard/events?tab=gallery', label: 'Preschool Photo Gallery' },
+          ]
+        },
       ]
     },
-    { 
-      href: '/dashboard/academic', 
-      label: 'Academics', 
-      icon: BookOpen, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/calendar', label: 'Academic Calendar' },
-        { href: '/dashboard/classes', label: 'Classes & Sections' },
-        { href: '/dashboard/academic?tab=subjects', label: 'Subjects' },
-        { href: '/dashboard/academic?tab=timetable', label: 'Timetable' },
-        { href: '/dashboard/curriculum', label: 'Curriculum' },
-        { href: '/dashboard/teachers?tab=assignments', label: 'Teacher Assignments' },
+    {
+      category: 'System Governance',
+      items: [
+        { 
+          href: '/dashboard/reports', 
+          label: 'Executive Reports Hub', 
+          icon: BarChart3, 
+          show: true,
+          subItems: [
+            { href: '/dashboard/reports?tab=academic', label: 'Curricular Reports' },
+            { href: '/dashboard/reports?tab=attendance', label: 'Attendance Reports' },
+            { href: '/dashboard/reports?tab=finance', label: 'Financial Reports' },
+            { href: '/dashboard/reports?tab=staff', label: 'Staff Performance Reports' },
+            { href: '/dashboard/reports?tab=export', label: 'Institutional Export Center' },
+          ]
+        },
+        { 
+          href: '/dashboard/users', 
+          label: 'Users & Permissions', 
+          icon: Shield, 
+          show: isSuperAdmin,
+          subItems: [
+            { href: '/dashboard/users', label: 'User Directory' },
+            { href: '/dashboard/users?tab=roles', label: 'Roles & Permissions' },
+          ]
+        },
+        { 
+          href: '/dashboard/settings', 
+          label: 'Preschool Settings & Audit', 
+          icon: Settings, 
+          show: isSuperAdmin || isPrincipal,
+          subItems: [
+            { href: '/dashboard/settings', label: 'General Settings' },
+            { href: '/dashboard/audit-logs', label: 'System Security & Audit Logs' },
+          ]
+        },
       ]
-    },
-    { 
-      href: '/dashboard/attendance', 
-      label: 'Attendance', 
-      icon: CheckCircle2, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/attendance', label: 'Daily Student Attendance' },
-        { href: '/dashboard/attendance?tab=teachers', label: 'Daily Teacher Attendance' },
-        { href: '/dashboard/attendance?tab=reports', label: 'Class Attendance Reports' },
-        { href: '/dashboard/leaves', label: 'Leave Applications' },
-      ]
-    },
-    { 
-      href: '/dashboard/fees', 
-      label: 'Fees & Finance', 
-      icon: DollarSign, 
-      show: isAccountant || isSuperAdmin,
-      subItems: [
-        { href: '/dashboard/fees?tab=structure', label: 'Fee Structure Setup' },
-        { href: '/dashboard/fees?tab=invoices', label: 'Student Invoices' },
-        { href: '/dashboard/fees?tab=collect', label: 'Payment Collection' },
-        { href: '/dashboard/fees?tab=receipts', label: 'Fee Receipts' },
-        { href: '/dashboard/fees?tab=dues', label: 'Outstanding Dues' },
-        { href: '/dashboard/fees?tab=scholarships', label: 'Scholarships & Concessions' },
-      ]
-    },
-    { 
-      href: '/dashboard/online-exams', 
-      label: 'Examinations', 
-      icon: FileSpreadsheet, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/online-exams', label: 'Online Exams' },
-        { href: '/dashboard/assessments', label: 'Assessments & Marks' },
-        { href: '/dashboard/assessments?tab=reportcards', label: 'Report Cards' },
-      ]
-    },
-    { 
-      href: '/dashboard/events', 
-      label: 'Events & Gallery', 
-      icon: CalendarDays, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/events', label: 'School Events' },
-        { href: '/dashboard/events?tab=gallery', label: 'Photo Gallery' },
-      ]
-    },
-    { 
-      href: '/dashboard/circulars', 
-      label: 'Communication', 
-      icon: Megaphone, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/circulars', label: 'Circulars & Notices' },
-        { href: '/dashboard/chat', label: 'Staff Messages' },
-      ]
-    },
-    { 
-      href: '/dashboard/reports', 
-      label: 'Reports', 
-      icon: BarChart3, 
-      show: true,
-      subItems: [
-        { href: '/dashboard/reports?tab=academic', label: 'Academic Reports' },
-        { href: '/dashboard/reports?tab=attendance', label: 'Attendance Reports' },
-        { href: '/dashboard/reports?tab=finance', label: 'Financial Reports' },
-      ]
-    },
-    { 
-      href: '/dashboard/users', 
-      label: 'Users & Roles', 
-      icon: Shield, 
-      show: isSuperAdmin,
-      subItems: [
-        { href: '/dashboard/users', label: 'User Directory' },
-        { href: '/dashboard/users?tab=roles', label: 'Roles & Permissions' },
-      ]
-    },
-    { 
-      href: '/dashboard/settings', 
-      label: 'Settings / Audit', 
-      icon: Settings, 
-      show: isSuperAdmin || isPrincipal,
-      subItems: [
-        { href: '/dashboard/settings', label: 'General Settings' },
-        { href: '/dashboard/audit-logs', label: 'System Audit Logs' },
-      ]
-    },
+    }
   ], [isSuperAdmin, isPrincipal, isAccountant]);
+
+  const navItems = useMemo(() => navCategories.flatMap(c => c.items), [navCategories]);
 
   // Compute breadcrumb title from pathname
   const currentBreadcrumbs = useMemo(() => {
@@ -376,76 +406,96 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Mobile Navigation List */}
-            <nav className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
-              {navItems.filter((item) => item.show).map((item) => {
-                const Icon = item.icon;
-                const isItemActive =
-                  pathname === item.href ||
-                  (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
-                  item.subItems?.some((sub) => pathname === sub.href);
-                const hasSubItems = item.subItems && item.subItems.length > 0;
-                const isExpanded = openSubmenu === item.label || (openSubmenu === null && isItemActive);
+            <nav className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+              {navCategories.map((cat) => {
+                const visibleItems = cat.items.filter((item) => item.show);
+                if (visibleItems.length === 0) return null;
+                const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : pathname;
 
                 return (
-                  <div key={item.label} className="space-y-1">
-                    {hasSubItems ? (
-                      <button
-                        type="button"
-                        onClick={() => setOpenSubmenu(isExpanded ? '__closed__' : item.label)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
-                          isItemActive
-                            ? 'bg-[#0050CB] text-white shadow-md'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-4 h-4 text-white" />
-                          <span>{item.label}</span>
-                        </div>
-                        <ChevronDown
-                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                            isExpanded ? 'rotate-180 text-white' : 'text-slate-400'
-                          }`}
-                        />
-                      </button>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
-                          isItemActive
-                            ? 'bg-[#0050CB] text-white shadow-md'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-4 h-4" />
-                          <span>{item.label}</span>
-                        </div>
-                      </Link>
-                    )}
+                  <div key={cat.category} className="space-y-1">
+                    <div className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 select-none">
+                      {cat.category}
+                    </div>
+                    {visibleItems.map((item) => {
+                      const Icon = item.icon;
+                      const isItemActive =
+                        pathname === item.href ||
+                        (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
+                        item.subItems?.some((sub) => currentUrl === sub.href || pathname === sub.href);
+                      const hasSubItems = item.subItems && item.subItems.length > 0;
+                      const isExpanded = openSubmenu === item.label || (openSubmenu === null && isItemActive);
 
-                    {hasSubItems && isExpanded && (
-                      <div className="pl-6 pr-2 space-y-1 pt-1">
-                        {item.subItems!.map((sub) => {
-                          const isSubActive = pathname === sub.href;
-                          return (
-                            <Link
-                              key={sub.href}
-                              href={sub.href}
-                              onClick={() => setIsMobileMenuOpen(false)}
-                              className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors ${
-                                isSubActive
-                                  ? 'bg-[#0050CB] text-white font-bold shadow-xs'
-                                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      return (
+                        <div key={item.label} className="space-y-1">
+                          {hasSubItems ? (
+                            <button
+                              type="button"
+                              onClick={() => setOpenSubmenu(isExpanded ? '__closed__' : item.label)}
+                              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                                isItemActive
+                                  ? 'bg-[#0050CB] text-white shadow-md'
+                                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                               }`}
                             >
-                              <span>{sub.label}</span>
+                              <div className="flex items-center gap-3">
+                                <Icon className="w-4 h-4 text-white" />
+                                <span>{item.label}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                {item.badge && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-[#FF690C] text-white">
+                                    {item.badge}
+                                  </span>
+                                )}
+                                <ChevronDown
+                                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                                    isExpanded ? 'rotate-180 text-white' : 'text-slate-400'
+                                  }`}
+                                />
+                              </div>
+                            </button>
+                          ) : (
+                            <Link
+                              href={item.href}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                                isItemActive
+                                  ? 'bg-[#0050CB] text-white shadow-md'
+                                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Icon className="w-4 h-4" />
+                                <span>{item.label}</span>
+                              </div>
                             </Link>
-                          );
-                        })}
-                      </div>
-                    )}
+                          )}
+
+                          {hasSubItems && isExpanded && (
+                            <div className="pl-6 pr-2 space-y-1 pt-1 border-l-2 border-slate-700/60 ml-4">
+                              {item.subItems!.map((sub) => {
+                                const isSubActive = currentUrl === sub.href || pathname === sub.href;
+                                return (
+                                  <Link
+                                    key={sub.href}
+                                    href={sub.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-xs transition-colors ${
+                                      isSubActive
+                                        ? 'bg-[#0050CB] text-white font-bold shadow-xs'
+                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                    }`}
+                                  >
+                                    <span>{sub.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -512,111 +562,183 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Sidebar Navigation Links (Scrollable) */}
-        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1.5 custom-scrollbar">
-          {navItems.filter((item) => item.show).map((item) => {
-            const Icon = item.icon;
-            const isItemActive =
-              pathname === item.href ||
-              (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
-              item.subItems?.some((sub) => pathname === sub.href);
-            const hasSubItems = item.subItems && item.subItems.length > 0;
-            const isExpanded = openSubmenu === item.label || (openSubmenu === null && isItemActive);
+        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-3 custom-scrollbar">
+          {navCategories.map((cat) => {
+            const visibleItems = cat.items.filter((item) => item.show);
+            if (visibleItems.length === 0) return null;
+            const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : pathname;
 
             return (
-              <div key={item.label} className="space-y-1">
-                {hasSubItems ? (
-                  <button
-                    type="button"
-                    onClick={() => setOpenSubmenu(isExpanded ? '__closed__' : item.label)}
-                    className={`w-full flex items-center justify-between ${
-                      isCollapsed ? 'justify-center px-2' : 'px-3.5'
-                    } py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer group ${
-                      isItemActive
-                        ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10 font-bold'
-                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                    }`}
-                    title={isCollapsed ? item.label : undefined}
-                  >
-                    <div className="flex items-center">
-                      <Icon
-                        className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform duration-200`}
-                        strokeWidth={2}
-                      />
-                      {!isCollapsed && <span className="truncate">{item.label}</span>}
-                    </div>
-                    {!isCollapsed && (
-                      <ChevronDown
-                        className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180 text-white' : 'text-slate-400'
-                        }`}
-                      />
-                    )}
-                  </button>
+              <div key={cat.category} className="space-y-1">
+                {!isCollapsed ? (
+                  <div className="px-3.5 pt-2 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 select-none">
+                    {cat.category}
+                  </div>
                 ) : (
-                  <Link
-                    href={item.href}
-                    title={item.label}
-                    className={`flex items-center justify-between ${
-                      isCollapsed ? 'justify-center px-2' : 'px-3.5'
-                    } py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
-                      isItemActive
-                        ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10 font-bold'
-                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <Icon
-                        className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                          isItemActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
-                        }`}
-                        strokeWidth={2}
-                      />
-                      {!isCollapsed && <span className="truncate">{item.label}</span>}
-                    </div>
-                  </Link>
+                  <div className="w-8 h-px bg-slate-800 my-2 mx-auto" />
                 )}
 
-                {/* Submenu Expansion */}
-                {hasSubItems && isExpanded && !isCollapsed && (
-                  <div className="pl-4 pr-1 space-y-1 pt-1 animate-in fade-in duration-150">
-                    {item.subItems!.map((sub) => {
-                      const isSubActive = pathname === sub.href;
-                      return (
+                {visibleItems.map((item) => {
+                  const Icon = item.icon;
+                  const isItemActive =
+                    pathname === item.href ||
+                    (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
+                    item.subItems?.some((sub) => currentUrl === sub.href || pathname === sub.href);
+                  const hasSubItems = item.subItems && item.subItems.length > 0;
+                  const isExpanded = openSubmenu === item.label || (openSubmenu === null && isItemActive);
+
+                  return (
+                    <div key={item.label} className="relative group space-y-1">
+                      {hasSubItems ? (
+                        <button
+                          type="button"
+                          onClick={() => setOpenSubmenu(isExpanded ? '__closed__' : item.label)}
+                          className={`w-full flex items-center justify-between ${
+                            isCollapsed ? 'justify-center px-2' : 'px-3.5'
+                          } py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer group ${
+                            isItemActive
+                              ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10 font-bold'
+                              : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                          }`}
+                          title={isCollapsed ? item.label : undefined}
+                        >
+                          <div className="flex items-center">
+                            <Icon
+                              className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 text-white group-hover:scale-105 transition-transform duration-200`}
+                              strokeWidth={2}
+                            />
+                            {!isCollapsed && <span className="truncate">{item.label}</span>}
+                          </div>
+                          {!isCollapsed && (
+                            <div className="flex items-center gap-1.5">
+                              {item.badge && (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-[#FF690C] text-white">
+                                  {item.badge}
+                                </span>
+                              )}
+                              <ChevronDown
+                                className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                                  isExpanded ? 'rotate-180 text-white' : 'text-slate-400'
+                                }`}
+                              />
+                            </div>
+                          )}
+                        </button>
+                      ) : (
                         <Link
-                          key={sub.href}
-                          href={sub.href}
-                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors ${
-                            isSubActive
-                              ? 'bg-[#0050CB] text-white font-bold shadow-xs'
-                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          href={item.href}
+                          title={item.label}
+                          className={`flex items-center justify-between ${
+                            isCollapsed ? 'justify-center px-2' : 'px-3.5'
+                          } py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
+                            isItemActive
+                              ? 'bg-[#0050CB] text-white shadow-md shadow-[#0050CB]/35 ring-1 ring-white/10 font-bold'
+                              : 'text-slate-300 hover:bg-white/5 hover:text-white'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5">
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                isSubActive ? 'bg-white' : 'bg-slate-500'
+                          <div className="flex items-center">
+                            <Icon
+                              className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                                isItemActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
                               }`}
+                              strokeWidth={2}
                             />
-                            <span>{sub.label}</span>
+                            {!isCollapsed && <span className="truncate">{item.label}</span>}
                           </div>
+                          {!isCollapsed && item.badge && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-[#FF690C] text-white">
+                              {item.badge}
+                            </span>
+                          )}
                         </Link>
-                      );
-                    })}
-                  </div>
-                )}
+                      )}
+
+                      {/* Collapsed Hover Flyout Menu */}
+                      {isCollapsed && hasSubItems && (
+                        <div className="absolute left-full top-0 ml-2.5 w-56 bg-[#000E28] border border-slate-700/80 rounded-2xl shadow-2xl p-2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-150">
+                          <div className="px-3 py-1.5 border-b border-slate-800 text-[11px] font-black text-white flex items-center justify-between">
+                            <span>{item.label}</span>
+                            {item.badge && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-[#FF690C] text-white">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <div className="space-y-0.5 pt-1">
+                            {item.subItems!.map((sub) => {
+                              const isSubActive = currentUrl === sub.href || pathname === sub.href;
+                              return (
+                                <Link
+                                  key={sub.href}
+                                  href={sub.href}
+                                  className={`flex items-center px-3 py-1.5 rounded-xl text-xs transition-colors ${
+                                    isSubActive
+                                      ? 'bg-[#0050CB] text-white font-bold shadow-xs'
+                                      : 'text-slate-300 hover:text-white hover:bg-white/10'
+                                  }`}
+                                >
+                                  <span>{sub.label}</span>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Collapsed Tooltip for Non-Submenu items */}
+                      {isCollapsed && !hasSubItems && (
+                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 px-3 py-1.5 bg-[#000E28] border border-slate-700/80 rounded-xl shadow-xl text-xs font-bold text-white whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-150">
+                          {item.label}
+                        </div>
+                      )}
+
+                      {/* Expanded Submenu Expansion */}
+                      {hasSubItems && isExpanded && !isCollapsed && (
+                        <div className="pl-4 pr-1 space-y-0.5 pt-1 border-l-2 border-slate-700/60 ml-5 animate-in fade-in duration-150">
+                          {item.subItems!.map((sub) => {
+                            const isSubActive = currentUrl === sub.href || pathname === sub.href;
+                            return (
+                              <Link
+                                key={sub.href}
+                                href={sub.href}
+                                className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-xs transition-colors ${
+                                  isSubActive
+                                    ? 'bg-[#0050CB] text-white font-bold shadow-xs'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      isSubActive ? 'bg-white' : 'bg-slate-500'
+                                    }`}
+                                  />
+                                  <span>{sub.label}</span>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
         </nav>
 
-        {/* Better Education / Brighter Future Bottom Card matching screenshot */}
+        {/* Compact Kindergarten Accreditation badge */}
         {!isCollapsed && (
-          <div className="p-3 mx-3 my-2 rounded-2xl bg-gradient-to-b from-[#0B1D45] to-[#040D1E] border border-blue-900/60 overflow-hidden relative shadow-lg text-white shrink-0">
-            <p className="text-xs font-bold text-white">Better Education</p>
-            <p className="text-xs font-black text-[#38BDF8]">Brighter Future</p>
-            <div className="mt-2.5 rounded-xl overflow-hidden h-20 w-full relative">
-              <img src="/admin-hero-campus.jpg" alt="GGPS Campus" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#040D1E]/70 via-transparent to-transparent" />
+          <div className="p-3 mx-3 my-2 rounded-2xl bg-gradient-to-b from-[#0B1D45] to-[#040D1E] border border-blue-900/60 shadow-md text-white shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0050CB] to-[#2563EB] flex items-center justify-center text-white shrink-0 shadow-md">
+                <Award className="w-4 h-4 text-white" />
+              </div>
+              <div className="leading-tight">
+                <p className="text-[11px] font-black text-white">GGPS Kindergarten</p>
+                <p className="text-[9.5px] font-semibold text-[#38BDF8]">Pre-KG • LKG • UKG</p>
+              </div>
             </div>
           </div>
         )}
