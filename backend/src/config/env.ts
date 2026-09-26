@@ -6,7 +6,7 @@ dotenv.config();
 const envSchema = z.object({
   PORT: z.coerce.number().default(5001),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  MONGODB_URI: z.string().min(1, 'Database URI is required'),
+  MONGODB_URI: z.string().default('in-memory'),
   JWT_ACCESS_SECRET: z.string().min(8, 'JWT Access Secret must be at least 8 characters'),
   JWT_SECRET: z.string().min(8).optional(),
   JWT_REFRESH_SECRET: z.string().min(8, 'JWT Refresh Secret must be at least 8 characters').optional(),
@@ -37,7 +37,7 @@ if (!isDevOrTest && (!rawSecret || rawSecret.includes('super_secret_jwt_school_e
 const rawEnv = {
   PORT: process.env.PORT,
   NODE_ENV: process.env.NODE_ENV,
-  MONGODB_URI: process.env.MONGODB_URI || process.env.MONGO_URI || (isDevOrTest ? 'mongodb://localhost:27017/global_international_erp' : ''),
+  MONGODB_URI: process.env.MONGODB_URI || process.env.MONGO_URI || (isDevOrTest ? 'in-memory' : ''),
   JWT_ACCESS_SECRET: rawSecret || 'super_secret_jwt_school_erp_token_key_2026',
   JWT_SECRET: rawSecret || 'super_secret_jwt_school_erp_token_key_2026',
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || (rawSecret ? `${rawSecret}_refresh` : 'super_secret_refresh_token_key_2026'),

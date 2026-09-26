@@ -74,11 +74,62 @@ const attemptPrimaryConnect = async (): Promise<boolean> => {
   }
 };
 
+const connectInMemoryDB = async (): Promise<boolean> => {
+  if (mongoose.connection.readyState === 1) return true;
+
+  try {
+    console.log('⚡ Starting embedded in-memory MongoDB (no external MongoDB server required)...');
+    // @ts-ignore
+    const { MongoMemoryServer } = await import('mongodb-memory-server');
+    if (!memoryServerInstance) {
+      memoryServerInstance = await MongoMemoryServer.create({
+        binary: {
+          version: '4.4.29',
+        },
+        instance: {
+          dbName: 'global_international_erp',
+          launchTimeout: 60000,
+        },
+      });
+    }
+
+    const memoryUri = memoryServerInstance.getUri();
+    await mongoose.connect(memoryUri);
+    console.log(`✓ Embedded in-memory MongoDB connected: ${memoryUri}`);
+
+    console.log('[DB] Seeding default development accounts...');
+    await seedDatabase();
+    console.log('✓ Development database ready! You can log in with:');
+    console.log('   • Admin:      admin@school.com / password123');
+    console.log('   • Teacher:    teacher@school.com / password123');
+    console.log('   • Parent:     parent@school.com / password123');
+    return true;
+  } catch (memErr) {
+    console.error('[DB] CRITICAL: Failed to launch embedded in-memory MongoDB:', memErr);
+    console.warn('⚠️  Database is offline. Non-health HTTP endpoints will return 503 Service Unavailable.');
+    return false;
+  }
+};
+
 const connectDB = async () => {
   if (isConnecting) return;
   isConnecting = true;
 
-  // 1. Try initial connection with retries
+  // Use external database if explicit, in production, or when a remote MongoDB URI is configured
+  const isExplicitExternal =
+    process.env.USE_EXTERNAL_DB === 'true' ||
+    env.NODE_ENV === 'production' ||
+    (Boolean(env.MONGODB_URI) &&
+      env.MONGODB_URI !== 'in-memory' &&
+      !env.MONGODB_URI.includes('localhost:27017'));
+
+  if (!isExplicitExternal) {
+    await connectInMemoryDB();
+    isConnecting = false;
+    return;
+  }
+
+  // 1. Try initial connection with retries for production / external DB
   let connected = false;
   const maxInitialAttempts = env.NODE_ENV === 'production' ? 3 : 1;
 
@@ -110,36 +161,9 @@ const connectDB = async () => {
     return;
   }
 
-  // 3. In development / testing: Fallback to embedded in-memory MongoDB
+  // 3. In development / testing fallback
   if (!connected) {
-    try {
-      console.log('⚡ Launching embedded in-memory MongoDB for local development...');
-      // @ts-ignore
-      const { MongoMemoryServer } = await import('mongodb-memory-server');
-      memoryServerInstance = await MongoMemoryServer.create({
-        binary: {
-          version: '4.4.29',
-        },
-        instance: {
-          dbName: 'global_international_erp',
-          launchTimeout: 60000,
-        },
-      });
-
-      const memoryUri = memoryServerInstance.getUri();
-      const conn = await mongoose.connect(memoryUri);
-      console.log(`✓ Embedded in-memory MongoDB connected: ${memoryUri}`);
-
-      console.log('[DB] Seeding default development accounts...');
-      await seedDatabase();
-      console.log('✓ Development database ready! You can log in with:');
-      console.log('   • Admin:      admin@school.com / password123');
-      console.log('   • Teacher:    teacher@school.com / password123');
-      console.log('   • Parent:     parent@school.com / password123');
-    } catch (memErr) {
-      console.error('[DB] CRITICAL: Failed to launch embedded in-memory MongoDB fallback:', memErr);
-      console.warn('⚠️  Database is offline. Non-health HTTP endpoints will return 503 Service Unavailable.');
-    }
+    await connectInMemoryDB();
   }
 
   isConnecting = false;

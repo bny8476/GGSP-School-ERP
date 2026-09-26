@@ -123,7 +123,6 @@ const UserSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ role: 1 });
 UserSchema.index({ campusId: 1, role: 1 });
 

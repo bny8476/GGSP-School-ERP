@@ -20,7 +20,7 @@ import { ROLE_PERMISSIONS } from '../config/permissions';
 
 export const seedDatabase = async () => {
   try {
-    const options = { upsert: true, new: true, runValidators: true };
+    const options = { upsert: true, returnDocument: 'after' as const, runValidators: true };
 
     // 1. Seed Roles
     const seededRoles: Record<string, any> = {};
